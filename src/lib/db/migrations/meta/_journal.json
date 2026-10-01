@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1787854614594,
+      "tag": "0000_hard_katie_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787865333531,
+      "tag": "0001_remove-user-deleted-at",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787938967012,
+      "tag": "0002_change-email-to-text",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788133681888,
+      "tag": "0003_yielding_cobalt_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788394190818,
+      "tag": "0004_add_stripe_event_fields",
+      "breakpoints": true
+    }
+  ]
+}

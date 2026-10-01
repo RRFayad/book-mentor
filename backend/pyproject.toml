@@ -1,0 +1,21 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "black>=26.5.1",
+    "fastapi-clerk-auth>=0.0.9",
+    "fastapi[standard]>=0.141.1",
+    "isort>=9.0.1",
+    "psycopg[binary]>=3.3.4",
+    "python-dotenv>=1.2.3",
+    "sqlalchemy>=2.0.52",
+]
+
+[tool.isort]
+profile = "black"
+
+[tool.fastapi]
+entrypoint = "main:app"
