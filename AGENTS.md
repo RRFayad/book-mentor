@@ -47,9 +47,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   Call it directly in the client component that handles the action. Server
   actions return a result, and the calling client component turns it into a
   toast.
-- Do not refactor copied shadcn/ui components in `src/components/ui/`, Velora
-  components in `src/components/velora/`, or assistant-ui components in
-  `src/components/assistant-ui/` into the application styling pattern.
+- Do not refactor copied shadcn/ui components in `src/components/ui/` or Velora
+  components in `src/components/velora/` into the application styling pattern.
+- The thread components in `src/components/assistant-ui/` are app-owned and
+  built on assistant-ui primitives; they follow the application styling
+  pattern. Add assistant-ui pieces by writing them there, not with the shadcn
+  CLI, which would replace this repo's Base UI components.
 - The Conversation thread uses assistant-ui on a custom-backend runtime, never
   its LangGraph runtime (see
   `docs/adr/0004-assistant-ui-for-the-conversation-thread.md`). Do not wire up message
