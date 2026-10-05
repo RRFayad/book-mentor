@@ -32,6 +32,12 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
   Conversation stays open: it can still use passages already cited in it.
   Conversations never expire on their own and are never read-only.
 - Memory: recent messages verbatim plus a rolling summary of older ones.
+- History only grows: messages can't be edited, answers can't be regenerated,
+  and there is no branching. A streaming answer can be stopped, and answers can
+  be copied.
+- A stopped answer stays in the history, marked as stopped, with the Citations
+  it already had. An answer that fails with an error does not count toward the
+  message limit.
 
 ## The Mentor
 
@@ -54,7 +60,11 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 ## Screens
 
 The app uses a chat layout (like Claude or ChatGPT) instead of the starter
-kit's page-and-cards shell. Design: [Book Mentor v1 canvas](https://claude.ai/artifact/HbV6e1NR4qCuV99cV5rViA).
+kit's page-and-cards shell, with the Conversation thread built on assistant-ui
+(ADR 0004). Designs: the [v2 canvas (assistant-ui)](https://claude.ai/artifact/QtPG3Bwz9Y6m5Htd7tiFb4)
+is the reference for the sidebar, New Conversation, and Conversation screens;
+the [v1 canvas](https://claude.ai/artifact/HbV6e1NR4qCuV99cV5rViA) remains the
+reference for Library, Add Source, Delete Source, and the landing page.
 
 - **Sidebar**: New Conversation, Library (with active Source count), then the
   Conversations grouped by date, account at the bottom.
@@ -88,10 +98,15 @@ removed.
 Socratic mode, personal profile for applications, EPUB, OCR, web search in
 chat, larger or refreshing blog crawls, editable Source sets, resumable
 ingestion, re-adding a Source to an existing Conversation, suggested starter
-questions, preloaded demo Library, original-PDF viewer.
+questions, preloaded demo Library, original-PDF viewer, editing or regenerating
+messages, branching Conversations.
 
 ## Open engineering questions
 
 To settle in a second grill before tickets: the LangGraph flow (retrieve,
 reflect, decide, compare), chat streaming transport, chat model, Tavily
-endpoints and credit costs, and how Expiry cleanup is scheduled.
+endpoints and credit costs, and how Expiry cleanup is scheduled. With
+assistant-ui (ADR 0004), also: which custom-backend runtime the thread uses
+(ExternalStoreRuntime, or the AI SDK runtime fed by a FastAPI stream), and the
+message-part contract for answer sections and Citations that both the stream
+and the UI share.
