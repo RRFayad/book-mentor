@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ConversationThread } from "@/components/subscribed/conversation/conversation-thread";
 import { getConversation } from "@/lib/backend/conversations";
+import { getUsage } from "@/lib/backend/usage";
 import { tw } from "@/lib/utils";
 
 const styles = {
@@ -14,7 +15,10 @@ const ConversationPage = async ({
   params,
 }: PageProps<"/conversations/[id]">) => {
   const { id } = await params;
-  const conversation = await getConversation(id);
+  const [conversation, usage] = await Promise.all([
+    getConversation(id),
+    getUsage(),
+  ]);
 
   if (!conversation) {
     notFound();
@@ -22,7 +26,7 @@ const ConversationPage = async ({
 
   return (
     <div className={styles.thread}>
-      <ConversationThread conversation={conversation} />
+      <ConversationThread conversation={conversation} initialUsage={usage} />
     </div>
   );
 };

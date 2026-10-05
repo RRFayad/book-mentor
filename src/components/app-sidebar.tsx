@@ -4,7 +4,6 @@ import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { CreditCardIcon, LibraryIcon, SquarePenIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore } from "react";
 
 import {
   Sidebar,
@@ -22,6 +21,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useIsBrowser } from "@/hooks/use-is-browser";
 import type { ConversationSummary, Usage } from "@/lib/backend/types";
 import { groupConversationsByDate } from "@/lib/conversations/group-by-date";
 import { routes } from "@/lib/routes";
@@ -45,17 +45,6 @@ const styles = {
   accountEmail: tw("mt-0.5 truncate text-xs text-sidebar-foreground/60"),
 };
 
-// Grouping by date needs the user's local time, which the server does not
-// know. The groups render only in the browser, so the server HTML and the
-// first browser render always match.
-const subscribeToNothing = () => () => {};
-const useIsBrowser = () =>
-  useSyncExternalStore(
-    subscribeToNothing,
-    () => true,
-    () => false,
-  );
-
 type AppSidebarProps = {
   appName: string;
   billingEnabled: boolean;
@@ -72,6 +61,8 @@ export const AppSidebar = ({
   const pathname = usePathname();
   const { user } = useUser();
   const { isMobile, state } = useSidebar();
+  // Grouping by date needs the user's local time, which the server does not
+  // know, so the groups render in the browser only.
   const isBrowser = useIsBrowser();
   const conversationGroups = isBrowser
     ? groupConversationsByDate(conversations, new Date())

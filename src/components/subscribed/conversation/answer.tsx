@@ -31,6 +31,13 @@ const styles = {
   markerSelected: tw(
     "border-primary bg-primary text-primary-foreground hover:bg-primary",
   ),
+  error: tw(
+    "rounded-md border border-destructive bg-destructive-surface p-3 text-sm text-destructive-text",
+  ),
+  writing: tw(
+    "inline-block size-2 animate-pulse rounded-full bg-foreground motion-reduce:animate-none",
+  ),
+  stopped: tw("text-[13px] text-muted-foreground"),
 };
 
 const CitationMarker = ({
@@ -135,16 +142,33 @@ const Part = ({ part, answerId }: { part: AnswerPart; answerId: string }) => {
   }
 };
 
-// Renders a Mentor answer: its sections, comparisons, and Citation markers.
+// Renders a Mentor answer: its sections, comparisons, and Citation markers,
+// and whether it is still being written, was stopped, or failed.
 export const Answer = ({ data }: DataMessagePartProps) => {
   // The thread puts a MentorAnswer in every "answer" part.
   const answer = data as MentorAnswer;
+
+  if (answer.status === "error") {
+    return (
+      <p role="alert" className={styles.error}>
+        The Mentor couldn&apos;t finish this answer. Send your question again.
+      </p>
+    );
+  }
 
   return (
     <div className={styles.answer}>
       {answer.parts.map((part, index) => (
         <Part key={index} part={part} answerId={answer.id} />
       ))}
+      {answer.status === "streaming" && (
+        <span
+          role="status"
+          aria-label="The Mentor is writing"
+          className={styles.writing}
+        />
+      )}
+      {answer.status === "stopped" && <p className={styles.stopped}>Stopped</p>}
     </div>
   );
 };

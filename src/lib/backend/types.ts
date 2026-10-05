@@ -39,6 +39,19 @@ export type AddSourceResult =
   | { status: "failed" }
   | { status: "limit-reached" };
 
+// The client chooses the ids, so it can show the messages before the reply.
+export type NewMessage = {
+  conversationId: string;
+  userMessageId: string;
+  answerId: string;
+  text: string;
+};
+
+export type SendMessageResult =
+  | { status: "answered"; answer: MentorAnswer; usage: Usage }
+  | { status: "limit-reached"; usage: Usage }
+  | { status: "failed" };
+
 export type ConversationSummary = {
   id: string;
   title: string;
