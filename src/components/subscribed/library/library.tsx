@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { AddSourceButton } from "@/components/subscribed/library/add-source-dialog";
+import { DeleteSourceButton } from "@/components/subscribed/library/delete-source-button";
 import { SourceRow } from "@/components/subscribed/library/source-row";
 import { UsageCard } from "@/components/subscribed/library/usage-card";
 import { PageHeader } from "@/components/subscribed/page-header";
@@ -37,9 +38,16 @@ type LibraryProps = {
   sources: Source[];
   usage: Usage;
   now: Date;
+  // How many Conversations use each Source, by Source id.
+  conversationCounts: Record<string, number>;
 };
 
-export const Library = ({ sources, usage, now }: LibraryProps) => {
+export const Library = ({
+  sources,
+  usage,
+  now,
+  conversationCounts,
+}: LibraryProps) => {
   const atLimit = usage.activeSources >= usage.sourceLimit;
 
   return (
@@ -88,7 +96,18 @@ export const Library = ({ sources, usage, now }: LibraryProps) => {
           )}
           <ul className={styles.list}>
             {sources.map((source) => (
-              <SourceRow key={source.id} source={source} now={now} />
+              <SourceRow
+                key={source.id}
+                source={source}
+                now={now}
+                action={
+                  <DeleteSourceButton
+                    sourceId={source.id}
+                    title={source.title}
+                    conversationCount={conversationCounts[source.id] ?? 0}
+                  />
+                }
+              />
             ))}
           </ul>
         </section>

@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-import { addSource } from "@/lib/backend/sources";
+import { addSource, deleteSource } from "@/lib/backend/sources";
 import type { AddSourceResult, NewSource } from "@/lib/backend/types";
 import { isNewSourceValid } from "@/lib/sources/new-source";
 
@@ -25,4 +25,22 @@ export const addSourceAction = async (
   }
 
   return result;
+};
+
+export const deleteSourceAction = async (
+  sourceId: string,
+): Promise<{ ok: boolean }> => {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { ok: false };
+  }
+
+  const ok = await deleteSource(sourceId);
+
+  if (ok) {
+    revalidatePath("/", "layout");
+  }
+
+  return { ok };
 };

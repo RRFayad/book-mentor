@@ -12,6 +12,44 @@ const MOCK_POST_COUNT = 20;
 export const listSources = async (): Promise<Source[]> =>
   getMockStore().sources.map((source) => ({ ...source }));
 
+// How many Conversations use each Source, by Source id.
+export const countConversationsBySource = async (): Promise<
+  Record<string, number>
+> => {
+  const counts: Record<string, number> = {};
+
+  for (const conversation of getMockStore().conversations) {
+    for (const source of conversation.sources) {
+      counts[source.id] = (counts[source.id] ?? 0) + 1;
+    }
+  }
+
+  return counts;
+};
+
+// Removes the Source from the Library. Its Conversations keep it as an
+// expired Source, exactly as after its Expiry.
+export const deleteSource = async (sourceId: string): Promise<boolean> => {
+  const store = getMockStore();
+  const index = store.sources.findIndex((source) => source.id === sourceId);
+
+  if (index === -1) {
+    return false;
+  }
+
+  store.sources.splice(index, 1);
+
+  for (const conversation of store.conversations) {
+    for (const source of conversation.sources) {
+      if (source.id === sourceId) {
+        source.expired = true;
+      }
+    }
+  }
+
+  return true;
+};
+
 // Mock results for demos: a file name or blog address containing "scanned",
 // "large" or "fail" gives that result. Anything else is added as Ingesting.
 export const addSource = async (input: NewSource): Promise<AddSourceResult> => {
