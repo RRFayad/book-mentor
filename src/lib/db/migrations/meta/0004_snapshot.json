@@ -114,8 +114,12 @@
           "name": "subscriptions_user_id_users_id_fk",
           "tableFrom": "subscriptions",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -125,12 +129,16 @@
         "subscriptions_user_id_unique": {
           "name": "subscriptions_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id"]
+          "columns": [
+            "user_id"
+          ]
         },
         "subscriptions_stripe_subscription_id_unique": {
           "name": "subscriptions_stripe_subscription_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["stripe_subscription_id"]
+          "columns": [
+            "stripe_subscription_id"
+          ]
         }
       },
       "policies": {},
@@ -212,17 +220,23 @@
         "users_clerk_id_unique": {
           "name": "users_clerk_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["clerk_id"]
+          "columns": [
+            "clerk_id"
+          ]
         },
         "users_stripe_customer_id_unique": {
           "name": "users_stripe_customer_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["stripe_customer_id"]
+          "columns": [
+            "stripe_customer_id"
+          ]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       },
       "policies": {},
@@ -234,12 +248,19 @@
     "public.subscription_plan": {
       "name": "subscription_plan",
       "schema": "public",
-      "values": ["basic", "premium", "all_in"]
+      "values": [
+        "basic",
+        "premium",
+        "all_in"
+      ]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": ["user", "admin"]
+      "values": [
+        "user",
+        "admin"
+      ]
     }
   },
   "schemas": {},
