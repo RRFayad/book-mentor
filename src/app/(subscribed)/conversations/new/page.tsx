@@ -1,20 +1,10 @@
-import { PageHeader } from "@/components/subscribed/page-header";
-import { tw } from "@/lib/utils";
+import { NewConversation } from "@/components/subscribed/conversation/new-conversation";
+import { listSources } from "@/lib/backend/sources";
 
-const styles = {
-  page: tw("mx-auto w-full max-w-7xl space-y-8"),
-};
+const NewConversationPage = async () => {
+  const sources = await listSources();
 
-// Placeholder until the "New Conversation with the Source picker" ticket.
-const NewConversationPage = () => {
-  return (
-    <main className={styles.page}>
-      <PageHeader
-        title="New Conversation"
-        description="Pick up to 3 Sources from your Library, then ask your first question."
-      />
-    </main>
-  );
+  return <NewConversation sources={sources} />;
 };
 
 export default NewConversationPage;

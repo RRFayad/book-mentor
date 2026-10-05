@@ -13,8 +13,10 @@ const styles = {
 
 const ConversationPage = async ({
   params,
+  searchParams,
 }: PageProps<"/conversations/[id]">) => {
   const { id } = await params;
+  const { ask } = await searchParams;
   const [conversation, usage] = await Promise.all([
     getConversation(id),
     getUsage(),
@@ -26,7 +28,11 @@ const ConversationPage = async ({
 
   return (
     <div className={styles.thread}>
-      <ConversationThread conversation={conversation} initialUsage={usage} />
+      <ConversationThread
+        conversation={conversation}
+        initialUsage={usage}
+        pendingQuestion={typeof ask === "string" ? ask : undefined}
+      />
     </div>
   );
 };

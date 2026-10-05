@@ -205,7 +205,8 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
 type AddSourceButtonProps = {
   children: ReactNode;
   initialKind?: SourceKind;
-  variant?: "default" | "outline";
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm";
   disabled?: boolean;
 };
 
@@ -214,13 +215,16 @@ export const AddSourceButton = ({
   children,
   initialKind = "book",
   variant = "default",
+  size = "default",
   disabled = false,
 }: AddSourceButtonProps) => {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant={variant} disabled={disabled} />}>
+      <DialogTrigger
+        render={<Button variant={variant} size={size} disabled={disabled} />}
+      >
         {children}
       </DialogTrigger>
       <DialogContent className={styles.content}>

@@ -6,6 +6,7 @@ import {
   type AppendMessage,
   type ThreadMessageLike,
 } from "@assistant-ui/react";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { sendMessageAction, stopAnswerAction } from "@/actions/messages";
@@ -89,12 +90,17 @@ type Stream = {
 type ConversationThreadProps = {
   conversation: Conversation;
   initialUsage: Usage;
+  // The first question of a new Conversation, sent once when the thread opens.
+  pendingQuestion?: string;
 };
 
 export const ConversationThread = ({
   conversation,
   initialUsage,
+  pendingQuestion,
 }: ConversationThreadProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
   const [messages, setMessages] = useState(conversation.messages);
   const [usage, setUsage] = useState(initialUsage);
   const [selectedCitation, setSelectedCitation] = useState<CitationKey | null>(
@@ -173,10 +179,8 @@ export const ConversationThread = ({
     [finishStream, showAnswer, stopStream],
   );
 
-  const onNew = useCallback(
-    async (message: AppendMessage) => {
-      const text = messageText(message);
-
+  const sendText = useCallback(
+    async (text: string) => {
       if (!text || streamRef.current) {
         return;
       }
@@ -238,6 +242,25 @@ export const ConversationThread = ({
     },
     [conversationId, finishStream, playAnswer, showAnswer],
   );
+
+  const onNew = useCallback(
+    (message: AppendMessage) => sendText(messageText(message)),
+    [sendText],
+  );
+
+  // A new Conversation arrives with its first question: send it once, then
+  // drop it from the address so a reload does not send it again.
+  const pendingSentRef = useRef(false);
+
+  useEffect(() => {
+    if (!pendingQuestion || pendingSentRef.current || messages.length > 0) {
+      return;
+    }
+
+    pendingSentRef.current = true;
+    router.replace(pathname);
+    void sendText(pendingQuestion);
+  }, [messages.length, pathname, pendingQuestion, router, sendText]);
 
   const convertMessage = useCallback(
     (message: Message) => toThreadMessage(message, sources),

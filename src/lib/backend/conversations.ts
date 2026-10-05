@@ -2,6 +2,10 @@ import "server-only";
 
 import { getMockStore } from "@/lib/backend/mock/store";
 import type { Conversation, ConversationSummary } from "@/lib/backend/types";
+import {
+  SOURCE_PICK_LIMIT,
+  titleFromQuestion,
+} from "@/lib/conversations/source-picks";
 
 export const listConversations = async (): Promise<ConversationSummary[]> =>
   getMockStore().conversations.map(({ id, title, lastActivityAt }) => ({
@@ -18,4 +22,48 @@ export const getConversation = async (
   );
 
   return conversation ? structuredClone(conversation) : null;
+};
+
+// Creates an empty Conversation from 1 to 3 Ready Sources. The thread then
+// sends the first question, so its answer streams like any other.
+export const createConversation = async (
+  sourceIds: string[],
+  firstQuestion: string,
+): Promise<{ conversationId: string } | null> => {
+  const store = getMockStore();
+  const sources = [...new Set(sourceIds)].map((id) =>
+    store.sources.find((source) => source.id === id),
+  );
+
+  if (
+    sources.length < 1 ||
+    sources.length > SOURCE_PICK_LIMIT ||
+    sources.some((source) => source?.state !== "ready")
+  ) {
+    return null;
+  }
+
+  const conversation: Conversation = {
+    id: crypto.randomUUID(),
+    title: titleFromQuestion(firstQuestion),
+    lastActivityAt: new Date().toISOString(),
+    sources: sources.flatMap((source) =>
+      source
+        ? [
+            {
+              id: source.id,
+              kind: source.kind,
+              title: source.title,
+              author: source.author,
+              expired: false,
+            },
+          ]
+        : [],
+    ),
+    messages: [],
+  };
+
+  store.conversations.unshift(conversation);
+
+  return { conversationId: conversation.id };
 };
