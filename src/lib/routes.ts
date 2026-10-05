@@ -13,9 +13,11 @@ export const routes = {
   appHome: newConversation,
   conversations: {
     new: newConversation,
-    // For a dynamic path, add a function and a matching [param]/page.tsx folder:
-    // detail: (conversationId: string) => `/conversations/${encodeURIComponent(conversationId)}`,
+    // A dynamic path is a function with a matching [param]/page.tsx folder.
+    detail: (conversationId: string) =>
+      `/conversations/${encodeURIComponent(conversationId)}`,
   },
+  library: "/library",
   settings: {
     account: "/settings/account",
     billing: "/settings/billing",

@@ -72,9 +72,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   [App Shell canvas](https://claude.ai/artifact/HWhacGtes2kTC143kN4aUk) only
   documents the code as it was before that change.
 - A new subscribed page lives under `src/app/(subscribed)/` and is wired in
-  three places: its path in `src/lib/routes.ts`, its nav item in
-  `src/components/app-sidebar.tsx`, and its breadcrumb in `routeContext` in
-  `src/components/subscribed/app-header.tsx`.
+  two places: its path in `src/lib/routes.ts` and, when it needs one, its nav
+  item in `src/components/app-sidebar.tsx`. The header has no breadcrumb.
 - Management pages (Library, Account) follow the existing page pattern: a
   `mx-auto w-full max-w-7xl` container, `PageHeader`, then white cards styled
   like the ones in `src/components/subscribed/billing.tsx`. Conversation
@@ -116,6 +115,7 @@ Run relevant checks after changes:
 # Next.js
 npm run lint
 npx tsc --noEmit
+npm test
 npx prettier --check <changed-files>
 
 # FastAPI
