@@ -27,6 +27,18 @@ export type Source = {
 } & (BookDetails | BlogDetails) &
   IngestionStatus;
 
+// What the user enters to add a Source. The browser does not read the PDF yet,
+// so a book is only its file name for now.
+export type NewSource =
+  | { kind: "book"; fileName: string; title: string; author: string }
+  | { kind: "blog"; address: string; title: string; author: string };
+
+export type AddSourceResult =
+  | { status: "added"; source: Source }
+  | { status: "rejected"; reason: "scanned" | "too-large" }
+  | { status: "failed" }
+  | { status: "limit-reached" };
+
 export type ConversationSummary = {
   id: string;
   title: string;

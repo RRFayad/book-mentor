@@ -3,7 +3,7 @@ import "server-only";
 import { getMockStore } from "@/lib/backend/mock/store";
 import type { Usage } from "@/lib/backend/types";
 
-const SOURCE_LIMIT = 3;
+export const SOURCE_LIMIT = 3;
 const MESSAGE_LIMIT = 50;
 const MESSAGE_WINDOW_MS = 24 * 60 * 60 * 1000;
 

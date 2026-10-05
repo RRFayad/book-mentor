@@ -6,10 +6,10 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 
+import { AddSourceButton } from "@/components/subscribed/library/add-source-dialog";
 import { SourceRow } from "@/components/subscribed/library/source-row";
 import { UsageCard } from "@/components/subscribed/library/usage-card";
 import { PageHeader } from "@/components/subscribed/page-header";
-import { Button } from "@/components/ui/button";
 import type { Source, Usage } from "@/lib/backend/types";
 import { tw } from "@/lib/utils";
 
@@ -48,10 +48,10 @@ export const Library = ({ sources, usage, now }: LibraryProps) => {
         title="Library"
         description="The books and blogs your Mentor draws on, and how much of your allowance you've used."
         action={
-          <Button disabled={atLimit}>
+          <AddSourceButton disabled={atLimit}>
             <PlusIcon />
             Add Source
-          </Button>
+          </AddSourceButton>
         }
       />
       <UsageCard usage={usage} />
@@ -66,14 +66,14 @@ export const Library = ({ sources, usage, now }: LibraryProps) => {
             it&apos;s ready, you can start a Conversation with it.
           </p>
           <div className={styles.emptyActions}>
-            <Button>
+            <AddSourceButton initialKind="book">
               <BookOpenIcon />
               Add a book
-            </Button>
-            <Button variant="outline">
+            </AddSourceButton>
+            <AddSourceButton initialKind="blog" variant="outline">
               <GlobeIcon />
               Add a blog
-            </Button>
+            </AddSourceButton>
           </div>
         </section>
       ) : (

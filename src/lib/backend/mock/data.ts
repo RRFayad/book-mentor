@@ -31,7 +31,7 @@ export type MockData = {
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
-const SOURCE_LIFETIME = 7 * DAY;
+export const SOURCE_LIFETIME = 7 * DAY;
 
 const at = (now: Date, msAgo: number): string =>
   new Date(now.getTime() - msAgo).toISOString();
