@@ -8,6 +8,7 @@ import type {
   SendMessageResult,
 } from "@/lib/backend/types";
 import { getUsage, MESSAGE_LIMIT } from "@/lib/backend/usage";
+import { partialAnswer } from "@/lib/conversations/partial-answer";
 import { messageAllowance } from "@/lib/usage/message-allowance";
 
 // A canned answer for the frontend phase. The real Mentor replaces it.
@@ -104,8 +105,11 @@ export const sendMessage = async (
     (item) => item.id === message.conversationId,
   );
 
+  if (!conversation) {
+    return { status: "failed" };
+  }
+
   if (
-    !conversation ||
     messageAllowance(store.sentMessages, now, MESSAGE_LIMIT).remaining === 0
   ) {
     return { status: "limit-reached", usage: await getUsage() };
@@ -139,19 +143,30 @@ export const sendMessage = async (
   };
 };
 
-// The user stopped the answer: keep what was shown, marked as stopped.
+// The user stopped the answer after `shownWords` words. The server cuts its
+// own saved answer, so the browser never supplies answer content.
 export const stopAnswer = async (
   conversationId: string,
-  shownAnswer: MentorAnswer,
+  answerId: string,
+  shownWords: number,
 ): Promise<void> => {
   const conversation = getMockStore().conversations.find(
     (item) => item.id === conversationId,
   );
-  const index = conversation?.messages.findIndex(
-    (item) => item.id === shownAnswer.id,
-  );
+  const index =
+    conversation?.messages.findIndex((item) => item.id === answerId) ?? -1;
+  const saved = conversation?.messages[index];
 
-  if (conversation && index !== undefined && index !== -1) {
-    conversation.messages[index] = { ...shownAnswer, status: "stopped" };
+  if (
+    !conversation ||
+    saved?.role !== "mentor" ||
+    saved.status !== "complete"
+  ) {
+    return;
   }
+
+  conversation.messages[index] = {
+    ...partialAnswer(saved, Math.max(0, shownWords)),
+    status: "stopped",
+  };
 };

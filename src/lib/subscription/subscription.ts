@@ -86,3 +86,22 @@ export const requireCurrentUserSubscriptionPlan = async (
     redirect(routes.pricing);
   }
 };
+
+// The same rule as requireCurrentUserSubscriptionPlan, without redirects.
+// Server actions are not covered by the (subscribed) layout's check, so each
+// one calls this before doing anything.
+export const canCurrentUserUseSubscriptionPlan = async (
+  requiredPlan: SubscriptionPlan,
+): Promise<boolean> => {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return false;
+  }
+
+  if (!featureFlags.billingEnabled) {
+    return true;
+  }
+
+  return canCurrentUserAccessSubscriptionPlan(requiredPlan);
+};

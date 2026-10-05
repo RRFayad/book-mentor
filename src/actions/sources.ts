@@ -1,19 +1,22 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 import { addSource, deleteSource } from "@/lib/backend/sources";
 import type { AddSourceResult, NewSource } from "@/lib/backend/types";
 import { isNewSourceValid } from "@/lib/sources/new-source";
+import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
+import { SubscriptionPlan } from "@/types/database";
 
 // Results are returned, not thrown, so the dialog can show them.
 export const addSourceAction = async (
   input: NewSource,
 ): Promise<AddSourceResult> => {
-  const { userId } = await auth();
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
 
-  if (!userId || !isNewSourceValid(input)) {
+  if (!canUse || !isNewSourceValid(input)) {
     return { status: "failed" };
   }
 
@@ -30,9 +33,11 @@ export const addSourceAction = async (
 export const deleteSourceAction = async (
   sourceId: string,
 ): Promise<{ ok: boolean }> => {
-  const { userId } = await auth();
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
 
-  if (!userId) {
+  if (!canUse) {
     return { ok: false };
   }
 

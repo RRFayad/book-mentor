@@ -11,6 +11,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { sendMessageAction, stopAnswerAction } from "@/actions/messages";
+import { getUsageAction } from "@/actions/usage";
 import { Thread } from "@/components/assistant-ui/thread";
 import { showToast } from "@/components/toaster";
 import { Answer } from "@/components/subscribed/conversation/answer";
@@ -28,6 +29,7 @@ import type {
   MentorAnswer,
   MentorAnswerStatus,
   Message,
+  SendMessageResult,
   Usage,
 } from "@/lib/backend/types";
 import { answerToPlainText } from "@/lib/conversations/answer-text";
@@ -88,6 +90,7 @@ const messageText = (message: AppendMessage): string =>
 // The answer being streamed: what is shown so far, and how to stop it.
 type Stream = {
   shown: MentorAnswer;
+  shownWords: number;
   timer: number | null;
   stopRequested: boolean;
 };
@@ -130,7 +133,18 @@ export const ConversationThread = ({
     streamRef.current = null;
   }, []);
 
-  useEffect(() => finishStream, [finishStream]);
+  // On unmount, stop the timer only. Keeping the stream itself lets React's
+  // extra effect run in development (Strict Mode) leave a pending send intact.
+  useEffect(
+    () => () => {
+      const timer = streamRef.current?.timer;
+
+      if (timer) {
+        window.clearInterval(timer);
+      }
+    },
+    [],
+  );
 
   const stopStream = useCallback(async () => {
     const stream = streamRef.current;
@@ -150,7 +164,7 @@ export const ConversationThread = ({
     const stopped: MentorAnswer = { ...stream.shown, status: "stopped" };
 
     showAnswer(stopped);
-    await stopAnswerAction(conversationId, stopped);
+    await stopAnswerAction(conversationId, stopped.id, stream.shownWords);
   }, [conversationId, finishStream, showAnswer]);
 
   const playAnswer = useCallback(
@@ -174,6 +188,7 @@ export const ConversationThread = ({
         }
 
         stream.shown = partialAnswer(answer, shownWords);
+        stream.shownWords = shownWords;
         showAnswer(stream.shown);
       }, TICK_MS);
 
@@ -200,19 +215,31 @@ export const ConversationThread = ({
         citations: [],
       };
 
-      streamRef.current = { shown: waiting, timer: null, stopRequested: false };
+      streamRef.current = {
+        shown: waiting,
+        shownWords: 0,
+        timer: null,
+        stopRequested: false,
+      };
       setMessages((current) => [
         ...current,
         { id: userMessageId, role: "user", text },
         waiting,
       ]);
 
-      const result = await sendMessageAction({
-        conversationId,
-        userMessageId,
-        answerId,
-        text,
-      });
+      let result: SendMessageResult;
+
+      try {
+        result = await sendMessageAction({
+          conversationId,
+          userMessageId,
+          answerId,
+          text,
+        });
+      } catch {
+        // A network or server error: treat it like a failed send.
+        result = { status: "failed" };
+      }
 
       if (result.status !== "answered") {
         finishStream();
@@ -266,6 +293,28 @@ export const ConversationThread = ({
     router.replace(pathname);
     void sendText(pendingQuestion);
   }, [messages.length, pathname, pendingQuestion, router, sendText]);
+
+  // At the limit, read the usage again once the next message is allowed, so
+  // the composer opens without a reload.
+  useEffect(() => {
+    if (!usage.nextMessageAvailableAt) {
+      return;
+    }
+
+    const wait = Date.parse(usage.nextMessageAvailableAt) - Date.now();
+    const timer = window.setTimeout(
+      async () => {
+        const fresh = await getUsageAction();
+
+        if (fresh) {
+          setUsage(fresh);
+        }
+      },
+      Math.max(0, wait) + 1000,
+    );
+
+    return () => window.clearTimeout(timer);
+  }, [usage.nextMessageAvailableAt]);
 
   const convertMessage = useCallback(
     (message: Message) => toThreadMessage(message, sources),

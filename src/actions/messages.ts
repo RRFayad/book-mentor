@@ -1,21 +1,20 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 import { sendMessage, stopAnswer } from "@/lib/backend/messages";
-import type {
-  MentorAnswer,
-  NewMessage,
-  SendMessageResult,
-} from "@/lib/backend/types";
+import type { NewMessage, SendMessageResult } from "@/lib/backend/types";
+import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
+import { SubscriptionPlan } from "@/types/database";
 
 export const sendMessageAction = async (
   message: NewMessage,
 ): Promise<SendMessageResult> => {
-  const { userId } = await auth();
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
 
-  if (!userId || message.text.trim().length === 0) {
+  if (!canUse || message.text.trim().length === 0) {
     return { status: "failed" };
   }
 
@@ -29,11 +28,14 @@ export const sendMessageAction = async (
 
 export const stopAnswerAction = async (
   conversationId: string,
-  shownAnswer: MentorAnswer,
+  answerId: string,
+  shownWords: number,
 ): Promise<void> => {
-  const { userId } = await auth();
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
 
-  if (userId) {
-    await stopAnswer(conversationId, shownAnswer);
+  if (canUse) {
+    await stopAnswer(conversationId, answerId, shownWords);
   }
 };

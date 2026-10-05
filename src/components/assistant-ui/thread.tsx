@@ -50,6 +50,7 @@ const styles = {
   ),
   composerActions: tw("flex items-center justify-between gap-3 ps-2.5"),
   sendButton: tw("rounded-full"),
+  stopIcon: tw("fill-current"),
 };
 
 type ThreadProps = {
@@ -167,7 +168,7 @@ const Composer = ({
             className={styles.sendButton}
             aria-label="Stop generating"
           >
-            <SquareIcon className="fill-current" />
+            <SquareIcon className={styles.stopIcon} />
           </Button>
         </ComposerPrimitive.Cancel>
       </AuiIf>

@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -9,36 +8,57 @@ import {
   deleteConversation,
   renameConversation,
 } from "@/lib/backend/conversations";
+import { getUsage } from "@/lib/backend/usage";
 import { canStartConversation } from "@/lib/conversations/source-picks";
 import { routes } from "@/lib/routes";
+import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
+import { SubscriptionPlan } from "@/types/database";
 
+export type CreateConversationResult =
+  | { status: "created"; conversationId: string }
+  | { status: "limit-reached" }
+  | { status: "failed" };
+
+// A Conversation starts by sending its first question, so it is not created
+// when no message is left in the 24-hour window.
 export const createConversationAction = async (
   sourceIds: string[],
   firstQuestion: string,
-): Promise<{ conversationId: string } | null> => {
-  const { userId } = await auth();
+): Promise<CreateConversationResult> => {
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
 
-  if (!userId || !canStartConversation(sourceIds, firstQuestion)) {
-    return null;
+  if (!canUse || !canStartConversation(sourceIds, firstQuestion)) {
+    return { status: "failed" };
+  }
+
+  const usage = await getUsage();
+
+  if (usage.messagesInWindow >= usage.messageLimit) {
+    return { status: "limit-reached" };
   }
 
   const result = await createConversation(sourceIds, firstQuestion.trim());
 
-  if (result) {
-    // The new Conversation appears in the sidebar.
-    revalidatePath("/", "layout");
+  if (!result) {
+    return { status: "failed" };
   }
 
-  return result;
+  // The new Conversation appears in the sidebar.
+  revalidatePath("/", "layout");
+
+  return { status: "created", conversationId: result.conversationId };
 };
 
 export const renameConversationAction = async (
   conversationId: string,
   title: string,
 ): Promise<{ ok: boolean }> => {
-  const { userId } = await auth();
-  const ok =
-    Boolean(userId) && (await renameConversation(conversationId, title));
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
+  const ok = canUse && (await renameConversation(conversationId, title));
 
   if (ok) {
     // The sidebar and the header show the title.
@@ -54,15 +74,17 @@ export const deleteConversationAction = async (
   conversationId: string,
   isViewing: boolean,
 ): Promise<{ ok: boolean }> => {
-  const { userId } = await auth();
-  const ok = Boolean(userId) && (await deleteConversation(conversationId));
-
-  if (ok && isViewing) {
-    redirect(routes.conversations.new);
-  }
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
+  const ok = canUse && (await deleteConversation(conversationId));
 
   if (ok) {
     revalidatePath("/", "layout");
+  }
+
+  if (ok && isViewing) {
+    redirect(routes.conversations.new);
   }
 
   return { ok };

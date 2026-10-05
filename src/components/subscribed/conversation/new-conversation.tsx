@@ -151,7 +151,16 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
     startTransition(async () => {
       const result = await createConversationAction(picked, question);
 
-      if (!result) {
+      if (result.status === "limit-reached") {
+        showToast({
+          type: "warning",
+          title: "You've sent 50 messages in the last 24 hours.",
+          message: "Start this Conversation once more messages are available.",
+        });
+        return;
+      }
+
+      if (result.status === "failed") {
         showToast({
           type: "error",
           title: "Couldn't start the Conversation.",
