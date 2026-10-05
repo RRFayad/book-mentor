@@ -1,20 +1,11 @@
-import { PageHeader } from "@/components/subscribed/page-header";
-import { tw } from "@/lib/utils";
+import { Library } from "@/components/subscribed/library/library";
+import { listSources } from "@/lib/backend/sources";
+import { getUsage } from "@/lib/backend/usage";
 
-const styles = {
-  page: tw("mx-auto w-full max-w-7xl space-y-8"),
-};
+const LibraryPage = async () => {
+  const [sources, usage] = await Promise.all([listSources(), getUsage()]);
 
-// Placeholder until the "Library page (view only)" ticket.
-const LibraryPage = () => {
-  return (
-    <main className={styles.page}>
-      <PageHeader
-        title="Library"
-        description="The books and blogs your Mentor draws on."
-      />
-    </main>
-  );
+  return <Library sources={sources} usage={usage} now={new Date()} />;
 };
 
 export default LibraryPage;
