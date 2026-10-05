@@ -12,6 +12,7 @@ import { sendMessageAction, stopAnswerAction } from "@/actions/messages";
 import { Thread } from "@/components/assistant-ui/thread";
 import { showToast } from "@/components/toaster";
 import { Answer } from "@/components/subscribed/conversation/answer";
+import { CitationPanel } from "@/components/subscribed/conversation/citation-panel";
 import {
   ConversationContext,
   type CitationKey,
@@ -38,6 +39,8 @@ const WORDS_PER_TICK = 3;
 const TICK_MS = 50;
 
 const styles = {
+  layout: tw("flex h-full"),
+  thread: tw("min-w-0 flex-1"),
   composerNote: tw("text-xs text-muted-foreground"),
 };
 
@@ -255,6 +258,15 @@ export const ConversationThread = ({
     isDisabled: atLimit && !isRunning,
   });
 
+  const selectedAnswer = messages.find(
+    (message): message is MentorAnswer =>
+      message.role === "mentor" && message.id === selectedCitation?.answerId,
+  );
+  const citation =
+    selectedAnswer?.citations.find(
+      (item) => item.number === selectedCitation?.number,
+    ) ?? null;
+
   const context = useMemo(
     () => ({
       sources,
@@ -266,19 +278,27 @@ export const ConversationThread = ({
 
   return (
     <ConversationContext value={context}>
-      <AssistantRuntimeProvider runtime={runtime}>
-        <Thread
-          AnswerPart={Answer}
-          composerHeader={<SourceChips sources={sources} />}
-          composerNote={
-            <span className={styles.composerNote}>
-              Sources are fixed for this Conversation
-            </span>
-          }
-          composerFooter={<MessageAllowance usage={usage} />}
-          placeholder={atLimit ? "Message limit reached" : undefined}
+      <div className={styles.layout}>
+        <div className={styles.thread}>
+          <AssistantRuntimeProvider runtime={runtime}>
+            <Thread
+              AnswerPart={Answer}
+              composerHeader={<SourceChips sources={sources} />}
+              composerNote={
+                <span className={styles.composerNote}>
+                  Sources are fixed for this Conversation
+                </span>
+              }
+              composerFooter={<MessageAllowance usage={usage} />}
+              placeholder={atLimit ? "Message limit reached" : undefined}
+            />
+          </AssistantRuntimeProvider>
+        </div>
+        <CitationPanel
+          citation={citation}
+          onClose={() => setSelectedCitation(null)}
         />
-      </AssistantRuntimeProvider>
+      </div>
     </ConversationContext>
   );
 };
