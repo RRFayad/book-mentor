@@ -21,6 +21,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { ConversationMenu } from "@/components/subscribed/conversation/conversation-menu";
 import { useIsBrowser } from "@/hooks/use-is-browser";
 import type { ConversationSummary, Usage } from "@/lib/backend/types";
 import { groupConversationsByDate } from "@/lib/conversations/group-by-date";
@@ -144,6 +145,11 @@ export const AppSidebar = ({
                             {conversation.title}
                           </span>
                         </SidebarMenuButton>
+                        <ConversationMenu
+                          conversationId={conversation.id}
+                          title={conversation.title}
+                          isCurrent={pathname === href}
+                        />
                       </SidebarMenuItem>
                     );
                   })}

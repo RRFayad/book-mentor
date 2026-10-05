@@ -67,3 +67,36 @@ export const createConversation = async (
 
   return { conversationId: conversation.id };
 };
+
+export const renameConversation = async (
+  conversationId: string,
+  title: string,
+): Promise<boolean> => {
+  const conversation = getMockStore().conversations.find(
+    (item) => item.id === conversationId,
+  );
+  const tidy = title.trim().replace(/\s+/g, " ");
+
+  if (!conversation || tidy.length === 0) {
+    return false;
+  }
+
+  conversation.title = tidy;
+
+  return true;
+};
+
+export const deleteConversation = async (
+  conversationId: string,
+): Promise<boolean> => {
+  const { conversations } = getMockStore();
+  const index = conversations.findIndex((item) => item.id === conversationId);
+
+  if (index === -1) {
+    return false;
+  }
+
+  conversations.splice(index, 1);
+
+  return true;
+};
