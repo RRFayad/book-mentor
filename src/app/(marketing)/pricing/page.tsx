@@ -19,13 +19,13 @@ const styles = {
 
 const PricingPage = async () => {
   if (!featureFlags.billingEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const subscription = await getCurrentUserSubscription();
 
   if (isSubscriptionActive(subscription)) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const plans = getAvailableStripePlans();

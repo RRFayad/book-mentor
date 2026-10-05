@@ -462,8 +462,8 @@ Before building product features, verify the complete SaaS foundation:
 ### Verify:
 
 - Confirm the subscription is synchronized to PostgreSQL
-- Open the protected workspace
-- Confirm the protected FastAPI request works (mock data overview)
+- Open the app and confirm you land on New Conversation
+- Confirm FastAPI is reachable: open `<BACKEND_URL>/healthy`
 - Open Stripe Customer Portal from Billing
 - Confirm account management works
 

@@ -21,7 +21,7 @@ const styles = {
 
 const Success = () => {
   if (!featureFlags.billingEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   return (
@@ -34,10 +34,10 @@ const Success = () => {
           shortly.
         </p>
         <Button className={styles.action} asChild>
-          <Link href={routes.workspace.overview}>Go to workspace now</Link>
+          <Link href={routes.appHome}>Go to workspace now</Link>
         </Button>
         <RedirectAfterDelay
-          href={routes.workspace.overview}
+          href={routes.appHome}
           destination="your workspace"
         />
       </section>

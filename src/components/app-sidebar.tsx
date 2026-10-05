@@ -4,8 +4,8 @@ import Link from "next/link";
 import { UserButton, useUser } from "@clerk/nextjs";
 import {
   CreditCardIcon,
-  LayoutDashboardIcon,
   SparklesIcon,
+  SquarePenIcon,
   UserRoundIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -30,9 +30,9 @@ import { routes } from "@/lib/routes";
 
 const workspaceNavigation = [
   {
-    title: "Overview",
-    href: routes.workspace.overview,
-    icon: LayoutDashboardIcon,
+    title: "New Conversation",
+    href: routes.conversations.new,
+    icon: SquarePenIcon,
   },
 ];
 
@@ -83,7 +83,7 @@ export const AppSidebar = ({ appName, billingEnabled }: AppSidebarProps) => {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className={styles.header}>
-        <Link href={routes.workspace.overview} className={styles.brand}>
+        <Link href={routes.appHome} className={styles.brand}>
           <SparklesIcon className={styles.brandIcon} />
           <span className={styles.brandLabel}>{appName}</span>
         </Link>

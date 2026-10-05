@@ -10,8 +10,8 @@ const SignInPage = () => {
   return (
     <div className={styles.page}>
       <SignIn
-        fallbackRedirectUrl={routes.workspace.overview}
-        signUpFallbackRedirectUrl={routes.workspace.overview}
+        fallbackRedirectUrl={routes.appHome}
+        signUpFallbackRedirectUrl={routes.appHome}
       />
     </div>
   );

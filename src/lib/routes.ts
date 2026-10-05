@@ -1,3 +1,5 @@
+const newConversation = "/conversations/new";
+
 export const routes = {
   home: "/",
   pricing: "/pricing",
@@ -7,10 +9,12 @@ export const routes = {
     success: "/payment/success",
     cancelled: "/payment/cancelled",
   },
-  workspace: {
-    overview: "/workspace/overview",
+  // Where signed-in users land. Change the first screen of the app here only.
+  appHome: newConversation,
+  conversations: {
+    new: newConversation,
     // For a dynamic path, add a function and a matching [param]/page.tsx folder:
-    // item: (itemId: string) => `/workspace/items/${encodeURIComponent(itemId)}`,
+    // detail: (conversationId: string) => `/conversations/${encodeURIComponent(conversationId)}`,
   },
   settings: {
     account: "/settings/account",
