@@ -3,25 +3,23 @@
 import {
   AssistantRuntimeProvider,
   useExternalStoreRuntime,
-  type DataMessagePartProps,
   type ThreadMessageLike,
 } from "@assistant-ui/react";
-import { createContext, useCallback, useContext, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { Thread } from "@/components/assistant-ui/thread";
+import { Answer } from "@/components/subscribed/conversation/answer";
+import {
+  ConversationContext,
+  type CitationKey,
+} from "@/components/subscribed/conversation/conversation-context";
 import type {
   Conversation,
   ConversationSource,
-  MentorAnswer,
   MentorAnswerStatus,
   Message,
 } from "@/lib/backend/types";
 import { answerToPlainText } from "@/lib/conversations/answer-text";
-import { tw } from "@/lib/utils";
-
-const styles = {
-  plainAnswer: tw("whitespace-pre-line"),
-};
 
 const answerStatus: Record<MentorAnswerStatus, ThreadMessageLike["status"]> = {
   streaming: { type: "running" },
@@ -29,9 +27,6 @@ const answerStatus: Record<MentorAnswerStatus, ThreadMessageLike["status"]> = {
   stopped: { type: "incomplete", reason: "cancelled" },
   error: { type: "incomplete", reason: "error" },
 };
-
-// The Conversation's Sources, for answers that name a Source.
-const SourcesContext = createContext<ConversationSource[]>([]);
 
 // Our Message becomes an assistant-ui message. A Mentor answer travels whole
 // as one custom "answer" part; its plain text is kept for the Copy button.
@@ -55,14 +50,6 @@ const toThreadMessage = (
         },
       };
 
-const PlainAnswer = ({ data }: DataMessagePartProps<MentorAnswer>) => {
-  const sources = useContext(SourcesContext);
-
-  return (
-    <p className={styles.plainAnswer}>{answerToPlainText(data, sources)}</p>
-  );
-};
-
 type ConversationThreadProps = {
   conversation: Conversation;
 };
@@ -71,6 +58,9 @@ export const ConversationThread = ({
   conversation,
 }: ConversationThreadProps) => {
   const [messages] = useState(conversation.messages);
+  const [selectedCitation, setSelectedCitation] = useState<CitationKey | null>(
+    null,
+  );
   const { sources } = conversation;
 
   const convertMessage = useCallback(
@@ -86,11 +76,20 @@ export const ConversationThread = ({
     onNew,
   });
 
+  const context = useMemo(
+    () => ({
+      sources,
+      selectedCitation,
+      selectCitation: setSelectedCitation,
+    }),
+    [sources, selectedCitation],
+  );
+
   return (
-    <SourcesContext value={sources}>
+    <ConversationContext value={context}>
       <AssistantRuntimeProvider runtime={runtime}>
-        <Thread AnswerPart={PlainAnswer} />
+        <Thread AnswerPart={Answer} />
       </AssistantRuntimeProvider>
-    </SourcesContext>
+    </ConversationContext>
   );
 };
