@@ -6,6 +6,7 @@ import {
   type AppendMessage,
   type ThreadMessageLike,
 } from "@assistant-ui/react";
+import { ClockIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -20,6 +21,7 @@ import {
 } from "@/components/subscribed/conversation/conversation-context";
 import { MessageAllowance } from "@/components/subscribed/conversation/message-allowance";
 import { SourceChips } from "@/components/subscribed/conversation/source-chips";
+import { expiryBannerText } from "@/lib/conversations/expiry-banner";
 import type {
   Conversation,
   ConversationSource,
@@ -43,6 +45,9 @@ const styles = {
   layout: tw("flex h-full"),
   thread: tw("min-w-0 flex-1"),
   composerNote: tw("text-xs text-muted-foreground"),
+  banner: tw(
+    "mb-6 flex gap-3 rounded-xl border bg-muted px-4 py-3 text-sm leading-normal [&_svg]:mt-0.5 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground",
+  ),
 };
 
 const answerStatus: Record<MentorAnswerStatus, ThreadMessageLike["status"]> = {
@@ -290,6 +295,8 @@ export const ConversationThread = ({
       (item) => item.number === selectedCitation?.number,
     ) ?? null;
 
+  const expiry = expiryBannerText(sources);
+
   const context = useMemo(
     () => ({
       sources,
@@ -314,6 +321,16 @@ export const ConversationThread = ({
               }
               composerFooter={<MessageAllowance usage={usage} />}
               placeholder={atLimit ? "Message limit reached" : undefined}
+              banner={
+                expiry && (
+                  <p role="status" className={styles.banner}>
+                    <ClockIcon aria-hidden />
+                    <span>
+                      <strong>{expiry.title}</strong> {expiry.text}
+                    </span>
+                  </p>
+                )
+              }
             />
           </AssistantRuntimeProvider>
         </div>

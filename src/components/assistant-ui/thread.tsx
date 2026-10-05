@@ -62,6 +62,8 @@ type ThreadProps = {
   // Shown under the composer (the message allowance).
   composerFooter?: ReactNode;
   placeholder?: string;
+  // Shown at the top of the thread, above the messages.
+  banner?: ReactNode;
 };
 
 const CopyButton = () => {
@@ -179,10 +181,12 @@ export const Thread = ({
   composerNote,
   composerFooter,
   placeholder = "Reply to the Mentor…",
+  banner,
 }: ThreadProps) => (
   <ThreadPrimitive.Root className={styles.root}>
     <ThreadPrimitive.Viewport className={styles.viewport}>
       <div className={styles.column}>
+        {banner}
         <div className={styles.messages}>
           <ThreadPrimitive.Messages>
             {() => <ThreadMessage AnswerPart={AnswerPart} />}
