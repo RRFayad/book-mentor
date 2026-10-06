@@ -49,23 +49,38 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   toast.
 - Do not refactor copied shadcn/ui components in `src/components/ui/` or Velora
   components in `src/components/velora/` into the application styling pattern.
+- The thread components in `src/components/assistant-ui/` are app-owned and
+  built on assistant-ui primitives; they follow the application styling
+  pattern. Add assistant-ui pieces by writing them there, not with the shadcn
+  CLI, which would replace this repo's Base UI components.
+- The Conversation thread uses assistant-ui on a custom-backend runtime, never
+  its LangGraph runtime (see
+  `docs/adr/0004-assistant-ui-for-the-conversation-thread.md`). Do not wire up message
+  editing, regeneration, or branching handlers; v1 history only grows.
+- assistant-ui's names (Thread, Assistant, Attachment, `source` parts) stay
+  inside its components and runtime glue. Domain code, types, and UI copy use
+  the terms in `CONTEXT.md` (Conversation, Mentor, Source, Citation).
 - Keep marketing components in `src/components/marketing/`, subscribed-app
   components in `src/components/subscribed/`, and theme components in
   `src/components/theme/`.
 
 ## Implementing Designs
 
-- The app shell is code-owned; its visual reference is the
-  [App Shell canvas](https://claude.ai/artifact/HWhacGtes2kTC143kN4aUk).
-  Implement a design's page content inside the existing shell and change the
-  shell only when the request asks for it.
+- Book Mentor replaces the starter kit's shell with a chat layout. Its visual
+  references are the [v2 canvas](https://claude.ai/artifact/QtPG3Bwz9Y6m5Htd7tiFb4)
+  (sidebar, New Conversation, Conversation, built on assistant-ui's thread
+  look) and the [v1 canvas](https://claude.ai/artifact/HbV6e1NR4qCuV99cV5rViA)
+  (Library, Add Source, Delete Source, landing page); `docs/v1-product.md`
+  says which screen follows which. The starter kit's
+  [App Shell canvas](https://claude.ai/artifact/HWhacGtes2kTC143kN4aUk) only
+  documents the code as it was before that change.
 - A new subscribed page lives under `src/app/(subscribed)/` and is wired in
-  three places: its path in `src/lib/routes.ts`, its nav item in
-  `src/components/app-sidebar.tsx`, and its breadcrumb in `routeContext` in
-  `src/components/subscribed/app-header.tsx`.
-- Pages follow the existing page pattern: a `mx-auto w-full max-w-7xl`
-  container, `PageHeader`, then white cards styled like the ones in
-  `src/components/subscribed/billing.tsx`.
+  two places: its path in `src/lib/routes.ts` and, when it needs one, its nav
+  item in `src/components/app-sidebar.tsx`. The header has no breadcrumb.
+- Management pages (Library, Account) follow the existing page pattern: a
+  `mx-auto w-full max-w-7xl` container, `PageHeader`, then white cards styled
+  like the ones in `src/components/subscribed/billing.tsx`. Conversation
+  screens follow the chat layout instead.
 - Translate design colors, radii, and fonts to theme tokens (`bg-card`,
   `text-muted-foreground`, `border`, `bg-primary`, `rounded-xl`) so light and
   dark themes both follow.
@@ -103,6 +118,7 @@ Run relevant checks after changes:
 # Next.js
 npm run lint
 npx tsc --noEmit
+npm test
 npx prettier --check <changed-files>
 
 # FastAPI

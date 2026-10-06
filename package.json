@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check": "npm run lint && npx tsc --noEmit && uv run --project backend black --check backend && uv run --project backend isort --check-only backend"
+    "check": "npm run lint && npx tsc --noEmit && npm test && uv run --project backend black --check backend && uv run --project backend isort --check-only backend",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@assistant-ui/react": "^0.15.23",
     "@base-ui/react": "^1.7.0",
     "@clerk/nextjs": "^7.8.2",
     "axios": "^1.20.0",
@@ -32,7 +34,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22.20.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.10",
@@ -41,6 +43,7 @@
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.3"
   }
 }

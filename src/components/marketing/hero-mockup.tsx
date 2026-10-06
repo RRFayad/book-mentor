@@ -90,7 +90,7 @@ export const HeroMockup = ({ className }: { className?: string }) => {
       <div aria-hidden className={styles.glow} />
 
       <BrowserMockup
-        url={`starter-kit${routes.workspace.overview}`}
+        url={`book-mentor${routes.appHome}`}
         className={styles.browser}
       >
         <BorderBeam size={96} duration={10} />
