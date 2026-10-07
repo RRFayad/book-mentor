@@ -1,5 +1,7 @@
 # Drizzle-owned chunks table, accessed through LangChain PGVectorStore
 
+> Superseded in part by [ADR 0005](0005-backend-owns-product-tables.md): the `chunks` table is owned by the backend (SQLAlchemy and Alembic), not Drizzle. The rest still holds: real columns and foreign keys, and LangChain's `PGVectorStore` never creates the table.
+
 Chunk embeddings live in a `chunks` table defined in the Drizzle schema like every other table, with real columns for its Source and owner and a foreign key that cascades on Source deletion. FastAPI reads and writes it through langchain-postgres `PGVectorStore` pointed at that existing table (custom id/content/embedding columns and `metadata_columns`), never letting LangChain create tables.
 
 ## Considered Options

@@ -27,9 +27,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   as AI, RAG, agents, and streaming.
 - PostgreSQL is the shared application database. Supabase, when used, is only
   the database host. Do not introduce Supabase Auth or the Supabase SDK.
-- Drizzle owns the schema and migrations in `src/lib/db/`. SQLAlchemy models in
-  `backend/db/models.py` map to the same database. Do not use SQLAlchemy
-  `create_all()`.
+- Drizzle owns the SaaS tables (`users`, `subscriptions`) and their migrations
+  in `src/lib/db/`. The backend owns the product tables (Sources, Chunks,
+  Conversations, and the rest) as SQLAlchemy models with Alembic migrations
+  (`docs/adr/0005-backend-owns-product-tables.md`). Each tool manages only its
+  own tables: Alembic autogenerate excludes the SaaS tables, and
+  `drizzle-kit push` is never used. Do not use SQLAlchemy `create_all()`.
 - FastAPI must derive identity from the verified Clerk JWT. Never trust a
   browser-supplied user ID for authenticated identity.
 

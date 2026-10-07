@@ -511,7 +511,10 @@ are owned by Drizzle.
 
 FastAPI may query them through SQLAlchemy but should not migrate them.
 
-Product-specific tables can be introduced as the product architecture evolves.
+Product tables (Sources, Chunks, Conversations, and the rest) are owned by the
+backend: SQLAlchemy models with Alembic migrations, run from `backend/`. Alembic
+ignores the SaaS tables, and `drizzle-kit push` is never used, so neither tool
+touches the other's tables. See `docs/adr/0005-backend-owns-product-tables.md`.
 
 ## Designing Product Screens
 
