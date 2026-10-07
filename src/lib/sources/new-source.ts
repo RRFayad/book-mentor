@@ -21,7 +21,8 @@ export const isNewSourceValid = (source: NewSource): boolean => {
     return false;
   }
 
+  // A book counts once the browser has read its pages.
   return source.kind === "book"
-    ? source.fileName.toLowerCase().endsWith(".pdf")
+    ? source.fileName.toLowerCase().endsWith(".pdf") && source.pageCount > 0
     : isWebAddress(source.address);
 };

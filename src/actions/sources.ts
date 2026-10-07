@@ -2,8 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
-import { addSource, deleteSource } from "@/lib/backend/sources";
-import type { AddSourceResult, NewSource } from "@/lib/backend/types";
+import { addSource, deleteSource, sendPageBatch } from "@/lib/backend/sources";
+import type {
+  AddSourceResult,
+  NewSource,
+  PageBatch,
+} from "@/lib/backend/types";
 import { isNewSourceValid } from "@/lib/sources/new-source";
 import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
 import { SubscriptionPlan } from "@/types/database";
@@ -48,4 +52,15 @@ export const deleteSourceAction = async (
   }
 
   return { ok };
+};
+
+export const sendPageBatchAction = async (
+  sourceId: string,
+  batch: PageBatch,
+): Promise<{ ok: boolean }> => {
+  const canUse = await canCurrentUserUseSubscriptionPlan(
+    SubscriptionPlan.Basic,
+  );
+
+  return { ok: canUse && (await sendPageBatch(sourceId, batch)) };
 };

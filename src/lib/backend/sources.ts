@@ -1,12 +1,17 @@
 import "server-only";
 
+import { getAuthenticatedBackendClient } from "@/lib/backend/client";
 import { SOURCE_LIFETIME } from "@/lib/backend/mock/data";
 import { getMockStore } from "@/lib/backend/mock/store";
-import type { AddSourceResult, NewSource, Source } from "@/lib/backend/types";
+import type {
+  AddSourceResult,
+  NewSource,
+  PageBatch,
+  Source,
+} from "@/lib/backend/types";
 import { SOURCE_LIMIT } from "@/lib/backend/usage";
 
-// The PDF is not read yet, so the mock gives every new book this page count.
-const MOCK_PAGE_COUNT = 240;
+const MAX_BOOK_PAGES = 500;
 const MOCK_POST_COUNT = 20;
 
 export const listSources = async (): Promise<Source[]> =>
@@ -50,8 +55,8 @@ export const deleteSource = async (sourceId: string): Promise<boolean> => {
   return true;
 };
 
-// Mock results for demos: a file name or blog address containing "scanned",
-// "large" or "fail" gives that result. Anything else is added as Ingesting.
+// Mock results for demos: a file name or blog address containing "fail" gives
+// a failed add. Scanned PDFs are caught by the browser, which reads the PDF.
 export const addSource = async (input: NewSource): Promise<AddSourceResult> => {
   const store = getMockStore();
 
@@ -63,11 +68,7 @@ export const addSource = async (input: NewSource): Promise<AddSourceResult> => {
     input.kind === "book" ? input.fileName : input.address
   ).toLowerCase();
 
-  if (trigger.includes("scanned")) {
-    return { status: "rejected", reason: "scanned" };
-  }
-
-  if (trigger.includes("large")) {
+  if (input.kind === "book" && input.pageCount > MAX_BOOK_PAGES) {
     return { status: "rejected", reason: "too-large" };
   }
 
@@ -78,7 +79,7 @@ export const addSource = async (input: NewSource): Promise<AddSourceResult> => {
   const now = Date.now();
   const details =
     input.kind === "book"
-      ? { kind: "book" as const, pageCount: MOCK_PAGE_COUNT }
+      ? { kind: "book" as const, pageCount: input.pageCount }
       : {
           kind: "blog" as const,
           postCount: MOCK_POST_COUNT,
@@ -98,4 +99,24 @@ export const addSource = async (input: NewSource): Promise<AddSourceResult> => {
   store.sources.push(source);
 
   return { status: "added", source: { ...source } };
+};
+
+// The first real backend call: sends one batch of a book's pages to FastAPI
+// (POST /sources/{id}/pages, docs/api-contract.md). Until the Sources ticket
+// lands, the Source id comes from the mock store.
+export const sendPageBatch = async (
+  sourceId: string,
+  batch: PageBatch,
+): Promise<boolean> => {
+  try {
+    const backend = await getAuthenticatedBackendClient();
+
+    await backend.post(`/sources/${encodeURIComponent(sourceId)}/pages`, batch);
+
+    return true;
+  } catch (error) {
+    console.error("Failed to send a page batch to FastAPI", error);
+
+    return false;
+  }
 };

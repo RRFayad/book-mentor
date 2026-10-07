@@ -7,6 +7,7 @@ const book = (overrides: Partial<Extract<NewSource, { kind: "book" }>> = {}) =>
   ({
     kind: "book",
     fileName: "heavy-duty.pdf",
+    pageCount: 212,
     title: "Heavy Duty",
     author: "Mike Mentzer",
     ...overrides,
@@ -36,6 +37,10 @@ describe("isNewSourceValid", () => {
     expect(isNewSourceValid(book({ fileName: "" }))).toBe(false);
     expect(isNewSourceValid(book({ fileName: "notes.txt" }))).toBe(false);
     expect(isNewSourceValid(book({ fileName: "HEAVY-DUTY.PDF" }))).toBe(true);
+  });
+
+  it("requires a book whose pages have been read", () => {
+    expect(isNewSourceValid(book({ pageCount: 0 }))).toBe(false);
   });
 
   it("requires a blog address that starts with http:// or https://", () => {

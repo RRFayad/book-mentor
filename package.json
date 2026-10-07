@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "check": "npm run lint && npx tsc --noEmit && npm test && uv run --project backend black --check backend && uv run --project backend isort --check-only backend",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "node scripts/copy-pdf-worker.mjs"
   },
   "dependencies": {
     "@assistant-ui/react": "^0.15.23",
@@ -22,6 +23,7 @@
     "motion": "^13.2.0",
     "next": "16.3.3",
     "next-themes": "^0.4.6",
+    "pdfjs-dist": "^6.4.299",
     "postgres": "^3.4.9",
     "radix-ui": "^1.6.7",
     "react": "19.2.8",

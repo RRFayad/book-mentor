@@ -27,11 +27,28 @@ export type Source = {
 } & (BookDetails | BlogDetails) &
   IngestionStatus;
 
-// What the user enters to add a Source. The browser does not read the PDF yet,
-// so a book is only its file name for now.
+// What the user enters to add a Source. For a book, the browser reads the PDF
+// and fills in the page count; the file itself is never uploaded (ADR 0001).
 export type NewSource =
-  | { kind: "book"; fileName: string; title: string; author: string }
+  | {
+      kind: "book";
+      fileName: string;
+      pageCount: number;
+      title: string;
+      author: string;
+    }
   | { kind: "blog"; address: string; title: string; author: string };
+
+// One page of a book's text, as the browser read it. Pages start at 1.
+export type PageText = {
+  page: number;
+  text: string;
+};
+
+// The pages the browser sends in one request while a book is Ingesting.
+export type PageBatch = {
+  pages: PageText[];
+};
 
 export type AddSourceResult =
   | { status: "added"; source: Source }
