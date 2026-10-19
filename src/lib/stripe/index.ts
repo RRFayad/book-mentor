@@ -41,6 +41,29 @@ export const updateStripeCustomerEmail = async (
   await getStripe().customers.update(customerId, { email });
 };
 
+// Subscriptions that still bill or grant access; a new Checkout would duplicate them.
+const liveSubscriptionStatuses: Stripe.Subscription.Status[] = [
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+  "paused",
+];
+
+export const hasLiveStripeSubscription = async (
+  customerId: string,
+): Promise<boolean> => {
+  const subscriptions = await getStripe().subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 10,
+  });
+
+  return subscriptions.data.some((subscription) =>
+    liveSubscriptionStatuses.includes(subscription.status),
+  );
+};
+
 export const createStripeCheckoutSession = async ({
   priceId,
   user,

@@ -8,6 +8,7 @@ import { subscriptionPlan } from "@/lib/db/schema";
 import {
   createStripeCheckoutSession,
   createStripeCustomerPortalSession,
+  hasLiveStripeSubscription,
 } from "@/lib/stripe";
 import { getOrCreateUserByClerkId, getUserByClerkId } from "@/lib/user/user";
 import { routes } from "@/lib/routes";
@@ -63,6 +64,15 @@ export const checkout = async (formData: FormData) => {
       throw new Error("Active subscription is missing a Stripe customer");
     }
 
+    return redirectToCustomerPortal(user.stripeCustomerId);
+  }
+
+  // The local row can lag behind a delayed or failed webhook, so ask Stripe too.
+  // Otherwise a paying customer sent back to pricing could subscribe twice.
+  if (
+    user.stripeCustomerId &&
+    (await hasLiveStripeSubscription(user.stripeCustomerId))
+  ) {
     return redirectToCustomerPortal(user.stripeCustomerId);
   }
 
