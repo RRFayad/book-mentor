@@ -83,6 +83,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `require_subscription_plan(...)` dependencies.
 - Keep Stripe SDK use, customer creation, Checkout Session creation, and
   Customer Portal Session creation server-only.
+- Each project uses its own Stripe sandbox. Local Stripe webhooks come from
+  the Stripe CLI (`stripe listen`, started by `npm run dev`), never from a
+  dashboard destination pointing at a tunnel; the dashboard destination is for
+  production only. When the Stripe webhook route handles a new event type, add
+  it to the `stripe:listen` script's `--events` list and to the production
+  destination.
 
 ## Backend Conventions
 

@@ -248,6 +248,7 @@ Prerequisites:
 - Python 3.14
 - uv
 - Docker Desktop (for the local database)
+- Stripe CLI (for local Stripe webhooks): `brew install stripe/stripe-cli/stripe`
 
 ## 5. Create PostgreSQL Database
 
@@ -291,14 +292,24 @@ database URL with the `postgresql+psycopg://` prefix to `backend/.env`.
 
 ## 6. Configure Clerk
 
-Create a Clerk application and copy its publishable and secret keys to
-`.env.local` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
+Give local development and the deployed app separate Clerk environments, so
+users and webhooks never cross between them:
+
+- **With your own domain:** use one Clerk application. Its development instance
+  (`pk_test_...`) is for local development, and its production instance
+  (`pk_live_...`) is for the deployed app. Production instances require a
+  domain you own; they can't use `*.vercel.app`.
+- **Without a domain yet** (for example, a demo on `*.vercel.app`): create two
+  Clerk applications, such as `My SaaS (local)` and `My SaaS (vercel)`, and use
+  each one's development keys in its own environment.
+
+Create a Clerk application and copy its publishable and secret keys (Overview > Manual Setup) to `.env.local` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
 
 `npm install` does not create Clerk environment variables. Clerk's `clerk init`
 CLI can write those two keys, but do not run it on this clone because Clerk is
 already integrated and the command can modify existing setup files.
 
-Add the Clerk JWKS URL to `.env.local` and `backend/.env`:
+Add the Clerk JWKS URL (Configure > API Keys) to `.env.local` and `backend/.env`:
 
 ```text
 https://<your-clerk-instance>/.well-known/jwks.json
@@ -306,23 +317,8 @@ https://<your-clerk-instance>/.well-known/jwks.json
 
 ### Create a Clerk webhook:
 
-```text
-https://<your-public-app-url>/api/webhooks/clerk
-```
-
-For local testing, expose Next.js with an HTTPS tunnel such as ngrok:
-
-```bash
-ngrok http 3000
-```
-
-Use the generated URL as the webhook endpoint:
-
-```text
-https://<your-ngrok-url>/api/webhooks/clerk
-```
-
-Subscribe to:
+Add one endpoint per environment, each in that environment's Clerk application
+or instance (Configure > Webhooks > Add Endpoint), subscribed to:
 
 ```text
 user.created
@@ -330,21 +326,50 @@ user.updated
 user.deleted
 ```
 
-Copy the webhook signing secret.
+**Local development:** Clerk can't reach `localhost`, so expose Next.js with an
+HTTPS tunnel such as ngrok:
 
-Add it to `.env.local` as `CLERK_WEBHOOK_SIGNING_SECRET`.
+```bash
+ngrok http 3000
+```
+
+```text
+https://<your-ngrok-url>/api/webhooks/clerk
+```
+
+Copy the endpoint's signing secret into `.env.local` as
+`CLERK_WEBHOOK_SIGNING_SECRET`.
+
+**Production:**
+
+```text
+https://<your-public-app-url>/api/webhooks/clerk
+```
+
+Copy that endpoint's signing secret into the deployment's environment variables
+(for example, Vercel). Each endpoint has its own secret.
 
 ## 7. Configure Stripe (Optional - Required when `BILLING_ENABLED=true`)
 
-Use **Test mode** while setting up the starter. You do not need to create
-customers or subscriptions manually; the application creates them through
-Stripe Checkout.
+You do not need to create customers or subscriptions manually; the application
+creates them through Stripe Checkout.
+
+### Create a Sandbox
+
+Give each project its own Stripe **Sandbox** (account menu > Sandboxes >
+Create). A sandbox is an isolated test environment with its own API keys,
+products, customers, and webhooks.
+
+A Stripe account sends every event to every webhook destination it has. When
+several projects, or local and production, share one account, each event
+reaches apps it doesn't belong to, and signature checks fail for the
+destinations whose secrets don't match. A sandbox per project keeps them apart.
 
 ### Create Products and Prices
 
-In the Stripe Dashboard, go to Developers > API keys. Copy the test-mode
-publishable and secret API keys into `.env.local` as
-`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY`, respectively.
+In the sandbox, go to Settings > Developers > API keys. Copy the publishable and secret API
+keys into `.env.local` as `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and
+`STRIPE_SECRET_KEY`, respectively.
 
 In Stripe Dashboard, open the Product catalog. For each plan you want to offer:
 
@@ -376,6 +401,40 @@ synchronizes plan changes through `customer.subscription.updated`.
 
 ### Create a Webhook
 
+The application only learns about subscriptions through Stripe webhooks, so
+pages stay gated until the webhook works.
+
+#### Local development: Stripe CLI
+
+Log in to the project's sandbox and get the local signing secret:
+
+```bash
+stripe login
+npm run stripe:listen
+```
+
+`stripe listen` prints a webhook signing secret (`whsec_...`). Add it to
+`.env.local` as `STRIPE_WEBHOOK_SECRET`, then stop the command. The secret
+stays the same across runs on the same machine.
+
+From then on, `npm run dev` runs the listener next to Next.js, so you don't
+start it yourself. Do not create a dashboard destination pointing at a tunnel
+URL: it duplicates deliveries and needs its own secret.
+
+The `stripe:listen` script forwards the same five subscription events that the
+production destination subscribes to (listed below). When the webhook route
+starts handling a new event type, add it to both the script's `--events` list
+and the production destination.
+
+To explore which events Stripe sends for a flow, run the listener with every
+event instead (the route logs `Unhandled Stripe event` for the ones it ignores):
+
+```bash
+stripe listen --all-snapshot --forward-to localhost:3000/api/webhooks/stripe
+```
+
+#### Production : Webhooks Dashboard destination
+
 Go to Developers > Webhooks > Add Destination > API Version `2026-08-26.dahlia`
 
 **Subscribe to:**
@@ -394,15 +453,9 @@ customer.subscription.updated
 https://<your-public-app-url>/api/webhooks/stripe
 ```
 
-For local testing, use the same ngrok URL (as on Clerk):
-
-```text
-https://<your-ngrok-url>/api/webhooks/stripe
-```
-
-Copy the webhook signing secret.
-
-Add it to `.env.local` as `STRIPE_WEBHOOK_SECRET`.
+Copy the destination's signing secret into the deployment's environment
+variables (for example, Vercel) as `STRIPE_WEBHOOK_SECRET`. Each destination has
+its own secret; don't reuse it in `.env.local`.
 
 ### Discount Coupon
 
@@ -467,7 +520,8 @@ uv run fastapi dev
 ```
 
 Start Next.js in another terminal. This also starts the local database
-container:
+container and forwards Stripe webhooks (`stripe listen`), with each process's
+output labeled:
 
 ```bash
 npm run dev
