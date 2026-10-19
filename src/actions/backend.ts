@@ -22,7 +22,7 @@ export const checkBackendHealth = async (): Promise<BackendHealthResult> => {
   } catch {
     return {
       ok: false,
-      error: "FastAPI didn't respond. Check that the backend is running.",
+      error: "The API didn't respond. Check that the backend is running.",
     };
   }
 };

@@ -18,13 +18,13 @@ export const BackendHealthButton = () => {
       if (result.ok) {
         showToast({
           type: "success",
-          title: "FastAPI is healthy",
+          title: "API is healthy",
           message: `The health check returned "${result.status}".`,
         });
       } else {
         showToast({
           type: "error",
-          title: "FastAPI is unreachable",
+          title: "API is unreachable",
           message: result.error,
         });
       }
