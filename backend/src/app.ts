@@ -2,12 +2,14 @@ import Fastify from "fastify";
 import { fastifyCors } from "@fastify/cors";
 import { getEnvVar } from "@app/shared/utils";
 import { authenticate } from "./auth/authenticate";
+import { requireSubscriptionPlan } from "./auth/subscription";
 import { clerkPlugin } from "@clerk/fastify";
-import type { User } from "@app/shared/types";
+import type { Subscription, User } from "@app/shared/types";
 
 declare module "fastify" {
   interface FastifyRequest {
-    user: User;
+    user: User; // Set by authenticate on protected routes.
+    subscription: Subscription | null; // Set by requireSubscriptionPlan on subscribed routes (null when billing is disabled)
   }
 }
 
@@ -17,6 +19,7 @@ app.register(fastifyCors, { origin: getEnvVar("FRONTEND_URL") });
 app.register(clerkPlugin);
 
 app.decorateRequest("user");
+app.decorateRequest("subscription");
 
 // ---------- Public routes ----------
 app.register(async (publicApp) => {
@@ -28,6 +31,11 @@ app.register(async (publicApp) => {
 // ---------- Protected routes ----------
 app.register(async (protectedApp) => {
   protectedApp.addHook("preHandler", authenticate);
+
+  // ---------- Subscription protected routes ----------
+  protectedApp.register(async (subscribedApp) => {
+    subscribedApp.addHook("preHandler", requireSubscriptionPlan("basic"));
+  });
 });
 
 const main = async () => {
