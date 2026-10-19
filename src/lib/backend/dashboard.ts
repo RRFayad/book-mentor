@@ -31,5 +31,5 @@ export type DashboardData = {
 };
 
 export const fetchDashboardData = async (): Promise<DashboardData | null> => {
-  return fetchBackendData<DashboardData>("/dashboard/");
+  return fetchBackendData<DashboardData>("/dashboard");
 };
