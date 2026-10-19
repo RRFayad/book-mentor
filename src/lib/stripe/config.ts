@@ -1,4 +1,4 @@
-import type { SubscriptionPlan } from "@/types/database";
+import type { SubscriptionPlan } from "@app/shared/types";
 
 import { getEnvVar } from "@/lib/utils";
 

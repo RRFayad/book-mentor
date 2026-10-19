@@ -3,7 +3,7 @@
 import { startTransition, useEffect, useRef } from "react";
 
 import { checkout } from "@/actions/stripe";
-import type { SubscriptionPlan } from "@/types/database";
+import type { SubscriptionPlan } from "@app/shared/types";
 import { tw } from "@/lib/utils";
 
 type StartCheckoutProps = {

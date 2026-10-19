@@ -1,7 +1,7 @@
 import "server-only";
 
 import Stripe from "stripe";
-import type { User } from "@/types/database";
+import type { User } from "@app/shared/types";
 import { getEnvVar, getErrorMessageAndThrow } from "../utils";
 import { addStripeCustomerIdToUserDb } from "../user/user";
 
@@ -42,7 +42,7 @@ export const updateStripeCustomerEmail = async (
 };
 
 // Subscriptions that still bill or grant access; a new Checkout would duplicate them.
-const liveSubscriptionStatuses: Stripe.Subscription.Status[] = [
+const LIVE_SUBSCRIPTION_STATUSES: Stripe.Subscription.Status[] = [
   "active",
   "trialing",
   "past_due",
@@ -60,7 +60,7 @@ export const hasLiveStripeSubscription = async (
   });
 
   return subscriptions.data.some((subscription) =>
-    liveSubscriptionStatuses.includes(subscription.status),
+    LIVE_SUBSCRIPTION_STATUSES.includes(subscription.status),
   );
 };
 

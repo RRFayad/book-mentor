@@ -7,7 +7,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
-import { SubscriptionPlan } from "@/types/database";
+import { SUBSCRIPTION_PLANS } from "../constants";
 
 export const userRole = pgEnum("user_role", ["user", "admin"]);
 
@@ -22,11 +22,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const subscriptionPlan = pgEnum("subscription_plan", [
-  SubscriptionPlan.Basic,
-  SubscriptionPlan.Premium,
-  SubscriptionPlan.AllIn,
-]);
+export const subscriptionPlan = pgEnum("subscription_plan", SUBSCRIPTION_PLANS);
 
 export const subscriptions = pgTable("subscriptions", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

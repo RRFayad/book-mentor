@@ -38,12 +38,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Frontend Conventions
 
 - Use TypeScript arrow functions, not function declarations.
+- Name fixed module-level constants (lists, lookup tables) in
+  `UPPER_SNAKE_CASE`, such as `SUBSCRIPTION_PLANS`. Objects built from
+  environment variables or config, such as `featureFlags` or `routes`, stay
+  `camelCase`.
 - Prefer Server Components. Add client components only when client-side
   behavior is necessary.
 - Keep Next.js to FastAPI calls under `src/lib/backend/`.
 - Application-owned Tailwind styles belong in a local `styles` object and must
   be wrapped with `tw()` so Prettier sorts the classes.
 - Use `cn()` only for runtime conditional class merging.
+- Group generic files (shared `constants`, `types`, `utils`) into sections with
+  `// ---------- Section ----------` dividers. Split a section into its own file
+  once it grows large.
 - Give user feedback with `showToast({ type, title, message })` from
   `src/components/toaster.tsx`; `type` is `success`, `warning`, or `error`.
   Call it directly in the client component that handles the action. Server

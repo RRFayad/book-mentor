@@ -5,7 +5,6 @@ import {
   getCurrentUserSubscription,
   requireCurrentUserSubscriptionPlan,
 } from "@/lib/subscription/subscription";
-import { SubscriptionPlan } from "@/types/database";
 import { tw } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
@@ -18,7 +17,7 @@ const BillingPage = async () => {
     redirect(routes.workspace.overview);
   }
 
-  await requireCurrentUserSubscriptionPlan(SubscriptionPlan.Basic);
+  await requireCurrentUserSubscriptionPlan("basic");
 
   const subscription = await getCurrentUserSubscription();
 
