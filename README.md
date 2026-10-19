@@ -12,7 +12,7 @@ Built to handle the SaaS infrastructure once, so new products can start with aut
 
 - Next.js + TypeScript frontend
 - FastAPI + Python backend
-- PostgreSQL database
+- PostgreSQL database, with a local Docker setup (pgvector included)
 - Clerk authentication
 - Clerk → PostgreSQL user synchronization
 - Stripe Checkout and Customer Portal
@@ -247,10 +247,35 @@ Prerequisites:
 - npm
 - Python 3.14
 - uv
+- Docker Desktop (for the local database)
 
 ## 5. Create PostgreSQL Database
 
-Create a PostgreSQL database using Supabase, another hosted provider, or local PostgreSQL.
+### Local development: Docker
+
+The repository includes a `docker-compose.yml` that runs PostgreSQL 18 with the
+pgvector extension. `npm run dev` starts it automatically (through the `predev`
+script), so you only need Docker Desktop running.
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app
+```
+
+Useful commands:
+
+```bash
+docker compose up -d     # start the database (npm run dev does this for you)
+docker compose down      # stop it; data is kept
+docker compose down -v   # stop it and delete all data
+```
+
+Container and volume names come from the project folder, so several projects
+built from this kit don't clash. If port 5432 is taken, set `DB_PORT=5433` in a
+`.env` file and use that port in `DATABASE_URL`.
+
+### Production: hosted PostgreSQL
+
+Create a PostgreSQL database using Supabase or another hosted provider.
 
 **If using Supabase**, go to **Connect → Connection string → Direct
 connection / URI** and copy the PostgreSQL connection string. Do not use the
@@ -407,11 +432,21 @@ Before running the application, confirm:
 
 ## 10. Apply Database Migrations
 
+If you use the local Docker database, start it first:
+
+```bash
+docker compose up -d
+```
+
 From the project root:
 
 ```bash
 npx drizzle-kit migrate
 ```
+
+Run this against every new or reset database (for example after
+`docker compose down -v`); otherwise the app fails because the tables don't
+exist.
 
 When changing the Drizzle schema:
 
@@ -431,7 +466,8 @@ cd backend
 uv run fastapi dev
 ```
 
-Start Next.js in another terminal:
+Start Next.js in another terminal. This also starts the local database
+container:
 
 ```bash
 npm run dev

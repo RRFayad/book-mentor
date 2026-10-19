@@ -1,0 +1,17 @@
+# Local PostgreSQL for development. Container and volume names come from the
+# project folder (e.g. saas-starter-kit-postgres-1), so scaffolded projects
+# don't clash.
+services:
+  postgres:
+    image: pgvector/pgvector:pg18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+volumes:
+  pgdata:

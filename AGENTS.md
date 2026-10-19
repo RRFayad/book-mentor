@@ -27,6 +27,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   as AI, RAG, agents, and streaming.
 - PostgreSQL is the shared application database. Supabase, when used, is only
   the database host. Do not introduce Supabase Auth or the Supabase SDK.
+- Local development uses the PostgreSQL + pgvector container in
+  `docker-compose.yml`; `npm run dev` starts it through `predev`.
 - Drizzle owns the schema and migrations in `src/lib/db/`. SQLAlchemy models in
   `backend/db/models.py` map to the same database. Do not use SQLAlchemy
   `create_all()`.
