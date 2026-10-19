@@ -39,7 +39,7 @@ export const BackendHealthButton = () => {
       disabled={pending}
     >
       <ActivityIcon />
-      {pending ? "Checking…" : "Check FastAPI"}
+      {pending ? "Checking…" : "Check API health"}
     </Button>
   );
 };

@@ -1,3 +1,4 @@
 {
-  "tailwindCSS.classFunctions": ["tw"]
+  "tailwindCSS.classFunctions": ["tw"],
+  "typescript.preferences.includePackageJsonAutoImports": "on"
 }

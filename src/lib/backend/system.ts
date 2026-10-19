@@ -7,6 +7,6 @@ export type HealthStatus = {
 };
 
 export const getHealthStatus = async (): Promise<HealthStatus> => {
-  const response = await backendClient.get<HealthStatus>("/healthy");
+  const response = await backendClient.get<HealthStatus>("/healthcheck");
   return response.data;
 };
