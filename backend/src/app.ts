@@ -1,13 +1,33 @@
 import Fastify from "fastify";
 import { fastifyCors } from "@fastify/cors";
 import { getEnvVar } from "@app/shared/utils";
+import { authenticate } from "./auth/authenticate";
+import { clerkPlugin } from "@clerk/fastify";
+import type { User } from "@app/shared/types";
+
+declare module "fastify" {
+  interface FastifyRequest {
+    user: User;
+  }
+}
 
 const app = Fastify({ logger: true });
 
 app.register(fastifyCors, { origin: getEnvVar("FRONTEND_URL") });
+app.register(clerkPlugin);
 
-app.get("/healthcheck", async () => {
-  return { status: "OK" };
+app.decorateRequest("user");
+
+// ---------- Public routes ----------
+app.register(async (publicApp) => {
+  publicApp.get("/healthcheck", async () => {
+    return { status: "OK" };
+  });
+});
+
+// ---------- Protected routes ----------
+app.register(async (protectedApp) => {
+  protectedApp.addHook("preHandler", authenticate);
 });
 
 const main = async () => {
