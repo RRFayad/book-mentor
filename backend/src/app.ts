@@ -6,6 +6,13 @@ import { requireSubscriptionPlan } from "./auth/subscription";
 import { dashboardRoutes } from "./routes/dashboard";
 import { clerkPlugin } from "@clerk/fastify";
 import type { Subscription, User } from "@app/shared/types";
+import {
+  jsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+} from "fastify-type-provider-zod";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -21,6 +28,25 @@ app.register(clerkPlugin);
 
 app.decorateRequest("user");
 app.decorateRequest("subscription");
+
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
+
+app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: "SaaS Starter Kit API",
+      version: process.env["npm_package_version"] ?? "dev",
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      },
+    },
+  },
+  transform: jsonSchemaTransform, // Converts the zod schemas into the docs
+});
+app.register(fastifySwaggerUi, { routePrefix: "/docs" });
 
 // ---------- Public routes ----------
 app.register(async (publicApp) => {
