@@ -4,12 +4,12 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { subscriptions } from "@app/shared/db/schema";
+import { subscriptions, type Subscription } from "@app/shared/db/schema";
 import {
   ACTIVE_SUBSCRIPTION_STATUSES,
   SUBSCRIPTION_PLAN_LEVELS,
 } from "@app/shared/constants";
-import { Subscription, SubscriptionPlan } from "@app/shared/types";
+import type { SubscriptionPlan } from "@app/shared/types";
 import { featureFlags } from "@/lib/feature-flags";
 import { getCurrentUser } from "../user/user";
 import { routes } from "@/lib/routes";

@@ -1,8 +1,10 @@
 # SaaS Starter Kit
 
-A reusable full-stack foundation for subscription SaaS products, including Python-first AI applications.
+A reusable full-stack TypeScript foundation for subscription SaaS products, including AI applications.
 
-Built to handle the SaaS infrastructure once, so new products can start with authentication, billing, database persistence, authorization, and a Python backend already working.
+Built to handle the SaaS infrastructure once, so new products can start with authentication, billing, database persistence, authorization, and an API backend already working.
+
+> **v2** replaced the FastAPI (Python) backend with Fastify (TypeScript). The Python version is available in [v1.1.4](https://github.com/RRFayad/saas-starter-kit/releases/tag/v1.1.4).
 
 [Live Demo](https://rf-saas-starter-kit.vercel.app/)
 
@@ -11,18 +13,21 @@ Built to handle the SaaS infrastructure once, so new products can start with aut
 ## What's Included
 
 - Next.js + TypeScript frontend
-- FastAPI + Python backend
+- Fastify + TypeScript API backend
+- npm workspaces monorepo with a shared package (`@app/shared`)
 - PostgreSQL database, with a local Docker setup (pgvector included)
+- Drizzle ORM + migrations, shared by the frontend and the API
+- Zod API schemas shared by the frontend and the API
+- API docs with Swagger (OpenAPI) at `/docs`
 - Clerk authentication
 - Clerk → PostgreSQL user synchronization
 - Stripe Checkout and Customer Portal
 - Stripe → PostgreSQL subscription synchronization
-- Subscription authorization in Next.js and FastAPI
-- Drizzle ORM + migrations
-- SQLAlchemy
+- Subscription authorization in Next.js and the API
+- Protected Next.js → API communication
 - Responsive landing page and authenticated app shell
 - Billing and account management
-- Protected Next.js → FastAPI communication
+- Toast notifications
 - Tailwind CSS + shadcn/ui + Velora UI
 - Light/dark themes
 
@@ -43,13 +48,19 @@ Next.js
    ├──────────────► PostgreSQL
    │
    ▼
-FastAPI
-   ├── Clerk JWT Validation
+Fastify API
+   ├── Clerk Token Validation
    ├── Subscription Authorization
+   ├── Swagger Docs (/docs)
    └── Product / AI Logic
    │
    ▼
 PostgreSQL
+
+@app/shared (used by both)
+   ├── Drizzle schema + migrations
+   ├── Zod API schemas
+   └── Constants, types, utils
 ```
 
 ### Responsibilities
@@ -62,36 +73,48 @@ PostgreSQL
 - Subscription state
 - Account management
 
-**FastAPI owns product/domain logic:**
+**The API (Fastify) owns product/domain logic:**
 
 - Product APIs
 - Future domain logic (AI features, etc)
 
-Both use the same PostgreSQL database.
+**`@app/shared` holds what both sides must agree on:**
 
-Drizzle owns the SaaS database schema and migrations. SQLAlchemy maps the existing tables for FastAPI access.
+- The Drizzle schema and migrations
+- The API contract (Zod schemas, with types inferred from them)
+- Shared constants, types, and utils
+
+Both apps use the same PostgreSQL database through the same Drizzle schema.
 
 Stripe remains the billing source of truth. PostgreSQL stores the current subscription state used for authorization.
 
 ## Project Structure
 
 ```text
-src/
+src/                   Next.js app
   actions/             Server Actions
   app/                 Next.js routes
   components/          UI components
   lib/
-    backend/           Next.js → FastAPI client
-    db/                Drizzle schema and migrations
+    backend/           Next.js → API client
+    db/                Drizzle client
     stripe/            Stripe integration
     subscription/      Subscription authorization
     user/              User queries
 
-backend/
-  auth/                Clerk + subscription authorization
-  db/                  SQLAlchemy connection/models
-  routers/             Product APIs
-  main.py              FastAPI application
+backend/src/           Fastify API (@app/backend)
+  app.ts               App setup, plugins, and route scopes
+  db.ts                Drizzle client
+  auth/                Clerk authentication + subscription hooks
+  dashboard/           Sample feature (route + controller)
+  healthcheck/         Health check route
+
+packages/shared/src/   Shared package (@app/shared)
+  db/                  Drizzle schema, row types, and migrations
+  schemas.ts           Zod API schemas and their types (the API contract)
+  constants.ts         Shared constants
+  types.ts             Shared types not tied to a schema
+  utils.ts             Shared helpers
 ```
 
 ---
@@ -169,7 +192,6 @@ NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 CLERK_WEBHOOK_SIGNING_SECRET=whsec_...
-CLERK_JWKS_URL=https://<your-clerk-instance>/.well-known/jwks.json
 
 # Stripe: required only when BILLING_ENABLED=true
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test...
@@ -194,17 +216,23 @@ NEXT_PUBLIC_GITHUB_URL=
 `backend/.env`:
 
 ```env
-# SQLAlchemy requires the explicit Psycopg 3 driver prefix.
-DATABASE_URL="postgresql+psycopg://..."
-CLERK_JWKS_URL=https://<your-clerk-instance>/.well-known/jwks.json
+# Same database and frontend URL as .env.local.
+DATABASE_URL=postgresql://...
 FRONTEND_URL=http://localhost:3000
+
+# Same Clerk application as .env.local.
+CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 
 # Keep this aligned with .env.local.
 BILLING_ENABLED=true
+
+# Optional: defaults to localhost:8000.
+PORT=
+HOST=
 ```
 
-The two database URLs must target the same PostgreSQL database. Next.js uses
-`postgresql://...`; FastAPI uses `postgresql+psycopg://...`.
+Both apps must use the same `DATABASE_URL`.
 
 ### Feature Flags
 
@@ -227,26 +255,21 @@ required.
 
 ## 4. Install Dependencies
 
-Frontend:
+From the project root (installs the Next.js app, the API, and the shared
+package):
 
 ```bash
 npm install
 ```
 
-Backend:
-
-```bash
-cd backend
-uv sync
-cd ..
-```
+The repository is an npm workspaces monorepo. Always install packages from the
+root, targeting a workspace, for example
+`npm install <package> -w @app/backend`.
 
 Prerequisites:
 
-- Node.js
+- Node.js 20 or newer
 - npm
-- Python 3.14
-- uv
 - Docker Desktop (for the local database)
 - Stripe CLI (for local Stripe webhooks): `brew install stripe/stripe-cli/stripe`
 
@@ -280,15 +303,14 @@ Create a PostgreSQL database using Supabase or another hosted provider.
 
 **If using Supabase**, go to **Connect → Connection string → Direct
 connection / URI** and copy the PostgreSQL connection string. Do not use the
-Supabase REST API URL. Use the PostgreSQL URI as the basis for both database
-URLs below.
+Supabase REST API URL.
 
-Next.js and FastAPI must use the same database.
+Next.js and the API must use the same database.
 
 Supabase is used only as PostgreSQL hosting in the reference project. The Starter Kit does not depend on Supabase Auth, Storage, or its SDK.
 
-Add the connection URL to `.env.local` as `DATABASE_URL`, then add the same
-database URL with the `postgresql+psycopg://` prefix to `backend/.env`.
+Add the connection URL as `DATABASE_URL` to both `.env.local` and
+`backend/.env`.
 
 ## 6. Configure Clerk
 
@@ -309,11 +331,9 @@ Create a Clerk application and copy its publishable and secret keys (Overview > 
 CLI can write those two keys, but do not run it on this clone because Clerk is
 already integrated and the command can modify existing setup files.
 
-Add the Clerk JWKS URL (Configure > API Keys) to `.env.local` and `backend/.env`:
-
-```text
-https://<your-clerk-instance>/.well-known/jwks.json
-```
+Add the same two keys to `backend/.env` as `CLERK_PUBLISHABLE_KEY` and
+`CLERK_SECRET_KEY`. The API uses them to verify the session tokens Next.js
+sends.
 
 ### Create a Clerk webhook:
 
@@ -477,8 +497,8 @@ Before running the application, confirm:
 
 - `.env.local` has the database URL, Clerk keys and webhook secret, application
   URLs, Stripe secret/webhook secrets, and at least one Stripe Price ID.
-- `backend/.env` has the Psycopg 3 database URL, Clerk JWKS URL, and the same
-  `FRONTEND_URL` as `.env.local`.
+- `backend/.env` has the same `DATABASE_URL`, `FRONTEND_URL`, Clerk keys, and
+  `BILLING_ENABLED` as `.env.local`.
 - Optional values are intentional: GitHub links are hidden without
   `NEXT_PUBLIC_GITHUB_URL`, and no demo coupon is applied without
   `STRIPE_DEMO_COUPON_ID`.
@@ -494,46 +514,47 @@ docker compose up -d
 From the project root:
 
 ```bash
-npx drizzle-kit migrate
+npm run db:migrate
 ```
 
 Run this against every new or reset database (for example after
 `docker compose down -v`); otherwise the app fails because the tables don't
 exist.
 
-When changing the Drizzle schema:
+The schema lives in `packages/shared/src/db/schema.ts`. When changing it:
 
 ```bash
-npx drizzle-kit generate
-npx drizzle-kit migrate
+npm run db:generate
+npm run db:migrate
 ```
 
 Commit generated migrations with the schema change.
 
 ## 11. Run Locally
 
-Start FastAPI:
-
-```bash
-cd backend
-uv run fastapi dev
-```
-
-Start Next.js in another terminal. This also starts the local database
-container and forwards Stripe webhooks (`stripe listen`), with each process's
-output labeled:
+From the project root, one command starts everything:
 
 ```bash
 npm run dev
 ```
 
+It starts the local database container, then runs Next.js (`[web]`), the API
+(`[api]`), and the Stripe webhook listener (`[stripe]`) side by side, with each
+process's output labeled. `Ctrl+C` stops all of them.
+
 Services:
 
 ```text
-Next.js:  http://localhost:3000
-FastAPI:  http://127.0.0.1:8000
-Health:   http://127.0.0.1:8000/healthy
+Next.js:   http://localhost:3000
+API:       http://localhost:8000
+Health:    http://localhost:8000/healthcheck
+API docs:  http://localhost:8000/docs
 ```
+
+To call protected routes from the API docs or Postman, get a session token from
+the browser console while signed in to the app
+(`await window.Clerk.session.getToken()`) and send it as
+`Authorization: Bearer <token>`. Session tokens expire after about a minute.
 
 ## 12. Verify the Starter
 
@@ -541,8 +562,7 @@ Before building product features, verify the complete SaaS foundation:
 
 - Sign up through Clerk
 - Confirm the user is synchronized to PostgreSQL
-- Select a subscription plan 
-(If Stripe is configured)
+- Select a subscription plan (if billing is enabled)
 - Complete Stripe Checkout
   - **Important:** If you did not set a 100% coupon, fill out the credit card
     form with:
@@ -554,7 +574,9 @@ Before building product features, verify the complete SaaS foundation:
 
 - Confirm the subscription is synchronized to PostgreSQL
 - Open the protected workspace
-- Confirm the protected FastAPI request works (mock data overview)
+- Confirm the protected API request works (sample dashboard on the Overview page)
+- Click **Check API health** on the Overview page
+- Open the API docs at `/docs`
 - Open Stripe Customer Portal from Billing
 - Confirm account management works
 
@@ -570,11 +592,11 @@ The Starter Kit intentionally separates SaaS infrastructure from product logic.
 Next.js
   → SaaS infrastructure + UI
 
-FastAPI
+Fastify API
   → Product/domain/AI logic
 ```
 
-For an AI SaaS, product features such as these belong primarily in the FastAPI layer:
+For an AI SaaS, product features such as these belong primarily in the API:
 
 ```text
 Document ingestion
@@ -589,20 +611,57 @@ Product-specific APIs
 
 The existing authentication, users, subscriptions, billing, and authorization infrastructure can remain unchanged.
 
-## Database Ownership
+## Adding an API Feature
 
-SaaS tables such as:
+Give each feature its own folder in `backend/src/`, named after the feature,
+with three files:
 
 ```text
-users
-subscriptions
+backend/src/<feature>/
+  <feature>.route.ts        Route definition: path, Zod schemas, Swagger metadata
+  <feature>.controller.ts   Request handling: reads the request, returns the response
+  <feature>.service.ts      Business logic and database access (Drizzle)
 ```
 
-are owned by Drizzle.
+- **Route:** declares the path and attaches the request and response schemas
+  from `@app/shared/schemas`. The schemas validate every request and response
+  and generate the Swagger docs.
+- **Controller:** turns an HTTP request into a service call and the result
+  into a response. It stays thin.
+- **Service:** holds the actual logic and queries, with no knowledge of HTTP,
+  so it can be reused and tested on its own.
 
-FastAPI may query them through SQLAlchemy but should not migrate them.
+Small features can skip a layer: `healthcheck` only has a route, and the sample
+`dashboard` has a route and a controller.
 
-Product-specific tables can be introduced as the product architecture evolves.
+Then register the routes in the right scope in `backend/src/app.ts`:
+
+| Scope      | Hooks                                                              | For                             |
+| ---------- | ------------------------------------------------------------------ | ------------------------------- |
+| Public     | none                                                               | Health checks, public endpoints |
+| Protected  | `authenticate` (sets `request.user`)                               | Any signed-in user              |
+| Subscribed | + `requireSubscriptionPlan("basic")` (sets `request.subscription`) | Paid features                   |
+
+For a plan-gated feature, nest another scope with
+`requireSubscriptionPlan("premium")` (or `"all_in"`).
+
+Define the request and response schemas in
+`packages/shared/src/schemas.ts`. The frontend uses the inferred types
+(`z.infer`) for the data it receives, so a contract change shows up as a type
+error on both sides.
+
+The `dashboard` feature is a sample endpoint: use it as a template for your
+first real feature, then delete it (its folder, its schema in `schemas.ts`, and
+the Overview page that renders it).
+
+## Database Ownership
+
+The Drizzle schema and migrations live in `packages/shared/src/db/` and are
+shared by the Next.js app and the API. Both apps read and write SaaS tables
+such as `users` and `subscriptions` through the same schema.
+
+Add product-specific tables to the same schema and generate a migration with
+`npm run db:generate`.
 
 ## Designing Product Screens
 
@@ -631,7 +690,8 @@ The shell design stays neutral on purpose: re-skin a new SaaS through the theme 
 
 # Development Checks
 
-Run all frontend and backend checks:
+Run all checks (lint, plus a type check for the Next.js app, the API, and the
+shared package):
 
 ```bash
 npm run check
@@ -644,6 +704,8 @@ npm run build
 
 When using the Starter Kit for a real production application:
 
+- Deploy the Next.js app and the API as separate services, each with its own
+  environment variables.
 - Update Frontend and Backend URL env vars.
 - Update Clerk and Stripe webhook endpoints.
 - Keep database credentials server-side.
@@ -678,7 +740,18 @@ Ship
 
 # Roadmap
 
-## v1.1 — Organizations / Teams
+## API Owns All Server Logic
+
+Move the remaining server-side SaaS logic (Clerk and Stripe webhooks, Checkout,
+Customer Portal, and page authorization) from Next.js into the API, so Next.js
+only renders and the API owns every database and Stripe call.
+
+## Admin Dashboard
+
+Replace the sample dashboard with real SaaS metrics from Stripe, visible to
+users with the `admin` role.
+
+## Organizations / Teams
 
 Extend the starter for B2B SaaS applications with:
 

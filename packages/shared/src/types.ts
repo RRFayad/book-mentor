@@ -1,12 +1,8 @@
 import type { SUBSCRIPTION_PLANS } from "./constants";
-import type { subscriptions, users } from "./db/schema";
 
-// ---------- Database rows (inferred from the Drizzle schema) ----------
-
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-
-export type Subscription = typeof subscriptions.$inferSelect;
+// Shared domain types that don't belong to a schema file. Types inferred from a
+// schema live next to it: database rows in db/schema.ts, API types in
+// schemas.ts.
 
 // ---------- Subscription ----------
 

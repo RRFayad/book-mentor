@@ -6,7 +6,7 @@ import { requireSubscriptionPlan } from "./auth/subscription";
 import { dashboardRoutes } from "./dashboard/dashboard.route";
 import { healthcheckRoutes } from "./healthcheck/healthcheck.route";
 import { clerkPlugin } from "@clerk/fastify";
-import type { Subscription, User } from "@app/shared/types";
+import type { Subscription, User } from "@app/shared/db/schema";
 import {
   jsonSchemaTransform,
   serializerCompiler,

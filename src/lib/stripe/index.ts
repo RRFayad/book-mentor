@@ -1,7 +1,7 @@
 import "server-only";
 
 import Stripe from "stripe";
-import type { User } from "@app/shared/types";
+import type { User } from "@app/shared/db/schema";
 import { getEnvVar, getErrorMessageAndThrow } from "../utils";
 import { addStripeCustomerIdToUserDb } from "../user/user";
 
