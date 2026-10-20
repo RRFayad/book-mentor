@@ -1,5 +1,7 @@
 # The backend owns the product tables
 
+> Superseded by [ADR 0006](0006-one-drizzle-schema-for-every-table.md): the backend is now Fastify, and every table is in the shared Drizzle schema.
+
 Drizzle owns the SaaS tables (`users`, `subscriptions`) and their migrations. The backend owns every product table (Sources, Chunks, Conversations, messages, Citations), defined as SQLAlchemy models and migrated with Alembic. This matches the existing rule that FastAPI owns the product, keeps the whole product in Python, and makes SQLAlchemy and Alembic part of the backend work.
 
 Two migration tools share one database, so each manages only its own tables:
