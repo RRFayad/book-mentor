@@ -3,7 +3,8 @@ import { fastifyCors } from "@fastify/cors";
 import { getEnvVar } from "@app/shared/utils";
 import { authenticate } from "./auth/authenticate";
 import { requireSubscriptionPlan } from "./auth/subscription";
-import { dashboardRoutes } from "./routes/dashboard";
+import { dashboardRoutes } from "./dashboard/dashboard.route";
+import { healthcheckRoutes } from "./healthcheck/healthcheck.route";
 import { clerkPlugin } from "@clerk/fastify";
 import type { Subscription, User } from "@app/shared/types";
 import {
@@ -50,9 +51,7 @@ app.register(fastifySwaggerUi, { routePrefix: "/docs" });
 
 // ---------- Public routes ----------
 app.register(async (publicApp) => {
-  publicApp.get("/healthcheck", async () => {
-    return { status: "OK" };
-  });
+  publicApp.register(healthcheckRoutes);
 });
 
 // ---------- Protected routes ----------
