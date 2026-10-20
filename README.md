@@ -103,7 +103,7 @@ src/                   Next.js app
     user/              User queries
 
 backend/src/           Fastify API (@app/backend)
-  app.ts               App setup, plugins, and route scopes
+  main.ts              App entry: setup, plugins, and route scopes
   db.ts                Drizzle client
   auth/                Clerk authentication + subscription hooks
   dashboard/           Sample feature (route + controller)
@@ -634,7 +634,7 @@ backend/src/<feature>/
 Small features can skip a layer: `healthcheck` only has a route, and the sample
 `dashboard` has a route and a controller.
 
-Then register the routes in the right scope in `backend/src/app.ts`:
+Then register the routes in the right scope in `backend/src/main.ts`:
 
 | Scope      | Hooks                                                              | For                             |
 | ---------- | ------------------------------------------------------------------ | ------------------------------- |
@@ -706,6 +706,10 @@ When using the Starter Kit for a real production application:
 
 - Deploy the Next.js app and the API as separate services, each with its own
   environment variables.
+- On Vercel, the API project uses the **Fastify** framework preset with Root
+  Directory `backend` and "Include files outside the root directory" enabled.
+  Vercel runs the backend's `npm run build`, an esbuild bundle that inlines
+  `@app/shared`, and serves it as the function entrypoint (`server.js`).
 - Update Frontend and Backend URL env vars.
 - Update Clerk and Stripe webhook endpoints.
 - Keep database credentials server-side.

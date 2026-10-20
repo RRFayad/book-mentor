@@ -22,6 +22,8 @@ node_modules/
 
 # workspace build output (backend)
 dist/
+backend/server.js
+backend/server.js.map
 
 # misc
 .DS_Store

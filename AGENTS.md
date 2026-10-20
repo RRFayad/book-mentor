@@ -121,7 +121,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `<feature>.route.ts` (path, Zod schemas, Swagger metadata),
   `<feature>.controller.ts` (request handling), and `<feature>.service.ts`
   (business logic and Drizzle queries). Small features can skip layers.
-- Register routes in the matching scope in `backend/src/app.ts`: public;
+- Register routes in the matching scope in `backend/src/main.ts`: public;
   protected (`authenticate`, sets `request.user`); or subscribed
   (`requireSubscriptionPlan(...)`, sets `request.subscription`). Nest a scope
   for plan-gated routes.
@@ -133,6 +133,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Fastify treats `/path` and `/path/` as different routes; call routes without a
   trailing slash.
 - CORS accepts only `FRONTEND_URL`; keep it aligned with the Next.js app URL.
+- The API entry is `backend/src/main.ts`. Vercel deploys the esbuild bundle
+  from `npm run build` (`backend/server.js`), which inlines `@app/shared`
+  because Node can't load its TypeScript source from `node_modules`. Vercel
+  picks the entrypoint by file name, so never add `src/app`, `src/index`, or
+  `src/server` files to the backend: Vercel would run them unbundled.
+- The root `package.json` `overrides` pins `@fastify/static` (used by Swagger
+  UI) to 10.1.3. Newer versions `require()` the ESM-only `content-disposition`
+  v3, which Vercel's runtime loader rejects (`ERR_REQUIRE_ESM`, every route
+  returns 500). Before removing the pin, run the bundle with
+  `node --no-experimental-require-module server.js` to confirm it starts.
 
 ## Validation
 
