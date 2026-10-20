@@ -3,7 +3,6 @@ import { fastifyCors } from "@fastify/cors";
 import { getEnvVar } from "@app/shared/utils";
 import { authenticate } from "./auth/authenticate";
 import { requireSubscriptionPlan } from "./auth/subscription";
-import { dashboardRoutes } from "./dashboard/dashboard.route";
 import { healthcheckRoutes } from "./healthcheck/healthcheck.route";
 import { clerkPlugin } from "@clerk/fastify";
 import type { Subscription, User } from "@app/shared/db/schema";
@@ -61,7 +60,7 @@ app.register(async (protectedApp) => {
   // ---------- Subscription protected routes ----------
   protectedApp.register(async (subscribedApp) => {
     subscribedApp.addHook("preHandler", requireSubscriptionPlan("basic"));
-    subscribedApp.register(dashboardRoutes);
+    // Product routes go here, e.g. subscribedApp.register(sourcesRoutes);
   });
 });
 

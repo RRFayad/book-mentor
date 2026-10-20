@@ -106,7 +106,6 @@ backend/src/           Fastify API (@app/backend)
   main.ts              App entry: setup, plugins, and route scopes
   db.ts                Drizzle client
   auth/                Clerk authentication + subscription hooks
-  dashboard/           Sample feature (route + controller)
   healthcheck/         Health check route
 
 packages/shared/src/   Shared package (@app/shared)
@@ -630,8 +629,7 @@ backend/src/<feature>/
 - **Service:** holds the actual logic and queries, with no knowledge of HTTP,
   so it can be reused and tested on its own.
 
-Small features can skip a layer: `healthcheck` only has a route, and the sample
-`dashboard` has a route and a controller.
+Small features can skip a layer: `healthcheck` only has a route.
 
 Then register the routes in the right scope in `backend/src/main.ts`:
 
@@ -648,9 +646,6 @@ Define the request and response schemas in
 `packages/shared/src/schemas.ts`. The frontend uses the inferred types
 (`z.infer`) for the data it receives, so a contract change shows up as a type
 error on both sides.
-
-The `dashboard` feature is a sample endpoint: use it as a template for your
-first real feature, then delete it (its folder and its schema in `schemas.ts`).
 
 ## Database Ownership
 
@@ -750,8 +745,8 @@ only renders and the API owns every database and Stripe call.
 
 ## Admin Dashboard
 
-Replace the sample dashboard with real SaaS metrics from Stripe, visible to
-users with the `admin` role.
+Add an admin dashboard with real SaaS metrics from Stripe, visible to users
+with the `admin` role.
 
 ## Organizations / Teams
 
