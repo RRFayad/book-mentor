@@ -1,5 +1,7 @@
 import "server-only";
 
+import axios from "axios";
+
 import { getAuthenticatedBackendClient } from "@/lib/backend/client";
 import { SOURCE_LIFETIME } from "@/lib/backend/mock/data";
 import { getMockStore } from "@/lib/backend/mock/store";
@@ -118,5 +120,45 @@ export const sendPageBatch = async (
     console.error("Failed to send a page batch to the API", error);
 
     return false;
+  }
+};
+
+// Creates a Source in the API (POST /sources, docs/api-contract.md). The file
+// name stays in the browser; only what the contract lists is sent.
+export const createSource = async (
+  input: NewSource,
+): Promise<AddSourceResult> => {
+  const body =
+    input.kind === "book"
+      ? {
+          kind: input.kind,
+          title: input.title,
+          author: input.author,
+          pageCount: input.pageCount,
+        }
+      : {
+          kind: input.kind,
+          address: input.address,
+          title: input.title,
+          author: input.author,
+        };
+
+  try {
+    const backend = await getAuthenticatedBackendClient();
+    const { data } = await backend.post<AddSourceResult>("/sources", body);
+
+    return data;
+  } catch (error) {
+    if (
+      axios.isAxiosError(error) &&
+      error.response?.status === 422 &&
+      error.response.data?.detail === "too-large"
+    ) {
+      return { status: "rejected", reason: "too-large" };
+    }
+
+    console.error("Failed to create a Source in the API", error);
+
+    return { status: "failed" };
   }
 };

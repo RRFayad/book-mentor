@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import { addSource, deleteSource, sendPageBatch } from "@/lib/backend/sources";
+import {
+  createSource,
+  deleteSource,
+  sendPageBatch,
+} from "@/lib/backend/sources";
 import type {
   AddSourceResult,
   NewSource,
@@ -21,7 +25,7 @@ export const addSourceAction = async (
     return { status: "failed" };
   }
 
-  const result = await addSource(input);
+  const result = await createSource(input);
 
   if (result.status === "added") {
     // The Library and the sidebar's Source count both change.
