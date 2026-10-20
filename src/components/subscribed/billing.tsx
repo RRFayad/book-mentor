@@ -4,7 +4,8 @@ import { customerPortal } from "@/actions/stripe";
 import { PageHeader } from "@/components/subscribed/page-header";
 import { Button } from "@/components/ui/button";
 import { capitalize, tw } from "@/lib/utils";
-import type { Subscription, SubscriptionPlan } from "@/types/database";
+import type { Subscription } from "@app/shared/db/schema";
+import type { SubscriptionPlan } from "@app/shared/types";
 
 type BillingProps = {
   subscription: Subscription | null;

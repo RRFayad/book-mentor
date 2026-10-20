@@ -21,7 +21,7 @@ const styles = {
 
 const Cancelled = () => {
   if (!featureFlags.billingEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   return (

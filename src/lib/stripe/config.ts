@@ -1,4 +1,4 @@
-import type { SubscriptionPlan } from "@/types/database";
+import type { SubscriptionPlan } from "@app/shared/types";
 
 import { getEnvVar } from "@/lib/utils";
 
@@ -45,7 +45,7 @@ const stripePlanDetails: Record<SubscriptionPlan, StripePlanDetails> = {
     features: [
       "Everything in Basic",
       "Subscription-based authorization",
-      "FastAPI product backend",
+      "TypeScript API backend",
       "Advanced features",
       "Priority support",
     ],
@@ -58,7 +58,7 @@ const stripePlanDetails: Record<SubscriptionPlan, StripePlanDetails> = {
     interval: "per month",
     features: [
       "Everything in Premium",
-      "AI-ready Python architecture",
+      "AI-ready API architecture",
       "Priority starter-kit updates",
       "All product features",
       "Premium support",

@@ -83,15 +83,15 @@ const testimonials = [
 const faqs = [
   {
     q: "What is included in the starter?",
-    a: "Authentication, user synchronization, subscriptions, authorization, billing management, PostgreSQL persistence, a FastAPI backend, and a responsive SaaS UI — already integrated and ready to extend.",
+    a: "Authentication, user synchronization, subscriptions, authorization, billing management, PostgreSQL persistence, a Fastify API backend with Swagger docs, and a responsive SaaS UI — already integrated and ready to extend.",
   },
   {
-    q: "Why Next.js and FastAPI?",
-    a: "Next.js handles the web application and SaaS infrastructure, while FastAPI provides a dedicated Python backend for product and domain logic. This keeps the stack flexible and provides a natural foundation for Python-based AI applications.",
+    q: "Why Next.js and a separate API?",
+    a: "Next.js handles the web application and SaaS infrastructure, while a dedicated Fastify API holds your product and domain logic. Both are TypeScript and share one package for the database schema, types, and API contract, so a change on one side shows up as a type error on the other.",
   },
   {
     q: "How does authentication work?",
-    a: "Clerk handles authentication and user management. Clerk webhooks synchronize users with PostgreSQL, and authenticated requests to FastAPI are validated using Clerk tokens.",
+    a: "Clerk handles authentication and user management. Clerk webhooks synchronize users with PostgreSQL, and authenticated requests to the API are validated using Clerk session tokens.",
   },
   {
     q: "How are subscriptions handled?",
@@ -99,7 +99,7 @@ const faqs = [
   },
   {
     q: "Can I use it for AI applications?",
-    a: "Yes. The FastAPI backend provides a natural place for Python-based AI and product logic. AI-specific infrastructure such as LangChain, LangGraph, conversations, streaming, and usage tracking is planned separately rather than being bundled into the core SaaS foundation.",
+    a: "Yes. The API is a natural place for AI and product logic such as LLM calls, retrieval, and agents, and PostgreSQL ships with pgvector for embeddings. AI-specific infrastructure such as conversations, streaming, and usage tracking is planned separately rather than being bundled into the core SaaS foundation.",
   },
 ];
 
@@ -207,13 +207,13 @@ const styles = {
 
 const LandingPage = async () => {
   if (!featureFlags.landingPageEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const { userId } = await auth();
 
   if (userId) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const availablePlans = featureFlags.billingEnabled
@@ -255,15 +255,16 @@ const LandingPage = async () => {
 
             <BlurFade delay={0.35}>
               <p className={styles.hero.description}>
-                A production-ready foundation with Next.js, FastAPI, PostgreSQL,
-                Clerk, and Stripe — authentication, subscriptions, database
-                synchronization, and backend integration already set up.
+                A production-ready TypeScript foundation with Next.js, Fastify,
+                PostgreSQL, Clerk, and Stripe — authentication, subscriptions,
+                database synchronization, and backend integration already set
+                up.
               </p>
             </BlurFade>
 
             <BlurFade delay={0.5}>
               <div className={styles.hero.actions}>
-                <form action={routes.workspace.overview}>
+                <form action={routes.appHome}>
                   <ShimmerButton type="submit">
                     <RocketIcon className={styles.hero.actionIcon} />
                     View Live Demo
@@ -353,10 +354,10 @@ const LandingPage = async () => {
                   {[
                     "Authentication ready — Clerk auth synchronized with PostgreSQL.",
                     "Billing built in — Stripe subscriptions, webhooks, and Customer Portal.",
-                    "Python backend — FastAPI connected to Next.js and PostgreSQL.",
-                    "Database ready — PostgreSQL with Drizzle and SQLAlchemy.",
+                    "TypeScript API — Fastify connected to Next.js and PostgreSQL, with Swagger docs.",
+                    "Database ready — PostgreSQL with Drizzle, shared by both apps.",
                     "Modern UI — shadcn/ui,  Velora components and Tailwind CSS.",
-                    "AI-ready architecture — Python foundation ready for your AI stack.",
+                    "AI-ready architecture — a dedicated API and pgvector, ready for your AI stack.",
                   ].map((item) => (
                     <li key={item} className={styles.integrations.listItem}>
                       <span className={styles.featureCheck}>
@@ -387,7 +388,7 @@ const LandingPage = async () => {
                 {
                   icon: <LayersIcon className={styles.cards.icon} />,
                   title: "Full-stack by design",
-                  body: "Next.js owns the SaaS layer. FastAPI owns your product logic. Both share PostgreSQL with clear domain boundaries.",
+                  body: "Next.js owns the SaaS layer. The API owns your product logic. Both share PostgreSQL and one typed contract, with clear domain boundaries.",
                 },
                 {
                   icon: <ZapIcon className={styles.cards.icon} />,
@@ -521,7 +522,7 @@ const LandingPage = async () => {
                 billing, persistence, and backend integration already connected.
               </p>
               <div className={styles.callToAction.action}>
-                <form action={routes.workspace.overview}>
+                <form action={routes.appHome}>
                   <ShimmerButton
                     className={styles.callToAction.button}
                     type="submit"

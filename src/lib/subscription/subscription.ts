@@ -4,17 +4,15 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { subscriptions } from "@/lib/db/schema";
-import { Subscription, SubscriptionPlan } from "@/types/database";
+import { subscriptions, type Subscription } from "@app/shared/db/schema";
+import {
+  ACTIVE_SUBSCRIPTION_STATUSES,
+  SUBSCRIPTION_PLAN_LEVELS,
+} from "@app/shared/constants";
+import type { SubscriptionPlan } from "@app/shared/types";
 import { featureFlags } from "@/lib/feature-flags";
 import { getCurrentUser } from "../user/user";
 import { routes } from "@/lib/routes";
-
-const subscriptionPlanLevel: Record<SubscriptionPlan, number> = {
-  basic: 1,
-  premium: 2,
-  all_in: 3,
-};
 
 export const getSubscriptionByUserId = async (
   userId: number,
@@ -44,7 +42,7 @@ export const isSubscriptionActive = (
     return false;
   }
 
-  return ["active", "trialing"].includes(subscription.status);
+  return ACTIVE_SUBSCRIPTION_STATUSES.includes(subscription.status);
 };
 
 export const canAccessSubscriptionPlan = (
@@ -56,8 +54,8 @@ export const canAccessSubscriptionPlan = (
   }
 
   return (
-    subscriptionPlanLevel[subscription.plan] >=
-    subscriptionPlanLevel[requiredPlan]
+    SUBSCRIPTION_PLAN_LEVELS[subscription.plan] >=
+    SUBSCRIPTION_PLAN_LEVELS[requiredPlan]
   );
 };
 

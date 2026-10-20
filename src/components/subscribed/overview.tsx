@@ -9,11 +9,11 @@ import {
 
 import { PageHeader } from "@/components/subscribed/page-header";
 import { BackendHealthButton } from "@/components/subscribed/backend-health-button";
-import type { DashboardData } from "@/lib/backend/dashboard";
+import type { DashboardResponse } from "@app/shared/schemas";
 import { tw } from "@/lib/utils";
 
 type OverviewProps = {
-  dashboardData: DashboardData | null;
+  dashboardData: DashboardResponse | null;
 };
 
 const metricIcons = {
@@ -70,8 +70,8 @@ const styles = {
 
 export const Overview = ({ dashboardData }: OverviewProps) => {
   const description = dashboardData
-    ? `This mock dashboard data was fetched from FastAPI. The included account email, ${dashboardData.user_email}, confirms FastAPI is working and can read the application database.`
-    : "FastAPI could not return the sample dashboard data.";
+    ? `This mock dashboard data was fetched from the API. The included account email, ${dashboardData.user_email}, confirms the API is working and can read the application database.`
+    : "The API could not return the sample dashboard data.";
 
   return (
     <div className={styles.page}>
@@ -167,7 +167,7 @@ export const Overview = ({ dashboardData }: OverviewProps) => {
             Dashboard data is unavailable
           </p>
           <p className={styles.unavailableDescription}>
-            The FastAPI service could not return the sample dashboard data.
+            The API could not return the sample dashboard data.
           </p>
         </section>
       )}
