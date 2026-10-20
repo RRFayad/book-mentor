@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users } from "@app/shared/db/schema";
 import { featureFlags } from "@/lib/feature-flags";
 import { deleteStripeCustomer, updateStripeCustomerEmail } from "@/lib/stripe";
 import { getUserByClerkId } from "@/lib/user/user";

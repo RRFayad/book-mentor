@@ -12,7 +12,6 @@ import { getUsage } from "@/lib/backend/usage";
 import { canStartConversation } from "@/lib/conversations/source-picks";
 import { routes } from "@/lib/routes";
 import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
-import { SubscriptionPlan } from "@/types/database";
 
 export type CreateConversationResult =
   | { status: "created"; conversationId: string }
@@ -25,9 +24,7 @@ export const createConversationAction = async (
   sourceIds: string[],
   firstQuestion: string,
 ): Promise<CreateConversationResult> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
   if (!canUse || !canStartConversation(sourceIds, firstQuestion)) {
     return { status: "failed" };
@@ -55,9 +52,7 @@ export const renameConversationAction = async (
   conversationId: string,
   title: string,
 ): Promise<{ ok: boolean }> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
   const ok = canUse && (await renameConversation(conversationId, title));
 
   if (ok) {
@@ -74,9 +69,7 @@ export const deleteConversationAction = async (
   conversationId: string,
   isViewing: boolean,
 ): Promise<{ ok: boolean }> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
   const ok = canUse && (await deleteConversation(conversationId));
 
   if (ok) {

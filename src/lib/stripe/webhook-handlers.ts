@@ -5,8 +5,8 @@ import { eq, sql } from "drizzle-orm";
 
 import { stripePriceIds } from "@/lib/stripe/config";
 import { db } from "@/lib/db";
-import { subscriptions, users } from "@/lib/db/schema";
-import type { SubscriptionPlan } from "@/types/database";
+import { subscriptions, users } from "@app/shared/db/schema";
+import type { SubscriptionPlan } from "@app/shared/types";
 
 type SubscriptionWebhookEvent = Stripe.Event & {
   data: { object: Stripe.Subscription };

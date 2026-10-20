@@ -10,15 +10,12 @@ import type {
 } from "@/lib/backend/types";
 import { isNewSourceValid } from "@/lib/sources/new-source";
 import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
-import { SubscriptionPlan } from "@/types/database";
 
 // Results are returned, not thrown, so the dialog can show them.
 export const addSourceAction = async (
   input: NewSource,
 ): Promise<AddSourceResult> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
   if (!canUse || !isNewSourceValid(input)) {
     return { status: "failed" };
@@ -37,9 +34,7 @@ export const addSourceAction = async (
 export const deleteSourceAction = async (
   sourceId: string,
 ): Promise<{ ok: boolean }> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
   if (!canUse) {
     return { ok: false };
@@ -58,9 +53,7 @@ export const sendPageBatchAction = async (
   sourceId: string,
   batch: PageBatch,
 ): Promise<{ ok: boolean }> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
   return { ok: canUse && (await sendPageBatch(sourceId, batch)) };
 };

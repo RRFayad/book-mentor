@@ -4,10 +4,11 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { stripePriceIds } from "@/lib/stripe/config";
-import { subscriptionPlan } from "@/lib/db/schema";
+import { SUBSCRIPTION_PLANS } from "@app/shared/constants";
 import {
   createStripeCheckoutSession,
   createStripeCustomerPortalSession,
+  hasLiveStripeSubscription,
 } from "@/lib/stripe";
 import { getOrCreateUserByClerkId, getUserByClerkId } from "@/lib/user/user";
 import { routes } from "@/lib/routes";
@@ -17,10 +18,10 @@ import {
 } from "@/lib/subscription/subscription";
 import { featureFlags } from "@/lib/feature-flags";
 import { getEnvVar } from "@/lib/utils";
-import type { SubscriptionPlan } from "@/types/database";
+import type { SubscriptionPlan } from "@app/shared/types";
 
 const isSubscriptionPlan = (value: string): value is SubscriptionPlan => {
-  return subscriptionPlan.enumValues.includes(value as SubscriptionPlan);
+  return SUBSCRIPTION_PLANS.includes(value as SubscriptionPlan);
 };
 
 const redirectToCustomerPortal = async (customerId: string): Promise<never> => {
@@ -63,6 +64,15 @@ export const checkout = async (formData: FormData) => {
       throw new Error("Active subscription is missing a Stripe customer");
     }
 
+    return redirectToCustomerPortal(user.stripeCustomerId);
+  }
+
+  // The local row can lag behind a delayed or failed webhook, so ask Stripe too.
+  // Otherwise a paying customer sent back to pricing could subscribe twice.
+  if (
+    user.stripeCustomerId &&
+    (await hasLiveStripeSubscription(user.stripeCustomerId))
+  ) {
     return redirectToCustomerPortal(user.stripeCustomerId);
   }
 

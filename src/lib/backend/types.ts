@@ -1,5 +1,5 @@
 // The frontend's data contract. Names follow CONTEXT.md. Times are ISO 8601
-// strings because that is what the FastAPI JSON responses will carry.
+// strings because that is what the API JSON responses will carry.
 // The answer part types are provisional: the engineering grill may change them.
 
 export type SourceKind = "book" | "blog";

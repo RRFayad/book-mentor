@@ -1,7 +1,7 @@
 import "server-only";
 
 import Stripe from "stripe";
-import type { User } from "@/types/database";
+import type { User } from "@app/shared/db/schema";
 import { getEnvVar, getErrorMessageAndThrow } from "../utils";
 import { addStripeCustomerIdToUserDb } from "../user/user";
 
@@ -39,6 +39,29 @@ export const updateStripeCustomerEmail = async (
   email: string,
 ) => {
   await getStripe().customers.update(customerId, { email });
+};
+
+// Subscriptions that still bill or grant access; a new Checkout would duplicate them.
+const LIVE_SUBSCRIPTION_STATUSES: Stripe.Subscription.Status[] = [
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+  "paused",
+];
+
+export const hasLiveStripeSubscription = async (
+  customerId: string,
+): Promise<boolean> => {
+  const subscriptions = await getStripe().subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 10,
+  });
+
+  return subscriptions.data.some((subscription) =>
+    LIVE_SUBSCRIPTION_STATUSES.includes(subscription.status),
+  );
 };
 
 export const createStripeCheckoutSession = async ({

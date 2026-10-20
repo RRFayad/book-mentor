@@ -2,9 +2,9 @@ import "server-only";
 
 import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
-import { users } from "@/lib/db/schema";
+import { users } from "@app/shared/db/schema";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import type { User } from "@/types/database";
+import type { User } from "@app/shared/db/schema";
 
 export const getUserByClerkId = async (
   clerkId: string,

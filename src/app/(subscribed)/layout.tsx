@@ -8,7 +8,6 @@ import { getUsage } from "@/lib/backend/usage";
 import { featureFlags } from "@/lib/feature-flags";
 import { siteConfig } from "@/lib/site-config";
 import { requireCurrentUserSubscriptionPlan } from "@/lib/subscription/subscription";
-import { SubscriptionPlan } from "@/types/database";
 import { tw } from "@/lib/utils";
 
 type SubscribedLayoutProps = {
@@ -21,7 +20,7 @@ const styles = {
 };
 
 const SubscribedLayout = async ({ children }: SubscribedLayoutProps) => {
-  await requireCurrentUserSubscriptionPlan(SubscriptionPlan.Basic);
+  await requireCurrentUserSubscriptionPlan("basic");
 
   const [conversations, usage] = await Promise.all([
     listConversations(),

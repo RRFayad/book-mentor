@@ -21,30 +21,46 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Architecture Boundaries
 
+- The repository is an npm workspaces monorepo: the Next.js app at the root,
+  the Fastify API in `backend/` (`@app/backend`), and the shared package in
+  `packages/shared/` (`@app/shared`).
 - Next.js owns UI, Clerk authentication, Clerk and Stripe webhooks, billing,
   and SaaS/account concerns.
-- FastAPI owns product/domain APIs and future Python-based product logic, such
-  as AI, RAG, agents, and streaming.
+- The API (Fastify) owns product/domain APIs and future product logic, such as
+  AI, RAG, agents, and streaming.
+- `@app/shared` holds what both apps must agree on: the Drizzle schema and
+  migrations, the API contract (Zod schemas in `schemas.ts`), and shared
+  constants, types, and utils. Each app reads its own environment variables;
+  configuration objects such as `featureFlags` stay in their app.
+  Types inferred from a schema live next to it: row types (`User`,
+  `Subscription`) in `db/schema.ts`, API types in `schemas.ts`; `types.ts`
+  holds shared types that don't belong to a schema file.
 - PostgreSQL is the shared application database. Supabase, when used, is only
   the database host. Do not introduce Supabase Auth or the Supabase SDK.
-- Drizzle owns the SaaS tables (`users`, `subscriptions`) and their migrations
-  in `src/lib/db/`. The backend owns the product tables (Sources, Chunks,
-  Conversations, and the rest) as SQLAlchemy models with Alembic migrations
-  (`docs/adr/0005-backend-owns-product-tables.md`). Each tool manages only its
-  own tables: Alembic autogenerate excludes the SaaS tables, and
-  `drizzle-kit push` is never used. Do not use SQLAlchemy `create_all()`.
-- FastAPI must derive identity from the verified Clerk JWT. Never trust a
+- Local development uses the PostgreSQL + pgvector container in
+  `docker-compose.yml`; `npm run dev` starts it through `predev`.
+- Drizzle owns the schema and migrations in `packages/shared/src/db/`. Change
+  the schema there and run `npm run db:generate`.
+- The API derives identity from the verified Clerk session token. Never trust a
   browser-supplied user ID for authenticated identity.
 
 ## Frontend Conventions
 
 - Use TypeScript arrow functions, not function declarations.
+- Name fixed module-level constants (lists, lookup tables) in
+  `UPPER_SNAKE_CASE`, such as `SUBSCRIPTION_PLANS`. Objects built from
+  environment variables or config, such as `featureFlags` or `routes`, stay
+  `camelCase`.
 - Prefer Server Components. Add client components only when client-side
   behavior is necessary.
-- Keep Next.js to FastAPI calls under `src/lib/backend/`.
+- Keep Next.js to API calls under `src/lib/backend/`, typed with the inferred
+  types from `@app/shared/schemas`.
 - Application-owned Tailwind styles belong in a local `styles` object and must
   be wrapped with `tw()` so Prettier sorts the classes.
 - Use `cn()` only for runtime conditional class merging.
+- Group generic files (shared `constants`, `types`, `utils`) into sections with
+  `// ---------- Section ----------` dividers. Split a section into its own file
+  once it grows large.
 - Give user feedback with `showToast({ type, title, message })` from
   `src/components/toaster.tsx`; `type` is `success`, `warning`, or `error`.
   Call it directly in the client component that handles the action. Server
@@ -78,12 +94,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   [App Shell canvas](https://claude.ai/artifact/HWhacGtes2kTC143kN4aUk) only
   documents the code as it was before that change.
 - A new subscribed page lives under `src/app/(subscribed)/` and is wired in
-  two places: its path in `src/lib/routes.ts` and, when it needs one, its nav
-  item in `src/components/app-sidebar.tsx`. The header has no breadcrumb.
-- Management pages (Library, Account) follow the existing page pattern: a
-  `mx-auto w-full max-w-7xl` container, `PageHeader`, then white cards styled
-  like the ones in `src/components/subscribed/billing.tsx`. Conversation
-  screens follow the chat layout instead.
+  three places: its path in `src/lib/routes.ts`, its nav item in
+  `src/components/app-sidebar.tsx`, and its breadcrumb in `routeContext` in
+  `src/components/subscribed/app-header.tsx`.
+- Redirects and links into the app use `routes.appHome`. Only the Overview
+  page's own nav item and breadcrumb use `routes.workspace.overview`.
+- Pages follow the existing page pattern: a `mx-auto w-full max-w-7xl`
+  container, `PageHeader`, then white cards styled like the ones in
+  `src/components/subscribed/billing.tsx`.
 - Translate design colors, radii, and fonts to theme tokens (`bg-card`,
   `text-muted-foreground`, `border`, `bg-primary`, `rounded-xl`) so light and
   dark themes both follow.
@@ -95,36 +113,58 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `subscriptions`; authorization reads local subscription state rather than
   querying Stripe on every request.
 - Server-side Next.js pages use the subscription helpers in
-  `src/lib/subscription/`. FastAPI routes use
-  `require_subscription_plan(...)` dependencies.
+  `src/lib/subscription/`. API routes get the same check from the subscribed
+  scope (`requireSubscriptionPlan(...)`). Both read the plan rules from
+  `@app/shared/constants`.
 - Keep Stripe SDK use, customer creation, Checkout Session creation, and
   Customer Portal Session creation server-only.
+- Each project uses its own Stripe sandbox. Local Stripe webhooks come from
+  the Stripe CLI (`stripe listen`, started by `npm run dev`), never from a
+  dashboard destination pointing at a tunnel; the dashboard destination is for
+  production only. When the Stripe webhook route handles a new event type, add
+  it to the `stripe:listen` script's `--events` list and to the production
+  destination.
 
 ## Backend Conventions
 
-- Python dependencies and tooling are managed with `uv` in `backend/`.
-- `backend/` is an independently deployed Vercel project root. Import backend
-  modules from that root, such as `from auth.auth import ...`; do not import
-  them through `backend.*` or use relative imports that escape a subpackage.
-- Start FastAPI from `backend/` with
-  `uv run uvicorn main:app --reload --env-file .env`.
-- Format Python with Black and sort imports with isort.
-- Place product API routes in `backend/routers/`; keep authentication and
-  subscription dependencies under `backend/auth/`.
+- Install packages from the repo root into a workspace, such as
+  `npm install <package> -w @app/backend`. A `backend/package-lock.json` or
+  `backend/node_modules/` means something ran outside the workspace.
+- `npm run dev` at the root starts the database, Next.js, the API, and the
+  Stripe listener together. The API reads `backend/.env`.
+- Give each feature a folder in `backend/src/<feature>/` with
+  `<feature>.route.ts` (path, Zod schemas, Swagger metadata),
+  `<feature>.controller.ts` (request handling), and `<feature>.service.ts`
+  (business logic and Drizzle queries). Small features can skip layers.
+- Register routes in the matching scope in `backend/src/main.ts`: public;
+  protected (`authenticate`, sets `request.user`); or subscribed
+  (`requireSubscriptionPlan(...)`, sets `request.subscription`). Nest a scope
+  for plan-gated routes.
+- Auth hooks run in `preHandler`, after `clerkPlugin` reads the token there; an
+  `onRequest` hook sees no session.
+- Every route declares response schemas from `@app/shared/schemas`, including
+  `errorResponseSchema` for 401/403/404 on protected routes, and uses
+  `withTypeProvider<ZodTypeProvider>()`. Errors use the `{ detail }` body.
+- Fastify treats `/path` and `/path/` as different routes; call routes without a
+  trailing slash.
 - CORS accepts only `FRONTEND_URL`; keep it aligned with the Next.js app URL.
+- The API entry is `backend/src/main.ts`. Vercel deploys the esbuild bundle
+  from `npm run build` (`backend/server.js`), which inlines `@app/shared`
+  because Node can't load its TypeScript source from `node_modules`. Vercel
+  picks the entrypoint by file name, so never add `src/app`, `src/index`, or
+  `src/server` files to the backend: Vercel would run them unbundled.
+- The root `package.json` `overrides` pins `@fastify/static` (used by Swagger
+  UI) to 10.1.3. Newer versions `require()` the ESM-only `content-disposition`
+  v3, which Vercel's runtime loader rejects (`ERR_REQUIRE_ESM`, every route
+  returns 500). Before removing the pin, run the bundle with
+  `node --no-experimental-require-module server.js` to confirm it starts.
 
 ## Validation
 
 Run relevant checks after changes:
 
 ```bash
-# Next.js
-npm run lint
-npx tsc --noEmit
-npm test
+# Lint, plus type checks for the Next.js app, the API, and @app/shared
+npm run check
 npx prettier --check <changed-files>
-
-# FastAPI
-uv run --project backend black --check backend
-uv run --project backend isort --check-only backend
 ```

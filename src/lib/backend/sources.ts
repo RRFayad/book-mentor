@@ -101,7 +101,7 @@ export const addSource = async (input: NewSource): Promise<AddSourceResult> => {
   return { status: "added", source: { ...source } };
 };
 
-// The first real backend call: sends one batch of a book's pages to FastAPI
+// The first real backend call: sends one batch of a book's pages to the API
 // (POST /sources/{id}/pages, docs/api-contract.md). Until the Sources ticket
 // lands, the Source id comes from the mock store.
 export const sendPageBatch = async (
@@ -115,7 +115,7 @@ export const sendPageBatch = async (
 
     return true;
   } catch (error) {
-    console.error("Failed to send a page batch to FastAPI", error);
+    console.error("Failed to send a page batch to the API", error);
 
     return false;
   }

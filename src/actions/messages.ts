@@ -5,14 +5,11 @@ import { revalidatePath } from "next/cache";
 import { sendMessage, stopAnswer } from "@/lib/backend/messages";
 import type { NewMessage, SendMessageResult } from "@/lib/backend/types";
 import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
-import { SubscriptionPlan } from "@/types/database";
 
 export const sendMessageAction = async (
   message: NewMessage,
 ): Promise<SendMessageResult> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
   if (!canUse || message.text.trim().length === 0) {
     return { status: "failed" };
@@ -31,9 +28,7 @@ export const stopAnswerAction = async (
   answerId: string,
   shownWords: number,
 ): Promise<void> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan(
-    SubscriptionPlan.Basic,
-  );
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
   if (canUse) {
     await stopAnswer(conversationId, answerId, shownWords);
