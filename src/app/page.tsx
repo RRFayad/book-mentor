@@ -207,13 +207,13 @@ const styles = {
 
 const LandingPage = async () => {
   if (!featureFlags.landingPageEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const { userId } = await auth();
 
   if (userId) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const availablePlans = featureFlags.billingEnabled
@@ -264,7 +264,7 @@ const LandingPage = async () => {
 
             <BlurFade delay={0.5}>
               <div className={styles.hero.actions}>
-                <form action={routes.workspace.overview}>
+                <form action={routes.appHome}>
                   <ShimmerButton type="submit">
                     <RocketIcon className={styles.hero.actionIcon} />
                     View Live Demo
@@ -522,7 +522,7 @@ const LandingPage = async () => {
                 billing, persistence, and backend integration already connected.
               </p>
               <div className={styles.callToAction.action}>
-                <form action={routes.workspace.overview}>
+                <form action={routes.appHome}>
                   <ShimmerButton
                     className={styles.callToAction.button}
                     type="submit"

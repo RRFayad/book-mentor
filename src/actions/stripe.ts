@@ -28,7 +28,7 @@ const redirectToCustomerPortal = async (customerId: string): Promise<never> => {
   const frontendUrl = getEnvVar("FRONTEND_URL");
   const portalUrl = await createStripeCustomerPortalSession({
     customerId,
-    returnUrl: `${frontendUrl}${routes.workspace.overview}`,
+    returnUrl: `${frontendUrl}${routes.appHome}`,
   });
 
   redirect(portalUrl);
@@ -36,7 +36,7 @@ const redirectToCustomerPortal = async (customerId: string): Promise<never> => {
 
 export const checkout = async (formData: FormData) => {
   if (!featureFlags.billingEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const { userId: clerkUserId } = await auth();
@@ -95,7 +95,7 @@ export const checkout = async (formData: FormData) => {
 
 export const customerPortal = async () => {
   if (!featureFlags.billingEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const { userId: clerkUserId } = await auth();

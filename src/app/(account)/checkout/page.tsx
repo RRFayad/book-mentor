@@ -17,7 +17,7 @@ const styles = {
 
 const CheckoutPage = async ({ searchParams }: CheckoutPageProps) => {
   if (!featureFlags.billingEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   const { plan } = await searchParams;

@@ -83,7 +83,7 @@ export const AppSidebar = ({ appName, billingEnabled }: AppSidebarProps) => {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className={styles.header}>
-        <Link href={routes.workspace.overview} className={styles.brand}>
+        <Link href={routes.appHome} className={styles.brand}>
           <SparklesIcon className={styles.brandIcon} />
           <span className={styles.brandLabel}>{appName}</span>
         </Link>

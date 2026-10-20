@@ -14,7 +14,7 @@ const styles = {
 
 const BillingPage = async () => {
   if (!featureFlags.billingEnabled) {
-    redirect(routes.workspace.overview);
+    redirect(routes.appHome);
   }
 
   await requireCurrentUserSubscriptionPlan("basic");

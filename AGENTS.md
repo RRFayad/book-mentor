@@ -82,6 +82,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   three places: its path in `src/lib/routes.ts`, its nav item in
   `src/components/app-sidebar.tsx`, and its breadcrumb in `routeContext` in
   `src/components/subscribed/app-header.tsx`.
+- Redirects and links into the app use `routes.appHome`. Only the Overview
+  page's own nav item and breadcrumb use `routes.workspace.overview`.
 - Pages follow the existing page pattern: a `mx-auto w-full max-w-7xl`
   container, `PageHeader`, then white cards styled like the ones in
   `src/components/subscribed/billing.tsx`.
