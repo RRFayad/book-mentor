@@ -18,3 +18,10 @@ export const ACTIVE_SUBSCRIPTION_STATUSES: readonly string[] = [
   "active",
   "trialing",
 ];
+
+// ---------- Sources ----------
+
+// Kinds and ingestion states of a Source. The database enums and the API
+// schemas both derive from these lists.
+export const SOURCE_KINDS = ["book", "blog"] as const;
+export const SOURCE_STATES = ["ingesting", "ready"] as const;

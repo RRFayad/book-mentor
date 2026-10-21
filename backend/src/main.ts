@@ -13,6 +13,7 @@ import {
 } from "fastify-type-provider-zod";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import sourcesRoutes from "./sources/sources.route";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -56,12 +57,7 @@ app.register(async (publicApp) => {
 // ---------- Protected routes ----------
 app.register(async (protectedApp) => {
   protectedApp.addHook("preHandler", authenticate);
-
-  // ---------- Subscription protected routes ----------
-  protectedApp.register(async (subscribedApp) => {
-    subscribedApp.addHook("preHandler", requireSubscriptionPlan("basic"));
-    // Product routes go here, e.g. subscribedApp.register(sourcesRoutes);
-  });
+  protectedApp.register(sourcesRoutes, { prefix: "/sources" });
 });
 
 const main = async () => {
