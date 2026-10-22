@@ -8,8 +8,14 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
-import { SOURCE_KINDS, SOURCE_STATES, SUBSCRIPTION_PLANS } from "../constants";
+import {
+  SOURCE_KINDS,
+  SOURCE_LIFETIME_DAYS,
+  SOURCE_STATES,
+  SUBSCRIPTION_PLANS,
+} from "../constants";
 
 export const userRole = pgEnum("user_role", ["user", "admin"]);
 
@@ -73,8 +79,14 @@ export const sources = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true })
+      .default(sql.raw(`now() + interval '${SOURCE_LIFETIME_DAYS} days'`))
+      .notNull(),
   },
-  (table) => [index("sources_user_id_idx").on(table.userId)],
+  (table) => [
+    index("sources_user_id_idx").on(table.userId),
+    index("sources_expires_at_idx").on(table.expiresAt),
+  ],
 );
 
 export type SourceRow = typeof sources.$inferSelect;

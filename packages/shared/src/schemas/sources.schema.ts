@@ -1,44 +1,28 @@
 import { z } from "zod";
 
 import { SOURCE_KINDS, SOURCE_STATES } from "../constants";
+import { isoDateTimeSchema } from "./common.schema";
 
 // ---------- Source ----------
 
 export const sourceKindSchema = z.enum(SOURCE_KINDS);
 export const sourceStateSchema = z.enum(SOURCE_STATES);
 
-const sourceDetailsSchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("book"),
-    pageCount: z.int(),
-  }),
-  z.object({
-    kind: z.literal("blog"),
-    postCount: z.int(),
-    address: z.string(),
-  }),
-]);
-
-const ingestionStatusSchema = z.discriminatedUnion("state", [
-  z.object({
-    state: z.literal("ingesting"),
-    ingestionProgress: z.number(),
-  }),
-  z.object({
-    state: z.literal("ready"),
-  }),
-]);
-
-export const sourceResponseSchema = z
-  .object({
-    id: z.uuid(),
-    title: z.string(),
-    author: z.string(),
-    addedAt: z.iso.datetime(),
-    expiresAt: z.iso.datetime(),
-  })
-  .and(sourceDetailsSchema)
-  .and(ingestionStatusSchema);
+// A Source as the API returns it: the sources row without userId. Book-only
+// and blog-only fields are null for the other kind.
+export const sourceResponseSchema = z.object({
+  id: z.uuid(),
+  kind: sourceKindSchema,
+  title: z.string(),
+  author: z.string(),
+  pageCount: z.int().nullable(), // books only
+  postCount: z.int().nullable(), // blogs only
+  address: z.string().nullable(), // blogs only
+  state: sourceStateSchema,
+  ingestionProgress: z.number(),
+  createdAt: isoDateTimeSchema,
+  expiresAt: isoDateTimeSchema,
+});
 
 export const sourceParamsSchema = z.object({
   id: z.uuid(),
@@ -61,7 +45,7 @@ export const createSourceBodySchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
-export const addSourceResponseSchema = z.discriminatedUnion("status", [
+export const createSourceResponseSchema = z.discriminatedUnion("status", [
   z.object({ status: z.literal("added"), source: sourceResponseSchema }),
   z.object({
     status: z.literal("rejected"),
@@ -93,7 +77,7 @@ export type SourceState = z.infer<typeof sourceStateSchema>;
 export type Source = z.infer<typeof sourceResponseSchema>;
 export type SourceParams = z.infer<typeof sourceParamsSchema>;
 export type CreateSourceBody = z.infer<typeof createSourceBodySchema>;
-export type AddSourceResult = z.infer<typeof addSourceResponseSchema>;
+export type CreateSourceResult = z.infer<typeof createSourceResponseSchema>;
 export type PageText = z.infer<typeof pageTextSchema>;
 export type PageBatch = z.infer<typeof pageBatchSchema>;
 export type PageBatchResult = z.infer<typeof pageBatchResultSchema>;

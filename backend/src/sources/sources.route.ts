@@ -1,7 +1,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
-  addSourceHandler,
+  createSourceHandler,
   completeSourceIngestionHandler,
   deleteSource,
   getSourceConversationCount,
@@ -9,7 +9,7 @@ import {
   ingestSourceBatchHandler,
 } from "./sources.controller";
 import {
-  addSourceResponseSchema,
+  createSourceResponseSchema,
   createSourceBodySchema,
   errorResponseSchema,
   pageBatchResultSchema,
@@ -33,10 +33,10 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         body: createSourceBodySchema,
-        response: { 201: addSourceResponseSchema, 422: errorResponseSchema },
+        response: { 201: createSourceResponseSchema, 422: errorResponseSchema },
       },
     },
-    addSourceHandler,
+    createSourceHandler,
   );
   server.post(
     "/:id/pages",
