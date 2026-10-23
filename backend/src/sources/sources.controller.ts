@@ -1,13 +1,25 @@
-import { CreateSourceBody, CreateSourceResult } from "@app/shared/schemas";
+import {
+  CreateSourceRequestBody,
+  CreateSourceResponse,
+  GetSourcesResponse,
+} from "@app/shared/schemas";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { addSource } from "./sources.service";
+import { createSource, getSourcesByUser } from "./sources.service";
 
-type CreateSourceRoute = { Body: CreateSourceBody; Reply: CreateSourceResult };
+type GetSourcesRoute = { Reply: GetSourcesResponse };
+type CreateSourceRoute = {
+  Body: CreateSourceRequestBody;
+  Reply: CreateSourceResponse;
+};
 
 export const getSourcesHandler = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {};
+  request: FastifyRequest<GetSourcesRoute>,
+  reply: FastifyReply<GetSourcesRoute>,
+) => {
+  const userSources = await getSourcesByUser(request.user);
+
+  return reply.send(userSources);
+};
 
 export const createSourceHandler = async (
   request: FastifyRequest<CreateSourceRoute>,
@@ -16,7 +28,7 @@ export const createSourceHandler = async (
   const body = request.body;
   const user = request.user;
 
-  const [newSource] = await addSource(body, user);
+  const [newSource] = await createSource(body, user);
 
   return reply.code(201).send({ status: "added", source: newSource });
 };

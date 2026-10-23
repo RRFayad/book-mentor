@@ -10,10 +10,11 @@ import {
 } from "./sources.controller";
 import {
   createSourceResponseSchema,
-  createSourceBodySchema,
+  createSourceRequestBodySchema,
   errorResponseSchema,
-  pageBatchResultSchema,
-  pageBatchSchema,
+  getSourcesResponseSchema,
+  ingestPagesResponseSchema,
+  ingestPagesRequestBodySchema,
   sourceParamsSchema,
   sourceResponseSchema,
 } from "@app/shared/schemas";
@@ -23,7 +24,7 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     "/",
     {
       schema: {
-        response: { 200: z.array(sourceResponseSchema) },
+        response: { 200: getSourcesResponseSchema },
       },
     },
     getSourcesHandler,
@@ -32,7 +33,7 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     "/",
     {
       schema: {
-        body: createSourceBodySchema,
+        body: createSourceRequestBodySchema,
         response: { 201: createSourceResponseSchema, 422: errorResponseSchema },
       },
     },
@@ -43,8 +44,8 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         params: sourceParamsSchema,
-        body: pageBatchSchema,
-        response: { 200: pageBatchResultSchema, 404: errorResponseSchema },
+        body: ingestPagesRequestBodySchema,
+        response: { 200: ingestPagesResponseSchema, 404: errorResponseSchema },
       },
     },
     ingestSourceBatchHandler,

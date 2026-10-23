@@ -24,13 +24,15 @@ export const sourceResponseSchema = z.object({
   expiresAt: isoDateTimeSchema,
 });
 
+export const getSourcesResponseSchema = z.array(sourceResponseSchema);
+
 export const sourceParamsSchema = z.object({
   id: z.uuid(),
 });
 
 // ---------- POST /sources ----------
 
-export const createSourceBodySchema = z.discriminatedUnion("kind", [
+export const createSourceRequestBodySchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("book"),
     title: z.string().min(1),
@@ -62,11 +64,11 @@ export const pageTextSchema = z.object({
   text: z.string(),
 });
 
-export const pageBatchSchema = z.object({
+export const ingestPagesRequestBodySchema = z.object({
   pages: z.array(pageTextSchema),
 });
 
-export const pageBatchResultSchema = z.object({
+export const ingestPagesResponseSchema = z.object({
   ingestionProgress: z.number(),
 });
 
@@ -75,9 +77,14 @@ export const pageBatchResultSchema = z.object({
 export type SourceKind = z.infer<typeof sourceKindSchema>;
 export type SourceState = z.infer<typeof sourceStateSchema>;
 export type Source = z.infer<typeof sourceResponseSchema>;
+export type GetSourcesResponse = z.infer<typeof getSourcesResponseSchema>;
 export type SourceParams = z.infer<typeof sourceParamsSchema>;
-export type CreateSourceBody = z.infer<typeof createSourceBodySchema>;
-export type CreateSourceResult = z.infer<typeof createSourceResponseSchema>;
+export type CreateSourceRequestBody = z.infer<
+  typeof createSourceRequestBodySchema
+>;
+export type CreateSourceResponse = z.infer<typeof createSourceResponseSchema>;
 export type PageText = z.infer<typeof pageTextSchema>;
-export type PageBatch = z.infer<typeof pageBatchSchema>;
-export type PageBatchResult = z.infer<typeof pageBatchResultSchema>;
+export type IngestPagesRequestBody = z.infer<
+  typeof ingestPagesRequestBodySchema
+>;
+export type IngestPagesResponse = z.infer<typeof ingestPagesResponseSchema>;
