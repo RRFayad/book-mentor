@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   createSourceHandler,
   completeSourceIngestionHandler,
-  deleteSource,
+  deleteSourceHandler,
   getSourceConversationCount,
   getSourcesHandler,
   ingestSourceBatchHandler,
@@ -68,7 +68,7 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
         response: { 204: z.null(), 404: errorResponseSchema },
       },
     },
-    deleteSource,
+    deleteSourceHandler,
   );
   server.get("/conversation-counts", {}, getSourceConversationCount);
 };
