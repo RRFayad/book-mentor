@@ -1,20 +1,34 @@
 import {
+  CompleteSourceIngestionResponse,
   CreateSourceRequestBody,
   CreateSourceResponse,
   GetSourcesResponse,
+  IngestPagesRequestBody,
+  IngestPagesResponse,
   SourceParams,
 } from "@app/shared/schemas";
 import { FastifyRequest, FastifyReply } from "fastify";
 import {
+  completeSourceIngestionByUserId,
   createSource,
   deleteSourceByUserId,
   getSourcesByUserId,
+  ingestPagesByUserId,
 } from "./sources.service";
 
 type GetSourcesRoute = { Reply: GetSourcesResponse };
 type CreateSourceRoute = {
   Body: CreateSourceRequestBody;
   Reply: CreateSourceResponse;
+};
+type IngestPagesRoute = {
+  Params: SourceParams;
+  Body: IngestPagesRequestBody;
+  Reply: IngestPagesResponse;
+};
+type CompleteSourceIngestionRoute = {
+  Params: SourceParams;
+  Reply: CompleteSourceIngestionResponse;
 };
 type DeleteSourceRoute = { Params: SourceParams; Reply: null };
 
@@ -39,14 +53,30 @@ export const createSourceHandler = async (
   return reply.code(201).send({ status: "added", source: newSource });
 };
 
-export const ingestSourceBatchHandler = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {};
+export const ingestPagesHandler = async (
+  request: FastifyRequest<IngestPagesRoute>,
+  reply: FastifyReply<IngestPagesRoute>,
+) => {
+  const progress = await ingestPagesByUserId(
+    request.params.id,
+    request.user.id,
+    request.body.pages,
+  );
+
+  return reply.send(progress);
+};
+
 export const completeSourceIngestionHandler = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {};
+  request: FastifyRequest<CompleteSourceIngestionRoute>,
+  reply: FastifyReply<CompleteSourceIngestionRoute>,
+) => {
+  const source = await completeSourceIngestionByUserId(
+    request.params.id,
+    request.user.id,
+  );
+
+  return reply.send(source);
+};
 export const deleteSourceHandler = async (
   request: FastifyRequest<DeleteSourceRoute>,
   reply: FastifyReply<DeleteSourceRoute>,
@@ -55,7 +85,3 @@ export const deleteSourceHandler = async (
 
   return reply.code(204).send(null);
 };
-export const getSourceConversationCount = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {};

@@ -1,7 +1,7 @@
 import { MAX_BOOK_PAGES } from "@app/shared/constants";
-import { sources } from "@app/shared/db/schema";
+import { sources, SourceRow } from "@app/shared/db/schema";
 import { and, desc, eq } from "drizzle-orm";
-import { CreateSourceRequestBody } from "@app/shared/schemas";
+import { CreateSourceRequestBody, PageText } from "@app/shared/schemas";
 import { db } from "../db";
 import { HttpError } from "../errors";
 
@@ -41,4 +41,55 @@ export const deleteSourceByUserId = async (
   if (deleted.length === 0) {
     throw new HttpError(404, "Source not found");
   }
+};
+
+export const completeSourceIngestionByUserId = async (
+  sourceId: string,
+  userId: number,
+) => {
+  const [source] = await db
+    .update(sources)
+    .set({ state: "ready", ingestionProgress: 100 })
+    .where(and(eq(sources.id, sourceId), eq(sources.userId, userId)))
+    .returning();
+
+  if (!source) {
+    throw new HttpError(404, "Source not found");
+  }
+
+  return source;
+};
+
+export const ingestPagesByUserId = async (
+  sourceId: string,
+  userId: number,
+  pages: PageText[],
+) => {
+  const source: SourceRow | undefined = await db.query.sources.findFirst({
+    where: and(eq(sources.id, sourceId), eq(sources.userId, userId)),
+  });
+
+  if (!source) {
+    throw new HttpError(404, "Source not found");
+  }
+
+  if (source.state !== "ingesting") {
+    throw new HttpError(409, "Source is not ingesting");
+  }
+
+  //TODO: Add Ingest Logic here
+
+  // Batches arrive in order, so the last page sent tells how far ingestion is.
+  const lastPage = Math.max(...pages.map((page) => page.page));
+
+  const ingestionProgress = source.pageCount
+    ? Math.min(100, Math.round((lastPage / source.pageCount) * 100))
+    : 0;
+
+  await db
+    .update(sources)
+    .set({ ingestionProgress })
+    .where(eq(sources.id, sourceId));
+
+  return { ingestionProgress };
 };

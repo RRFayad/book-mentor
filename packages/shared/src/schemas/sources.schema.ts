@@ -65,12 +65,16 @@ export const pageTextSchema = z.object({
 });
 
 export const ingestPagesRequestBodySchema = z.object({
-  pages: z.array(pageTextSchema),
+  pages: z.array(pageTextSchema).min(1),
 });
 
 export const ingestPagesResponseSchema = z.object({
   ingestionProgress: z.number(),
 });
+
+// ---------- POST /sources/:id/complete ----------
+
+export const completeSourceIngestionResponseSchema = sourceResponseSchema;
 
 // ---------- Types ----------
 
@@ -88,3 +92,6 @@ export type IngestPagesRequestBody = z.infer<
   typeof ingestPagesRequestBodySchema
 >;
 export type IngestPagesResponse = z.infer<typeof ingestPagesResponseSchema>;
+export type CompleteSourceIngestionResponse = z.infer<
+  typeof completeSourceIngestionResponseSchema
+>;

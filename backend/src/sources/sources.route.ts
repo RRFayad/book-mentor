@@ -4,11 +4,11 @@ import {
   createSourceHandler,
   completeSourceIngestionHandler,
   deleteSourceHandler,
-  getSourceConversationCount,
   getSourcesHandler,
-  ingestSourceBatchHandler,
+  ingestPagesHandler,
 } from "./sources.controller";
 import {
+  completeSourceIngestionResponseSchema,
   createSourceResponseSchema,
   createSourceRequestBodySchema,
   errorResponseSchema,
@@ -16,7 +16,6 @@ import {
   ingestPagesResponseSchema,
   ingestPagesRequestBodySchema,
   sourceParamsSchema,
-  sourceResponseSchema,
 } from "@app/shared/schemas";
 
 const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
@@ -45,17 +44,24 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
       schema: {
         params: sourceParamsSchema,
         body: ingestPagesRequestBodySchema,
-        response: { 200: ingestPagesResponseSchema, 404: errorResponseSchema },
+        response: {
+          200: ingestPagesResponseSchema,
+          404: errorResponseSchema,
+          409: errorResponseSchema,
+        },
       },
     },
-    ingestSourceBatchHandler,
+    ingestPagesHandler,
   );
   server.post(
     "/:id/complete",
     {
       schema: {
         params: sourceParamsSchema,
-        response: { 200: sourceResponseSchema, 404: errorResponseSchema },
+        response: {
+          200: completeSourceIngestionResponseSchema,
+          404: errorResponseSchema,
+        },
       },
     },
     completeSourceIngestionHandler,
@@ -70,7 +76,6 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     deleteSourceHandler,
   );
-  server.get("/conversation-counts", {}, getSourceConversationCount);
 };
 
 export default sourcesRoutes;
