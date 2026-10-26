@@ -1,0 +1,2 @@
+ALTER TABLE "sources" ADD COLUMN "expires_at" timestamp with time zone DEFAULT now() + interval '7 days' NOT NULL;--> statement-breakpoint
+CREATE INDEX "sources_expires_at_idx" ON "sources" USING btree ("expires_at");

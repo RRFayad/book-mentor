@@ -1,8 +1,13 @@
 import { z } from "zod";
 
-// API contract shared by the backend and the frontend. The backend attaches
-// these schemas to routes (response validation and Swagger docs); the frontend
-// uses the inferred types for the data it receives.
+// ---------- Fields ----------
+
+// A date sent as an ISO 8601 string. The API sends Date objects (Drizzle rows)
+// and the JSON carries the string; parsing with the schema gives a Date back.
+export const isoDateTimeSchema = z.codec(z.iso.datetime(), z.date(), {
+  decode: (value) => new Date(value),
+  encode: (date) => date.toISOString(),
+});
 
 // ---------- Errors ----------
 

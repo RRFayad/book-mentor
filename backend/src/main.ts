@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import { fastifyCors } from "@fastify/cors";
 import { getEnvVar } from "@app/shared/utils";
 import { authenticate } from "./auth/authenticate";
-import { requireSubscriptionPlan } from "./auth/subscription";
+import { errorHandler } from "./errors";
 import { healthcheckRoutes } from "./healthcheck/healthcheck.route";
 import { clerkPlugin } from "@clerk/fastify";
 import type { Subscription, User } from "@app/shared/db/schema";
@@ -13,6 +13,7 @@ import {
 } from "fastify-type-provider-zod";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import sourcesRoutes from "./sources/sources.route";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -31,6 +32,11 @@ app.decorateRequest("subscription");
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+
+app.setErrorHandler(errorHandler);
+app.setNotFoundHandler((_request, reply) =>
+  reply.code(404).send({ detail: "Not found" }),
+);
 
 app.register(fastifySwagger, {
   openapi: {
@@ -56,12 +62,7 @@ app.register(async (publicApp) => {
 // ---------- Protected routes ----------
 app.register(async (protectedApp) => {
   protectedApp.addHook("preHandler", authenticate);
-
-  // ---------- Subscription protected routes ----------
-  protectedApp.register(async (subscribedApp) => {
-    subscribedApp.addHook("preHandler", requireSubscriptionPlan("basic"));
-    // Product routes go here, e.g. subscribedApp.register(sourcesRoutes);
-  });
+  protectedApp.register(sourcesRoutes, { prefix: "/sources" });
 });
 
 const main = async () => {

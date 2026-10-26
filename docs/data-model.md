@@ -21,13 +21,13 @@ users (Drizzle) ──┬─< sources ──< chunks
 
 ## Tables
 
-| Table                    | Key columns                                                                                                                                                                                          | Ticket |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| **sources**              | `id` (UUID), `user_id` → users, `kind` (book or blog), `title`, `author`, `page_count` (books), `post_count` and `address` (blogs), `state` (ingesting or ready), `ingestion_progress`, `created_at` | #17    |
-| **chunks**               | `id`, `source_id` → sources, `text`, `page` (books) or `post_title` and `post_url` (blogs), `embedding` (1536 numbers, pgvector)                                                                     | #18    |
-| **conversations**        | `id` (UUID), `user_id` → users, `title`, `summary` (rolling summary), `created_at`, `last_activity_at`                                                                                               | #19    |
-| **conversation_sources** | `conversation_id` → conversations, `source_id` → sources (empty once deleted), a copy of the Source's `title`, `author`, `kind`                                                                      | #19    |
-| **messages**             | `id` (UUID, chosen by the browser), `conversation_id` → conversations, `role` (user or mentor), `text` (user), `status`, `parts` and `citations` (mentor, JSON), `created_at`                        | #19    |
+| Table                    | Key columns                                                                                                                                                                                                                                                                | Ticket |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **sources**              | `id` (UUID), `user_id` → users, `kind` (book or blog), `title`, `author`, `page_count` (books), `post_count` and `address` (blogs), `state` (ingesting or ready), `ingestion_progress`, `created_at`, `expires_at` (7 days after creation; the expiry job deletes past it) | #17    |
+| **chunks**               | `id`, `source_id` → sources, `text`, `page` (books) or `post_title` and `post_url` (blogs), `embedding` (1536 numbers, pgvector)                                                                                                                                           | #18    |
+| **conversations**        | `id` (UUID), `user_id` → users, `title`, `summary` (rolling summary), `created_at`, `last_activity_at`                                                                                                                                                                     | #19    |
+| **conversation_sources** | `conversation_id` → conversations, `source_id` → sources (empty once deleted), a copy of the Source's `title`, `author`, `kind`                                                                                                                                            | #19    |
+| **messages**             | `id` (UUID, chosen by the browser), `conversation_id` → conversations, `role` (user or mentor), `text` (user), `status`, `parts` and `citations` (mentor, JSON), `created_at`                                                                                              | #19    |
 
 - **chunks is the vector store.** LangChain's `PGVectorStore` reads and writes
   it; the Alembic migration creates it (ADR 0002, ADR 0005).
