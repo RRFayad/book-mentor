@@ -4,6 +4,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { CreateSourceRequestBody, PageText } from "@app/shared/schemas";
 import { db } from "../db";
 import { HttpError } from "../errors";
+import { ingestContent } from "./ingestion.service";
 
 export const createSource = async (
   data: CreateSourceRequestBody,
@@ -11,6 +12,11 @@ export const createSource = async (
 ) => {
   if (data.kind === "book" && data.pageCount > MAX_BOOK_PAGES) {
     throw new HttpError(422, "too-large");
+  }
+
+  // TODO
+  if (data.kind === "blog") {
+    throw new HttpError(422, "Blogs aren't supported yet");
   }
 
   const result = await db
@@ -77,7 +83,7 @@ export const ingestPagesByUserId = async (
     throw new HttpError(409, "Source is not ingesting");
   }
 
-  //TODO: Add Ingest Logic here
+  await ingestContent(sourceId, pages);
 
   // Batches arrive in order, so the last page sent tells how far ingestion is.
   const lastPage = Math.max(...pages.map((page) => page.page));

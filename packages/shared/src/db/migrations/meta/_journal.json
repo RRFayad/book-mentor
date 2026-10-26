@@ -50,6 +50,20 @@
       "when": 1792704657893,
       "tag": "0006_concerned_bill_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793043152408,
+      "tag": "0007_enable-pgvector",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793047593145,
+      "tag": "0008_past_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

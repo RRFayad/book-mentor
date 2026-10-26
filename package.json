@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "predev": "docker compose up -d",
-    "dev": "concurrently -n web,api,stripe -c blue,green,magenta \"next dev\" \"npm run dev -w @app/backend\" \"npm run stripe:listen\"",
+    "dev": "concurrently -n web,api,stripe -c blue,green,magenta \"next dev\" \"npm run dev -w @app/backend\" \"node scripts/dev-stripe.mjs\"",
     "stripe:listen": "stripe listen --events customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,customer.subscription.paused,customer.subscription.resumed --forward-to localhost:3000/api/webhooks/stripe",
     "db:generate": "npm run db:generate -w @app/shared",
     "db:migrate": "npm run db:migrate -w @app/shared",

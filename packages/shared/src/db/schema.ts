@@ -7,10 +7,12 @@ import {
   text,
   timestamp,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import {
+  EMBEDDING_DIMENSIONS,
   SOURCE_KINDS,
   SOURCE_LIFETIME_DAYS,
   SOURCE_STATES,
@@ -91,3 +93,29 @@ export const sources = pgTable(
 
 export type SourceRow = typeof sources.$inferSelect;
 export type NewSourceRow = typeof sources.$inferInsert;
+
+// The vector store: one row per chunk of a Source's text, with its embedding.
+export const chunks = pgTable(
+  "chunks",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => sources.id, { onDelete: "cascade" }),
+    page: integer("page"), // books only
+    content: text("content").notNull(),
+    embedding: vector("embedding", {
+      dimensions: EMBEDDING_DIMENSIONS,
+    }).notNull(),
+  },
+  (table) => [
+    index("chunks_source_id_page_idx").on(table.sourceId, table.page),
+    index("chunks_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
+  ],
+);
+
+export type ChunkRow = typeof chunks.$inferSelect;
+export type NewChunkRow = typeof chunks.$inferInsert;

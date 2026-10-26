@@ -31,3 +31,10 @@ export const MAX_BOOK_PAGES = 500;
 
 // How long a Source is kept after it's added. Sets the default of sources.expires_at.
 export const SOURCE_LIFETIME_DAYS = 7;
+
+// ---------- Embeddings ----------
+
+// The model that embeds chunks and questions. Both must use the same one, and
+// the chunks.embedding column has exactly this many dimensions.
+export const EMBEDDING_MODEL = "text-embedding-3-small";
+export const EMBEDDING_DIMENSIONS = 1536;
