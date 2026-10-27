@@ -16,34 +16,27 @@ import {
   ingestPagesByUserId,
 } from "./sources.service";
 
-type GetSourcesRoute = { Reply: GetSourcesResponse };
-type CreateSourceRoute = {
-  Body: CreateSourceRequestBody;
-  Reply: CreateSourceResponse;
-};
-type IngestPagesRoute = {
-  Params: SourceParams;
-  Body: IngestPagesRequestBody;
-  Reply: IngestPagesResponse;
-};
-type CompleteSourceIngestionRoute = {
-  Params: SourceParams;
-  Reply: CompleteSourceIngestionResponse;
-};
-type DeleteSourceRoute = { Params: SourceParams; Reply: null };
+// ---------- Library ----------
+
+type GetSourcesIO = { Reply: GetSourcesResponse };
 
 export const getSourcesHandler = async (
-  request: FastifyRequest<GetSourcesRoute>,
-  reply: FastifyReply<GetSourcesRoute>,
+  request: FastifyRequest<GetSourcesIO>,
+  reply: FastifyReply<GetSourcesIO>,
 ) => {
   const userSources = await getSourcesByUserId(request.user.id);
 
   return reply.send(userSources);
 };
 
+type CreateSourceIO = {
+  Body: CreateSourceRequestBody;
+  Reply: CreateSourceResponse;
+};
+
 export const createSourceHandler = async (
-  request: FastifyRequest<CreateSourceRoute>,
-  reply: FastifyReply<CreateSourceRoute>,
+  request: FastifyRequest<CreateSourceIO>,
+  reply: FastifyReply<CreateSourceIO>,
 ) => {
   const body = request.body;
   const user = request.user;
@@ -53,9 +46,28 @@ export const createSourceHandler = async (
   return reply.code(201).send({ status: "added", source: newSource });
 };
 
+type DeleteSourceIO = { Params: SourceParams; Reply: null };
+
+export const deleteSourceHandler = async (
+  request: FastifyRequest<DeleteSourceIO>,
+  reply: FastifyReply<DeleteSourceIO>,
+) => {
+  await deleteSourceByUserId(request.params.id, request.user.id);
+
+  return reply.code(204).send(null);
+};
+
+// ---------- Ingestion ----------
+
+type IngestPagesIO = {
+  Params: SourceParams;
+  Body: IngestPagesRequestBody;
+  Reply: IngestPagesResponse;
+};
+
 export const ingestPagesHandler = async (
-  request: FastifyRequest<IngestPagesRoute>,
-  reply: FastifyReply<IngestPagesRoute>,
+  request: FastifyRequest<IngestPagesIO>,
+  reply: FastifyReply<IngestPagesIO>,
 ) => {
   const progress = await ingestPagesByUserId(
     request.params.id,
@@ -66,9 +78,14 @@ export const ingestPagesHandler = async (
   return reply.send(progress);
 };
 
+type CompleteSourceIngestionIO = {
+  Params: SourceParams;
+  Reply: CompleteSourceIngestionResponse;
+};
+
 export const completeSourceIngestionHandler = async (
-  request: FastifyRequest<CompleteSourceIngestionRoute>,
-  reply: FastifyReply<CompleteSourceIngestionRoute>,
+  request: FastifyRequest<CompleteSourceIngestionIO>,
+  reply: FastifyReply<CompleteSourceIngestionIO>,
 ) => {
   const source = await completeSourceIngestionByUserId(
     request.params.id,
@@ -76,12 +93,4 @@ export const completeSourceIngestionHandler = async (
   );
 
   return reply.send(source);
-};
-export const deleteSourceHandler = async (
-  request: FastifyRequest<DeleteSourceRoute>,
-  reply: FastifyReply<DeleteSourceRoute>,
-) => {
-  await deleteSourceByUserId(request.params.id, request.user.id);
-
-  return reply.code(204).send(null);
 };

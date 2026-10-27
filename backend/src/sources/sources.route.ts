@@ -33,7 +33,11 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         body: createSourceRequestBodySchema,
-        response: { 201: createSourceResponseSchema, 422: errorResponseSchema },
+        response: {
+          201: createSourceResponseSchema,
+          409: errorResponseSchema,
+          422: errorResponseSchema,
+        },
       },
     },
     createSourceHandler,

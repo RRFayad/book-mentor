@@ -97,9 +97,11 @@ removed.
 
 Socratic mode, personal profile for applications, EPUB, OCR, web search in
 chat, larger or refreshing blog crawls, editable Source sets, resumable
-ingestion, re-adding a Source to an existing Conversation, suggested starter
-questions, preloaded demo Library, original-PDF viewer, editing or regenerating
-messages, branching Conversations.
+ingestion, server-driven ingestion (direct-to-storage upload plus a background
+job queue, so closing the tab no longer stops it; ADR 0001), re-adding a Source
+to an existing Conversation, suggested starter questions, preloaded demo
+Library, original-PDF viewer, editing or regenerating messages, branching
+Conversations.
 
 ## Open engineering questions
 
