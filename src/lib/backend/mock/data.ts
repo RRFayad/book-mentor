@@ -3,10 +3,10 @@ import type {
   Conversation,
   ConversationSource,
   RichText,
-  Source,
 } from "@/lib/backend/types";
 
-// Mock data for the frontend phase (issue #14). Every book and blog text is a
+// Mock data for the parts without a real API yet (Conversations, messages,
+// the message limit). Sources come from the API since #17. Originally issue #14. Every book and blog text is a
 // bracketed placeholder; never put invented quotes from real authors here.
 
 export const mockScenarios = [
@@ -24,14 +24,12 @@ export type SentMessage = {
 };
 
 export type MockData = {
-  sources: Source[];
   conversations: Conversation[];
   sentMessages: SentMessage[];
 };
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
-export const SOURCE_LIFETIME = 7 * DAY;
 
 const at = (now: Date, msAgo: number): string =>
   new Date(now.getTime() - msAgo).toISOString();
@@ -43,43 +41,6 @@ const rich = (...items: (string | number)[]): RichText =>
       ? { type: "citation", number: item }
       : { type: "text", text: item },
   );
-
-const sourceDates = (now: Date, addedMsAgo: number) => ({
-  addedAt: at(now, addedMsAgo),
-  expiresAt: at(now, addedMsAgo - SOURCE_LIFETIME),
-});
-
-const heavyDuty = (now: Date): Source => ({
-  id: "src-heavy-duty",
-  kind: "book",
-  title: "Heavy Duty",
-  author: "Mike Mentzer",
-  pageCount: 212,
-  state: "ready",
-  ...sourceDates(now, 1 * DAY),
-});
-
-const bayeBlog = (now: Date): Source => ({
-  id: "src-baye-blog",
-  kind: "blog",
-  title: "Drew Baye's blog",
-  author: "Drew Baye",
-  postCount: 20,
-  address: "https://www.baye.com/",
-  state: "ready",
-  ...sourceDates(now, 6 * DAY),
-});
-
-const hitMentzerWay = (now: Date): Source => ({
-  id: "src-hit-mentzer-way",
-  kind: "book",
-  title: "High-Intensity Training the Mike Mentzer Way",
-  author: "Mike Mentzer",
-  pageCount: 348,
-  state: "ingesting",
-  ingestionProgress: 44,
-  ...sourceDates(now, 10 * 60 * 1000),
-});
 
 const heavyDutyRef: ConversationSource = {
   id: "src-heavy-duty",
@@ -465,11 +426,10 @@ const sentMessages = (
 
 export const createMockData = (scenario: MockScenario, now: Date): MockData => {
   if (scenario === "empty-library") {
-    return { sources: [], conversations: [], sentMessages: [] };
+    return { conversations: [], sentMessages: [] };
   }
 
   return {
-    sources: [heavyDuty(now), bayeBlog(now), hitMentzerWay(now)],
     conversations: [
       volumeConversation(now),
       failureConversation(now),

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getMockStore } from "@/lib/backend/mock/store";
+import { listSources } from "@/lib/backend/sources";
 import type { Conversation, ConversationSummary } from "@/lib/backend/types";
 import {
   SOURCE_PICK_LIMIT,
@@ -25,14 +26,16 @@ export const getConversation = async (
 };
 
 // Creates an empty Conversation from 1 to 3 Ready Sources. The thread then
-// sends the first question, so its answer streams like any other.
+// sends the first question, so its answer streams like any other. The
+// Conversation is still mocked (#19); its Sources come from the API.
 export const createConversation = async (
   sourceIds: string[],
   firstQuestion: string,
 ): Promise<{ conversationId: string } | null> => {
   const store = getMockStore();
+  const librarySources = await listSources();
   const sources = [...new Set(sourceIds)].map((id) =>
-    store.sources.find((source) => source.id === id),
+    librarySources.find((source) => source.id === id),
   );
 
   if (

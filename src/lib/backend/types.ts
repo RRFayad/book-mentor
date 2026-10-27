@@ -2,30 +2,11 @@
 // strings because that is what the API JSON responses will carry.
 // The answer part types are provisional: the engineering grill may change them.
 
-export type SourceKind = "book" | "blog";
+import type { Source, SourceKind } from "@app/shared/schemas";
 
-type BookDetails = {
-  kind: "book";
-  pageCount: number;
-};
-
-type BlogDetails = {
-  kind: "blog";
-  postCount: number;
-  address: string;
-};
-
-type IngestionStatus =
-  { state: "ingesting"; ingestionProgress: number } | { state: "ready" };
-
-export type Source = {
-  id: string;
-  title: string;
-  author: string;
-  addedAt: string;
-  expiresAt: string;
-} & (BookDetails | BlogDetails) &
-  IngestionStatus;
+// A Source comes from the API: the shared schema's type. Its dates are Date
+// objects once the response is parsed with sourceResponseSchema.
+export type { Source, SourceKind };
 
 // What the user enters to add a Source. For a book, the browser reads the PDF
 // and fills in the page count; the file itself is never uploaded (ADR 0001).
@@ -50,11 +31,7 @@ export type PageBatch = {
   pages: PageText[];
 };
 
-export type AddSourceResult =
-  | { status: "added"; source: Source }
-  | { status: "rejected"; reason: "scanned" | "too-large" }
-  | { status: "failed" }
-  | { status: "limit-reached" };
+export type { CreateSourceResponse as AddSourceResult } from "@app/shared/schemas";
 
 // The client chooses the ids, so it can show the messages before the reply.
 export type NewMessage = {
