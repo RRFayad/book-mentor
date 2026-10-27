@@ -1,6 +1,6 @@
-import { MAX_BOOK_PAGES } from "@app/shared/constants";
+import { MAX_BOOK_PAGES, SOURCE_LIMIT } from "@app/shared/constants";
 import { sources, SourceRow } from "@app/shared/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, gt } from "drizzle-orm";
 import { CreateSourceRequestBody, PageText } from "@app/shared/schemas";
 import { db } from "../db";
 import { HttpError } from "../errors";
@@ -19,12 +19,29 @@ export const createSource = async (
     throw new HttpError(422, "Blogs aren't supported yet");
   }
 
+  const activeSources = await countActiveSourcesByUserId(userId);
+
+  if (activeSources >= SOURCE_LIMIT) {
+    throw new HttpError(409, "limit-reached");
+  }
+
   const result = await db
     .insert(sources)
     .values({ ...data, userId })
     .returning();
 
   return result;
+};
+
+// Expired Sources stay in the table until the cleanup job removes them, so
+// only the ones not yet expired count.
+const countActiveSourcesByUserId = async (userId: number) => {
+  const [result] = await db
+    .select({ total: count() })
+    .from(sources)
+    .where(and(eq(sources.userId, userId), gt(sources.expiresAt, new Date())));
+
+  return result.total;
 };
 
 export const getSourcesByUserId = async (userId: number) => {
