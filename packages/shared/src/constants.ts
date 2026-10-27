@@ -32,6 +32,10 @@ export const MAX_BOOK_PAGES = 500;
 // How many active (not yet expired) Sources a user can have at once.
 export const SOURCE_LIMIT = 3;
 
+// How many messages a user can send in a rolling 24 hours (answers that failed
+// don't count).
+export const MESSAGE_LIMIT = 50;
+
 // How long a Source is kept after it's added. Sets the default of sources.expires_at.
 export const SOURCE_LIFETIME_DAYS = 7;
 

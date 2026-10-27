@@ -7,7 +7,7 @@ import {
 import axios from "axios";
 
 import { getAuthenticatedBackendClient } from "@/lib/backend/client";
-import { getMockStore } from "@/lib/backend/mock/store";
+import { callBackend } from "@/lib/backend/call-backend";
 import type {
   AddSourceResult,
   NewSource,
@@ -23,21 +23,18 @@ export const listSources = async (): Promise<Source[]> => {
   return getSourcesResponseSchema.parse(data);
 };
 
-// How many Conversations use each Source, by Source id. Still from the mock
-// Conversations until they have an API (#19).
+// How many Conversations use each Source, by Source id
+// (GET /sources/conversation-counts, arriving in #19). Until then: none.
 export const countConversationsBySource = async (): Promise<
   Record<string, number>
-> => {
-  const counts: Record<string, number> = {};
+> =>
+  callBackend("count Conversations by Source", {}, async (backend) => {
+    const { data } = await backend.get<Record<string, number>>(
+      "/sources/conversation-counts",
+    );
 
-  for (const conversation of getMockStore().conversations) {
-    for (const source of conversation.sources) {
-      counts[source.id] = (counts[source.id] ?? 0) + 1;
-    }
-  }
-
-  return counts;
-};
+    return data;
+  });
 
 // Removes the Source from the Library. Its Conversations keep it as an
 // expired Source, exactly as after its Expiry.
@@ -50,15 +47,6 @@ export const deleteSource = async (sourceId: string): Promise<boolean> => {
     console.error("Failed to delete a Source in the API", error);
 
     return false;
-  }
-
-  // Until Conversations have an API (#19), the mock ones mark it expired.
-  for (const conversation of getMockStore().conversations) {
-    for (const source of conversation.sources) {
-      if (source.id === sourceId) {
-        source.expired = true;
-      }
-    }
   }
 
   return true;

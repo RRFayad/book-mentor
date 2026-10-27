@@ -8,15 +8,11 @@ import {
   deleteConversation,
   renameConversation,
 } from "@/lib/backend/conversations";
+import type { CreateConversationResult } from "@/lib/backend/types";
 import { getUsage } from "@/lib/backend/usage";
 import { canStartConversation } from "@/lib/conversations/source-picks";
 import { routes } from "@/lib/routes";
 import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
-
-export type CreateConversationResult =
-  | { status: "created"; conversationId: string }
-  | { status: "limit-reached" }
-  | { status: "failed" };
 
 // A Conversation starts by sending its first question, so it is not created
 // when no message is left in the 24-hour window.
@@ -38,14 +34,12 @@ export const createConversationAction = async (
 
   const result = await createConversation(sourceIds, firstQuestion.trim());
 
-  if (!result) {
-    return { status: "failed" };
+  if (result.status === "created") {
+    // The new Conversation appears in the sidebar.
+    revalidatePath("/", "layout");
   }
 
-  // The new Conversation appears in the sidebar.
-  revalidatePath("/", "layout");
-
-  return { status: "created", conversationId: result.conversationId };
+  return result;
 };
 
 export const renameConversationAction = async (

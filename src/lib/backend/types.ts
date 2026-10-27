@@ -46,6 +46,11 @@ export type SendMessageResult =
   | { status: "limit-reached"; usage: Usage }
   | { status: "failed" };
 
+export type CreateConversationResult =
+  | { status: "created"; conversationId: string }
+  | { status: "limit-reached" }
+  | { status: "failed" };
+
 export type ConversationSummary = {
   id: string;
   title: string;
