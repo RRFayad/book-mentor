@@ -1,12 +1,12 @@
 // Runs the Stripe webhook listener during `npm run dev`, only when billing is
-// enabled in .env.local. With billing off it exits right away, so projects
+// enabled in frontend/.env.local. With billing off it exits right away, so projects
 // without billing don't need the Stripe CLI.
 import { spawn } from "node:child_process";
 
 try {
-  process.loadEnvFile(".env.local");
+  process.loadEnvFile("frontend/.env.local");
 } catch {
-  // No .env.local: billing counts as disabled.
+  // No frontend/.env.local: billing counts as disabled.
 }
 
 if (process.env.BILLING_ENABLED !== "true") {

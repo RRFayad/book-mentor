@@ -3,58 +3,28 @@
   "version": "2.0.0",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "backend"
+    "frontend",
+    "backend",
+    "packages/*"
   ],
   "scripts": {
     "predev": "docker compose up -d",
-    "dev": "concurrently -n web,api,stripe -c blue,green,magenta \"next dev\" \"npm run dev -w @app/backend\" \"node scripts/dev-stripe.mjs\"",
+    "dev": "concurrently -n web,api,stripe -c blue,green,magenta \"npm run dev -w @app/frontend\" \"npm run dev -w @app/backend\" \"node scripts/dev-stripe.mjs\"",
     "stripe:listen": "stripe listen --events customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,customer.subscription.paused,customer.subscription.resumed --forward-to localhost:3000/api/webhooks/stripe",
     "db:generate": "npm run db:generate -w @app/shared",
     "db:migrate": "npm run db:migrate -w @app/shared",
-    "build": "next build",
-    "start": "next start",
+    "build": "npm run build -w @app/frontend",
     "lint": "eslint",
-    "check": "npm run lint && npx tsc --noEmit && npm test && npm run typecheck --workspaces --if-present",
-    "test": "vitest run",
-    "postinstall": "node scripts/copy-pdf-worker.mjs"
-  },
-  "dependencies": {
-    "@assistant-ui/react": "^0.15.23",
-    "@base-ui/react": "^1.7.0",
-    "@clerk/nextjs": "^7.8.2",
-    "axios": "^1.20.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "drizzle-orm": "^0.45.2",
-    "lucide-react": "^1.34.0",
-    "motion": "^13.2.0",
-    "next": "16.3.3",
-    "next-themes": "^0.4.6",
-    "pdfjs-dist": "^6.4.299",
-    "postgres": "^3.4.9",
-    "radix-ui": "^1.6.7",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "shadcn": "^4.19.0",
-    "sonner": "^2.0.8",
-    "stripe": "^22.6.0",
-    "tailwind-merge": "^3.6.0",
-    "tw-animate-css": "^1.4.0"
+    "test": "npm test -w @app/frontend",
+    "check": "npm run lint && npm run typecheck --workspaces --if-present && npm test"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^22.20.5",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "concurrently": "^10.0.6",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^5.0.3"
+    "typescript": "^5"
   },
   "overrides": {
     "@fastify/static": "10.1.3"

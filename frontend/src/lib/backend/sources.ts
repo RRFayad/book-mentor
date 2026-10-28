@@ -5,6 +5,7 @@ import {
   getSourcesResponseSchema,
 } from "@app/shared/schemas";
 import axios from "axios";
+import { unstable_rethrow } from "next/navigation";
 
 import { getAuthenticatedBackendClient } from "@/lib/backend/client";
 import { callBackend } from "@/lib/backend/call-backend";
@@ -44,6 +45,8 @@ export const deleteSource = async (sourceId: string): Promise<boolean> => {
 
     await backend.delete(`/sources/${encodeURIComponent(sourceId)}`);
   } catch (error) {
+    unstable_rethrow(error);
+
     console.error("Failed to delete a Source in the API", error);
 
     return false;
@@ -64,6 +67,8 @@ export const sendPageBatch = async (
 
     return true;
   } catch (error) {
+    unstable_rethrow(error);
+
     console.error("Failed to send a page batch to the API", error);
 
     return false;
@@ -75,10 +80,14 @@ export const completeSource = async (sourceId: string): Promise<boolean> => {
   try {
     const backend = await getAuthenticatedBackendClient();
 
-    await backend.post(`/sources/${encodeURIComponent(sourceId)}/complete`);
+    // An empty JSON body: with none, axios sends a form Content-Type, which
+    // Fastify rejects with 415.
+    await backend.post(`/sources/${encodeURIComponent(sourceId)}/complete`, {});
 
     return true;
   } catch (error) {
+    unstable_rethrow(error);
+
     console.error("Failed to complete a Source in the API", error);
 
     return false;
@@ -111,6 +120,8 @@ export const createSource = async (
 
     return createSourceResponseSchema.parse(data);
   } catch (error) {
+    unstable_rethrow(error);
+
     const detail = axios.isAxiosError(error) && error.response?.data?.detail;
 
     if (detail === "too-large") {

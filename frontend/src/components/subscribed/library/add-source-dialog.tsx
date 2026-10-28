@@ -117,7 +117,8 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
     const batches = toPageBatches(pages);
 
     for (const [index, batch] of batches.entries()) {
-      setSending(`Sending pages… ${index + 1} of ${batches.length}`);
+      const percent = Math.round((index / batches.length) * 100);
+      setSending(`Sending the book… ${percent}%`);
 
       const { ok } = await sendPageBatchAction(sourceId, batch);
 

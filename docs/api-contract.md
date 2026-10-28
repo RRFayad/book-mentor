@@ -2,7 +2,7 @@
 
 The backend API the screens use. Words follow [CONTEXT.md](../CONTEXT.md).
 Response shapes are the TypeScript types in
-[`src/lib/backend/types.ts`](../src/lib/backend/types.ts). How the backend
+[`frontend/src/lib/backend/types.ts`](../frontend/src/lib/backend/types.ts). How the backend
 stores this data is a different shape: see [data-model.md](data-model.md).
 
 - **Fixed:** the screens already rely on it. Changing it means changing the
@@ -86,4 +86,4 @@ answer at once.
 
 Limits: 3 active Sources; 50 messages in the last 24 hours, not counting
 messages whose answer failed. The tested rule the screens use is in
-`src/lib/usage/message-allowance.ts`; the backend must give the same result.
+`frontend/src/lib/usage/message-allowance.ts`; the backend must give the same result.

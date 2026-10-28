@@ -1,6 +1,7 @@
 import "server-only";
 
 import axios, { type AxiosInstance } from "axios";
+import { unstable_rethrow } from "next/navigation";
 
 import { getAuthenticatedBackendClient } from "@/lib/backend/client";
 
@@ -16,6 +17,9 @@ export const callBackend = async <T>(
 
     return await call(backend);
   } catch (error) {
+    // Next.js signals (dynamic rendering, redirect, notFound) are errors too.
+    unstable_rethrow(error);
+
     const notFound =
       axios.isAxiosError(error) && error.response?.status === 404;
 
