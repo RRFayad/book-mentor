@@ -1,13 +1,3 @@
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
-
 # Project Guidelines
 
 ## Scope and Workflow
@@ -26,6 +16,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`@app/backend`), and the shared package in `packages/shared/`
   (`@app/shared`). The root holds only what spans them: the workspace
   scripts, `docker-compose.yml`, ESLint, and Prettier.
+- The Next.js app (`frontend/`) uses a Next.js version with breaking changes
+  from common training data. Read `frontend/AGENTS.md` and the guides in
+  `node_modules/next/dist/docs/` before writing Next.js code.
 - Next.js owns UI, Clerk authentication, Clerk and Stripe webhooks, billing,
   and SaaS/account concerns.
 - The API (Fastify) owns product/domain APIs and future product logic, such as
