@@ -80,7 +80,9 @@ export const completeSource = async (sourceId: string): Promise<boolean> => {
   try {
     const backend = await getAuthenticatedBackendClient();
 
-    await backend.post(`/sources/${encodeURIComponent(sourceId)}/complete`);
+    // An empty JSON body: with none, axios sends a form Content-Type, which
+    // Fastify rejects with 415.
+    await backend.post(`/sources/${encodeURIComponent(sourceId)}/complete`, {});
 
     return true;
   } catch (error) {
