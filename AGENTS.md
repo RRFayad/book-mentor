@@ -131,7 +131,13 @@
   `<feature>.route.ts` (path, Zod schemas, Swagger metadata),
   `<feature>.controller.ts` (request handling), and `<feature>.service.ts`
   (business logic and Drizzle queries). Small features can skip layers.
-- Register routes in the matching scope in `backend/src/main.ts`: public;
+- Test each feature next to it (`backend/src/<feature>/*.test.ts`, run with
+  `npm test -w @app/backend`). Tests start the real API on a free port
+  (`createApp()` in `backend/src/create-app.ts`) and call it with axios, like
+  the frontend, against the `book_mentor_test` database, which is created and
+  migrated automatically. Clerk and OpenAI are mocked in
+  `backend/src/testing/setup.ts`. Docker must be running.
+- Register routes in the matching scope in `backend/src/create-app.ts`: public;
   protected (`authenticate`, sets `request.user`); or subscribed
   (`requireSubscriptionPlan(...)`, sets `request.subscription`). Nest a scope
   for plan-gated routes.
