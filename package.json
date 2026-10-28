@@ -15,7 +15,7 @@
     "db:migrate": "npm run db:migrate -w @app/shared",
     "build": "npm run build -w @app/frontend",
     "lint": "eslint",
-    "test": "npm test -w @app/frontend",
+    "test": "npm test --workspaces --if-present",
     "check": "npm run lint && npm run typecheck --workspaces --if-present && npm test"
   },
   "devDependencies": {

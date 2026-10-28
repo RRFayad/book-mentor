@@ -103,7 +103,9 @@ frontend/src/          Next.js app (@app/frontend)
     user/              User queries
 
 backend/src/           Fastify API (@app/backend)
-  main.ts              App entry: setup, plugins, and route scopes
+  main.ts              App entry: starts the server
+  create-app.ts        Setup, plugins, and route scopes (tests start it too)
+  testing/             Test setup: test database, Clerk and OpenAI mocks
   db.ts                Drizzle client
   auth/                Clerk authentication + subscription hooks
   healthcheck/         Health check route
@@ -631,7 +633,7 @@ backend/src/<feature>/
 
 Small features can skip a layer: `healthcheck` only has a route.
 
-Then register the routes in the right scope in `backend/src/main.ts`:
+Then register the routes in the right scope in `backend/src/create-app.ts`:
 
 | Scope      | Hooks                                                              | For                             |
 | ---------- | ------------------------------------------------------------------ | ------------------------------- |
