@@ -21,9 +21,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Architecture Boundaries
 
-- The repository is an npm workspaces monorepo: the Next.js app at the root,
-  the Fastify API in `backend/` (`@app/backend`), and the shared package in
-  `packages/shared/` (`@app/shared`).
+- The repository is an npm workspaces monorepo: the Next.js app in
+  `frontend/` (`@app/frontend`), the Fastify API in `backend/`
+  (`@app/backend`), and the shared package in `packages/shared/`
+  (`@app/shared`). The root holds only what spans them: the workspace
+  scripts, `docker-compose.yml`, ESLint, and Prettier.
 - Next.js owns UI, Clerk authentication, Clerk and Stripe webhooks, billing,
   and SaaS/account concerns.
 - The API (Fastify) owns product/domain APIs and future product logic, such as
@@ -53,7 +55,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `camelCase`.
 - Prefer Server Components. Add client components only when client-side
   behavior is necessary.
-- Keep Next.js to API calls under `src/lib/backend/`, typed with the inferred
+- Keep Next.js to API calls under `frontend/src/lib/backend/`, typed with the inferred
   types from `@app/shared/schemas`.
 - Application-owned Tailwind styles belong in a local `styles` object and must
   be wrapped with `tw()` so Prettier sorts the classes.
@@ -62,13 +64,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `// ---------- Section ----------` dividers. Split a section into its own file
   once it grows large.
 - Give user feedback with `showToast({ type, title, message })` from
-  `src/components/toaster.tsx`; `type` is `success`, `warning`, or `error`.
+  `frontend/src/components/toaster.tsx`; `type` is `success`, `warning`, or `error`.
   Call it directly in the client component that handles the action. Server
   actions return a result, and the calling client component turns it into a
   toast.
-- Do not refactor copied shadcn/ui components in `src/components/ui/` or Velora
-  components in `src/components/velora/` into the application styling pattern.
-- The thread components in `src/components/assistant-ui/` are app-owned and
+- Do not refactor copied shadcn/ui components in `frontend/src/components/ui/` or Velora
+  components in `frontend/src/components/velora/` into the application styling pattern.
+- The thread components in `frontend/src/components/assistant-ui/` are app-owned and
   built on assistant-ui primitives; they follow the application styling
   pattern. Add assistant-ui pieces by writing them there, not with the shadcn
   CLI, which would replace this repo's Base UI components.
@@ -79,9 +81,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - assistant-ui's names (Thread, Assistant, Attachment, `source` parts) stay
   inside its components and runtime glue. Domain code, types, and UI copy use
   the terms in `CONTEXT.md` (Conversation, Mentor, Source, Citation).
-- Keep marketing components in `src/components/marketing/`, subscribed-app
-  components in `src/components/subscribed/`, and theme components in
-  `src/components/theme/`.
+- Keep marketing components in `frontend/src/components/marketing/`, subscribed-app
+  components in `frontend/src/components/subscribed/`, and theme components in
+  `frontend/src/components/theme/`.
 
 ## Implementing Designs
 
@@ -93,15 +95,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   says which screen follows which. The starter kit's
   [App Shell canvas](https://claude.ai/artifact/HWhacGtes2kTC143kN4aUk) only
   documents the code as it was before that change.
-- A new subscribed page lives under `src/app/(subscribed)/` and is wired in
-  three places: its path in `src/lib/routes.ts`, its nav item in
-  `src/components/app-sidebar.tsx`, and its breadcrumb in `routeContext` in
-  `src/components/subscribed/app-header.tsx`.
+- A new subscribed page lives under `frontend/src/app/(subscribed)/` and is wired in
+  three places: its path in `frontend/src/lib/routes.ts`, its nav item in
+  `frontend/src/components/app-sidebar.tsx`, and its breadcrumb in `routeContext` in
+  `frontend/src/components/subscribed/app-header.tsx`.
 - Redirects and links into the app use `routes.appHome`. Only the Overview
   page's own nav item and breadcrumb use `routes.workspace.overview`.
 - Pages follow the existing page pattern: a `mx-auto w-full max-w-7xl`
   container, `PageHeader`, then white cards styled like the ones in
-  `src/components/subscribed/billing.tsx`.
+  `frontend/src/components/subscribed/billing.tsx`.
 - Translate design colors, radii, and fonts to theme tokens (`bg-card`,
   `text-muted-foreground`, `border`, `bg-primary`, `rounded-xl`) so light and
   dark themes both follow.
@@ -113,7 +115,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `subscriptions`; authorization reads local subscription state rather than
   querying Stripe on every request.
 - Server-side Next.js pages use the subscription helpers in
-  `src/lib/subscription/`. API routes get the same check from the subscribed
+  `frontend/src/lib/subscription/`. API routes get the same check from the subscribed
   scope (`requireSubscriptionPlan(...)`). Both read the plan rules from
   `@app/shared/constants`.
 - Keep Stripe SDK use, customer creation, Checkout Session creation, and

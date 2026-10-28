@@ -91,7 +91,7 @@ Stripe remains the billing source of truth. PostgreSQL stores the current subscr
 ## Project Structure
 
 ```text
-src/                   Next.js app
+frontend/src/          Next.js app (@app/frontend)
   actions/             Server Actions
   app/                 Next.js routes
   components/          UI components
@@ -110,7 +110,7 @@ backend/src/           Fastify API (@app/backend)
 
 packages/shared/src/   Shared package (@app/shared)
   db/                  Drizzle schema, row types, and migrations
-  schemas.ts           Zod API schemas and their types (the API contract)
+  schemas/             Zod API schemas and their types (the API contract)
   constants.ts         Shared constants
   types.ts             Shared types not tied to a schema
   utils.ts             Shared helpers
@@ -160,14 +160,14 @@ Your product now has its own Git history and is independent from the Starter Kit
 Create the ignored local environment files before configuring providers:
 
 ```bash
-touch .env.local backend/.env
+touch frontend/.env.local backend/.env
 ```
 
 **Important:** Confirm both files are ignored in your repo.
 
 Start with these templates. Fill each value in the relevant setup step below.
 
-`.env.local`:
+`frontend/.env.local`:
 
 ```env
 # Application - Replace these with the deployed service URLs in production.
@@ -215,15 +215,15 @@ NEXT_PUBLIC_GITHUB_URL=
 `backend/.env`:
 
 ```env
-# Same database and frontend URL as .env.local.
+# Same database and frontend URL as frontend/.env.local.
 DATABASE_URL=postgresql://...
 FRONTEND_URL=http://localhost:3000
 
-# Same Clerk application as .env.local.
+# Same Clerk application as frontend/.env.local.
 CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
-# Keep this aligned with .env.local.
+# Keep this aligned with frontend/.env.local.
 BILLING_ENABLED=true
 
 # Optional: defaults to localhost:8000.
@@ -248,7 +248,7 @@ Both flags must be exactly `true` or `false`.
 is disabled, `/` redirects to the authenticated workspace.
 
 `BILLING_ENABLED` controls pricing, Checkout, Customer Portal, Stripe webhooks,
-and subscription authorization. Set it to the same value in `.env.local` and
+and subscription authorization. Set it to the same value in `frontend/.env.local` and
 `backend/.env`. When it is `false`, Stripe environment variables are not
 required.
 
@@ -308,7 +308,7 @@ Next.js and the API must use the same database.
 
 Supabase is used only as PostgreSQL hosting in the reference project. The Starter Kit does not depend on Supabase Auth, Storage, or its SDK.
 
-Add the connection URL as `DATABASE_URL` to both `.env.local` and
+Add the connection URL as `DATABASE_URL` to both `frontend/.env.local` and
 `backend/.env`.
 
 ## 6. Configure Clerk
@@ -324,7 +324,7 @@ users and webhooks never cross between them:
   Clerk applications, such as `My SaaS (local)` and `My SaaS (vercel)`, and use
   each one's development keys in its own environment.
 
-Create a Clerk application and copy its publishable and secret keys (Overview > Manual Setup) to `.env.local` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
+Create a Clerk application and copy its publishable and secret keys (Overview > Manual Setup) to `frontend/.env.local` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
 
 `npm install` does not create Clerk environment variables. Clerk's `clerk init`
 CLI can write those two keys, but do not run it on this clone because Clerk is
@@ -356,7 +356,7 @@ ngrok http 3000
 https://<your-ngrok-url>/api/webhooks/clerk
 ```
 
-Copy the endpoint's signing secret into `.env.local` as
+Copy the endpoint's signing secret into `frontend/.env.local` as
 `CLERK_WEBHOOK_SIGNING_SECRET`.
 
 **Production:**
@@ -387,7 +387,7 @@ destinations whose secrets don't match. A sandbox per project keeps them apart.
 ### Create Products and Prices
 
 In the sandbox, go to Settings > Developers > API keys. Copy the publishable and secret API
-keys into `.env.local` as `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and
+keys into `frontend/.env.local` as `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and
 `STRIPE_SECRET_KEY`, respectively.
 
 In Stripe Dashboard, open the Product catalog. For each plan you want to offer:
@@ -395,9 +395,9 @@ In Stripe Dashboard, open the Product catalog. For each plan you want to offer:
 1. Create a Product, for example `My SaaS - Basic Plan`, `My SaaS - Premium Plan`, or `My SaaS - All In Plan`.
 2. Add one flat-rate **recurring** Price with your currency and billing
    interval, such as monthly.
-3. Copy its `price_...` ID into the matching variable in `.env.local`.
+3. Copy its `price_...` ID into the matching variable in `frontend/.env.local`.
 
-4. Update the matching display copy in `src/lib/stripe/config.ts`. Landing-page
+4. Update the matching display copy in `frontend/src/lib/stripe/config.ts`. Landing-page
    prices are intentionally not fetched from Stripe.
 
 The starter supports these plan variables:
@@ -433,7 +433,7 @@ npm run stripe:listen
 ```
 
 `stripe listen` prints a webhook signing secret (`whsec_...`). Add it to
-`.env.local` as `STRIPE_WEBHOOK_SECRET`, then stop the command. The secret
+`frontend/.env.local` as `STRIPE_WEBHOOK_SECRET`, then stop the command. The secret
 stays the same across runs on the same machine.
 
 From then on, `npm run dev` runs the listener next to Next.js, so you don't
@@ -474,7 +474,7 @@ https://<your-public-app-url>/api/webhooks/stripe
 
 Copy the destination's signing secret into the deployment's environment
 variables (for example, Vercel) as `STRIPE_WEBHOOK_SECRET`. Each destination has
-its own secret; don't reuse it in `.env.local`.
+its own secret; don't reuse it in `frontend/.env.local`.
 
 ### Discount Coupon
 
@@ -482,22 +482,22 @@ If you want to create a discount coupon (e.g. a demo 100% coupon) to be automati
 
 - Go to Dashboard > Product Catalog > Coupons
 - Create a coupon;
-- Set `STRIPE_DEMO_COUPON_ID` in `.env.local`
+- Set `STRIPE_DEMO_COUPON_ID` in `frontend/.env.local`
 
 ## 8. Share your Repo (Optional)
 
 - If you want to share your repository, for example as a portfolio project, add
-  its URL to `NEXT_PUBLIC_GITHUB_URL` in `.env.local`. This enables GitHub
+  its URL to `NEXT_PUBLIC_GITHUB_URL` in `frontend/.env.local`. This enables GitHub
   links on the landing page and in the SaaS shell.
 
 ## 9. Review Environment Variables
 
 Before running the application, confirm:
 
-- `.env.local` has the database URL, Clerk keys and webhook secret, application
+- `frontend/.env.local` has the database URL, Clerk keys and webhook secret, application
   URLs, Stripe secret/webhook secrets, and at least one Stripe Price ID.
 - `backend/.env` has the same `DATABASE_URL`, `FRONTEND_URL`, Clerk keys, and
-  `BILLING_ENABLED` as `.env.local`.
+  `BILLING_ENABLED` as `frontend/.env.local`.
 - Optional values are intentional: GitHub links are hidden without
   `NEXT_PUBLIC_GITHUB_URL`, and no demo coupon is applied without
   `STRIPE_DEMO_COUPON_ID`.
@@ -677,7 +677,7 @@ To design and build a new product screen:
 4. **Implement** — paste your canvas link into Claude Code and ask it to implement the screens. `AGENTS.md` tells the agent how a new page plugs into the shell.
 5. **Keep code as the source of truth** — once implemented, the code wins; the canvas is a reference.
 
-The shell design stays neutral on purpose: re-skin a new SaaS through the theme tokens in `src/app/globals.css` (`--primary`, `--radius`, fonts) rather than by editing the shell components.
+The shell design stays neutral on purpose: re-skin a new SaaS through the theme tokens in `frontend/src/app/globals.css` (`--primary`, `--radius`, fonts) rather than by editing the shell components.
 
 ---
 
@@ -699,7 +699,8 @@ When using the Starter Kit for a real production application:
 
 - Deploy the Next.js app and the API as separate services, each with its own
   environment variables.
-- On Vercel, the API project uses the **Fastify** framework preset with Root
+- On Vercel, the Next.js project uses Root Directory `frontend`, and the API
+  project uses the **Fastify** framework preset with Root
   Directory `backend` and "Include files outside the root directory" enabled.
   Vercel runs the backend's `npm run build`, an esbuild bundle that inlines
   `@app/shared`, and serves it as the function entrypoint (`server.js`).
