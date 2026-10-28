@@ -10,7 +10,7 @@ import { ClockIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { sendMessageAction, stopAnswerAction } from "@/actions/messages";
+import { sendMessageAction } from "@/actions/messages";
 import { getUsageAction } from "@/actions/usage";
 import { Thread } from "@/components/assistant-ui/thread";
 import { showToast } from "@/components/toaster";
@@ -164,8 +164,9 @@ export const ConversationThread = ({
     const stopped: MentorAnswer = { ...stream.shown, status: "stopped" };
 
     showAnswer(stopped);
-    await stopAnswerAction(conversationId, stopped.id, stream.shownWords);
-  }, [conversationId, finishStream, showAnswer]);
+    // TODO (#20): tell the server where the answer was stopped, once the
+    // contract defines how Stop reaches it. Until then it's cut on screen only.
+  }, [finishStream, showAnswer]);
 
   const playAnswer = useCallback(
     (answer: MentorAnswer) => {

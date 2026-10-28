@@ -1,111 +1,58 @@
 import "server-only";
 
+import {
+  createSourceResponseSchema,
+  getSourcesResponseSchema,
+} from "@app/shared/schemas";
 import axios from "axios";
 
 import { getAuthenticatedBackendClient } from "@/lib/backend/client";
-import { SOURCE_LIFETIME } from "@/lib/backend/mock/data";
-import { getMockStore } from "@/lib/backend/mock/store";
+import { callBackend } from "@/lib/backend/call-backend";
 import type {
   AddSourceResult,
   NewSource,
   PageBatch,
   Source,
 } from "@/lib/backend/types";
-import { SOURCE_LIMIT } from "@/lib/backend/usage";
 
-const MAX_BOOK_PAGES = 500;
-const MOCK_POST_COUNT = 20;
+// Parsing with the shared schema turns the JSON dates back into Date objects.
+export const listSources = async (): Promise<Source[]> => {
+  const backend = await getAuthenticatedBackendClient();
+  const { data } = await backend.get("/sources");
 
-export const listSources = async (): Promise<Source[]> =>
-  getMockStore().sources.map((source) => ({ ...source }));
+  return getSourcesResponseSchema.parse(data);
+};
 
-// How many Conversations use each Source, by Source id.
+// How many Conversations use each Source, by Source id
+// (GET /sources/conversation-counts, arriving in #19). Until then: none.
 export const countConversationsBySource = async (): Promise<
   Record<string, number>
-> => {
-  const counts: Record<string, number> = {};
+> =>
+  callBackend("count Conversations by Source", {}, async (backend) => {
+    const { data } = await backend.get<Record<string, number>>(
+      "/sources/conversation-counts",
+    );
 
-  for (const conversation of getMockStore().conversations) {
-    for (const source of conversation.sources) {
-      counts[source.id] = (counts[source.id] ?? 0) + 1;
-    }
-  }
-
-  return counts;
-};
+    return data;
+  });
 
 // Removes the Source from the Library. Its Conversations keep it as an
 // expired Source, exactly as after its Expiry.
 export const deleteSource = async (sourceId: string): Promise<boolean> => {
-  const store = getMockStore();
-  const index = store.sources.findIndex((source) => source.id === sourceId);
+  try {
+    const backend = await getAuthenticatedBackendClient();
 
-  if (index === -1) {
+    await backend.delete(`/sources/${encodeURIComponent(sourceId)}`);
+  } catch (error) {
+    console.error("Failed to delete a Source in the API", error);
+
     return false;
-  }
-
-  store.sources.splice(index, 1);
-
-  for (const conversation of store.conversations) {
-    for (const source of conversation.sources) {
-      if (source.id === sourceId) {
-        source.expired = true;
-      }
-    }
   }
 
   return true;
 };
 
-// Mock results for demos: a file name or blog address containing "fail" gives
-// a failed add. Scanned PDFs are caught by the browser, which reads the PDF.
-export const addSource = async (input: NewSource): Promise<AddSourceResult> => {
-  const store = getMockStore();
-
-  if (store.sources.length >= SOURCE_LIMIT) {
-    return { status: "limit-reached" };
-  }
-
-  const trigger = (
-    input.kind === "book" ? input.fileName : input.address
-  ).toLowerCase();
-
-  if (input.kind === "book" && input.pageCount > MAX_BOOK_PAGES) {
-    return { status: "rejected", reason: "too-large" };
-  }
-
-  if (trigger.includes("fail")) {
-    return { status: "failed" };
-  }
-
-  const now = Date.now();
-  const details =
-    input.kind === "book"
-      ? { kind: "book" as const, pageCount: input.pageCount }
-      : {
-          kind: "blog" as const,
-          postCount: MOCK_POST_COUNT,
-          address: input.address.trim(),
-        };
-  const source: Source = {
-    id: crypto.randomUUID(),
-    title: input.title.trim(),
-    author: input.author.trim(),
-    addedAt: new Date(now).toISOString(),
-    expiresAt: new Date(now + SOURCE_LIFETIME).toISOString(),
-    state: "ingesting",
-    ingestionProgress: 0,
-    ...details,
-  };
-
-  store.sources.push(source);
-
-  return { status: "added", source: { ...source } };
-};
-
-// The first real backend call: sends one batch of a book's pages to the API
-// (POST /sources/{id}/pages, docs/api-contract.md). Until the Sources ticket
-// lands, the Source id comes from the mock store.
+// Sends one batch of a book's pages (POST /sources/{id}/pages, ADR 0001).
 export const sendPageBatch = async (
   sourceId: string,
   batch: PageBatch,
@@ -118,6 +65,21 @@ export const sendPageBatch = async (
     return true;
   } catch (error) {
     console.error("Failed to send a page batch to the API", error);
+
+    return false;
+  }
+};
+
+// Marks a book Ready once all its pages were sent (POST /sources/{id}/complete).
+export const completeSource = async (sourceId: string): Promise<boolean> => {
+  try {
+    const backend = await getAuthenticatedBackendClient();
+
+    await backend.post(`/sources/${encodeURIComponent(sourceId)}/complete`);
+
+    return true;
+  } catch (error) {
+    console.error("Failed to complete a Source in the API", error);
 
     return false;
   }
@@ -145,16 +107,18 @@ export const createSource = async (
 
   try {
     const backend = await getAuthenticatedBackendClient();
-    const { data } = await backend.post<AddSourceResult>("/sources", body);
+    const { data } = await backend.post("/sources", body);
 
-    return data;
+    return createSourceResponseSchema.parse(data);
   } catch (error) {
-    if (
-      axios.isAxiosError(error) &&
-      error.response?.status === 422 &&
-      error.response.data?.detail === "too-large"
-    ) {
+    const detail = axios.isAxiosError(error) && error.response?.data?.detail;
+
+    if (detail === "too-large") {
       return { status: "rejected", reason: "too-large" };
+    }
+
+    if (detail === "limit-reached") {
+      return { status: "limit-reached" };
     }
 
     console.error("Failed to create a Source in the API", error);

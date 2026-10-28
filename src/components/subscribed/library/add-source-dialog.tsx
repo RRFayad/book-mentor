@@ -3,7 +3,11 @@
 import { BookOpenIcon, GlobeIcon, LockIcon } from "lucide-react";
 import { useId, useState, useTransition, type ReactNode } from "react";
 
-import { addSourceAction, sendPageBatchAction } from "@/actions/sources";
+import {
+  addSourceAction,
+  completeSourceAction,
+  sendPageBatchAction,
+} from "@/actions/sources";
 import { showToast } from "@/components/toaster";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +33,7 @@ const styles = {
     "flex h-8 items-center justify-center gap-2 rounded-md text-sm font-medium text-muted-foreground transition-colors [&_svg]:size-4",
   ),
   tabActive: tw("bg-background text-foreground shadow-sm"),
+  tabDisabled: tw("cursor-not-allowed opacity-50"),
   fields: tw("space-y-4"),
   field: tw("space-y-1.5"),
   label: tw("text-sm font-medium"),
@@ -121,7 +126,9 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
       }
     }
 
-    return true;
+    const { ok } = await completeSourceAction(sourceId);
+
+    return ok;
   };
 
   const chooseKind = (nextKind: SourceKind) => {
@@ -180,15 +187,16 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
           <BookOpenIcon aria-hidden />
           Book (PDF)
         </button>
+        {/* Blogs arrive in #21; until then the tab is shown but disabled. */}
         <button
           type="button"
           role="tab"
-          aria-selected={kind === "blog"}
-          className={cn(styles.tab, kind === "blog" && styles.tabActive)}
-          onClick={() => chooseKind("blog")}
+          aria-selected={false}
+          disabled
+          className={cn(styles.tab, styles.tabDisabled)}
         >
           <GlobeIcon aria-hidden />
-          Blog
+          Blog · Coming soon
         </button>
       </div>
 

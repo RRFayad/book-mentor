@@ -7,19 +7,22 @@ import {
   toggleSourcePick,
 } from "@/lib/conversations/source-picks";
 
-const source = (id: string, state: "ready" | "ingesting" = "ready"): Source =>
-  ({
-    id,
-    kind: "book",
-    title: id,
-    author: "Author",
-    pageCount: 100,
-    addedAt: "2026-10-01T00:00:00Z",
-    expiresAt: "2026-10-08T00:00:00Z",
-    ...(state === "ready"
-      ? { state: "ready" }
-      : { state: "ingesting", ingestionProgress: 10 }),
-  }) as Source;
+const source = (
+  id: string,
+  state: "ready" | "ingesting" = "ready",
+): Source => ({
+  id,
+  kind: "book",
+  title: id,
+  author: "Author",
+  pageCount: 100,
+  postCount: null,
+  address: null,
+  state,
+  ingestionProgress: state === "ready" ? 100 : 10,
+  createdAt: new Date("2026-10-01T00:00:00Z"),
+  expiresAt: new Date("2026-10-08T00:00:00Z"),
+});
 
 describe("toggleSourcePick", () => {
   it("adds a Ready Source and removes it when picked again", () => {

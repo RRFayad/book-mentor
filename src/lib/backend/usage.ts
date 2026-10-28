@@ -1,21 +1,35 @@
 import "server-only";
 
-import { getMockStore } from "@/lib/backend/mock/store";
+import { MESSAGE_LIMIT, SOURCE_LIMIT } from "@app/shared/constants";
+
+import { callBackend } from "@/lib/backend/call-backend";
+import { listSources } from "@/lib/backend/sources";
 import type { Usage } from "@/lib/backend/types";
-import { messageAllowance } from "@/lib/usage/message-allowance";
 
-export const SOURCE_LIMIT = 3;
-export const MESSAGE_LIMIT = 50;
-
+// GET /usage (docs/api-contract.md) arrives in #25. Until then: the real
+// number of active Sources, and no messages counted yet.
 export const getUsage = async (): Promise<Usage> => {
-  const { sources, sentMessages } = getMockStore();
-  const allowance = messageAllowance(sentMessages, new Date(), MESSAGE_LIMIT);
+  const usage = await callBackend<Usage | null>(
+    "get usage",
+    null,
+    async (backend) => {
+      const { data } = await backend.get<Usage>("/usage");
+
+      return data;
+    },
+  );
+
+  if (usage) {
+    return usage;
+  }
+
+  const sources = await listSources();
 
   return {
     activeSources: sources.length,
     sourceLimit: SOURCE_LIMIT,
-    messagesInWindow: allowance.used,
+    messagesInWindow: 0,
     messageLimit: MESSAGE_LIMIT,
-    nextMessageAvailableAt: allowance.nextAvailableAt,
+    nextMessageAvailableAt: null,
   };
 };

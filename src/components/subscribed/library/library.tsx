@@ -78,9 +78,9 @@ export const Library = ({
               <BookOpenIcon />
               Add a book
             </AddSourceButton>
-            <AddSourceButton initialKind="blog" variant="outline">
+            <AddSourceButton initialKind="blog" variant="outline" disabled>
               <GlobeIcon />
-              Add a blog
+              Add a blog · Coming soon
             </AddSourceButton>
           </div>
         </section>

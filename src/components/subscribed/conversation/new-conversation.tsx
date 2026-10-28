@@ -88,7 +88,7 @@ const sourceMeta = (source: Source): string => {
   return `${source.author} · ${kind} · ${
     source.kind === "book"
       ? `${source.pageCount} pages`
-      : `${source.postCount} posts`
+      : `${source.postCount ?? 0} posts`
   }`;
 };
 
@@ -114,9 +114,9 @@ const EmptyLibrary = () => (
         <BookOpenIcon />
         Add a book
       </AddSourceButton>
-      <AddSourceButton initialKind="blog" variant="outline">
+      <AddSourceButton initialKind="blog" variant="outline" disabled>
         <GlobeIcon />
-        Add a blog
+        Add a blog · Coming soon
       </AddSourceButton>
     </div>
   </main>

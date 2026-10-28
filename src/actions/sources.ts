@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import {
+  completeSource,
   createSource,
   deleteSource,
   sendPageBatch,
@@ -60,4 +61,18 @@ export const sendPageBatchAction = async (
   const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
   return { ok: canUse && (await sendPageBatch(sourceId, batch)) };
+};
+
+export const completeSourceAction = async (
+  sourceId: string,
+): Promise<{ ok: boolean }> => {
+  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
+  const ok = canUse && (await completeSource(sourceId));
+
+  if (ok) {
+    // The Source shows as Ready in the Library and the New Conversation picker.
+    revalidatePath("/", "layout");
+  }
+
+  return { ok };
 };

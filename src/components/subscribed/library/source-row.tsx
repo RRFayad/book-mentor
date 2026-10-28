@@ -41,7 +41,7 @@ type SourceRowProps = {
 const sizeText = (source: Source): string =>
   source.kind === "book"
     ? `${source.pageCount} pages`
-    : `${source.postCount} posts`;
+    : `${source.postCount ?? 0} posts`;
 
 export const SourceRow = ({ source, now, action }: SourceRowProps) => {
   const kindLabel = source.kind === "book" ? "Book" : "Blog";

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { sendMessage, stopAnswer } from "@/lib/backend/messages";
+import { sendMessage } from "@/lib/backend/messages";
 import type { NewMessage, SendMessageResult } from "@/lib/backend/types";
 import { canCurrentUserUseSubscriptionPlan } from "@/lib/subscription/subscription";
 
@@ -21,16 +21,4 @@ export const sendMessageAction = async (
   revalidatePath("/", "layout");
 
   return result;
-};
-
-export const stopAnswerAction = async (
-  conversationId: string,
-  answerId: string,
-  shownWords: number,
-): Promise<void> => {
-  const canUse = await canCurrentUserUseSubscriptionPlan("basic");
-
-  if (canUse) {
-    await stopAnswer(conversationId, answerId, shownWords);
-  }
 };

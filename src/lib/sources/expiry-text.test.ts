@@ -5,8 +5,7 @@ import { expiryText } from "@/lib/sources/expiry-text";
 const HOUR = 60 * 60 * 1000;
 const NOW = new Date("2026-10-15T12:00:00Z");
 
-const expiresIn = (ms: number): string =>
-  new Date(NOW.getTime() + ms).toISOString();
+const expiresIn = (ms: number): Date => new Date(NOW.getTime() + ms);
 
 describe("expiryText", () => {
   it("counts whole days left, rounded up", () => {
