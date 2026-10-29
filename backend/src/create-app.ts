@@ -16,6 +16,7 @@ import {
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import sourcesRoutes from "./sources/sources.route";
+import conversationsRoutes from "./conversations/conversations.route";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -66,6 +67,8 @@ export const createApp = async ({ logger = true } = {}) => {
   app.register(async (protectedApp) => {
     protectedApp.addHook("preHandler", authenticate);
     protectedApp.register(sourcesRoutes, { prefix: "/sources" });
+    //TODO: Uncomment after implementation
+    // protectedApp.register(conversationsRoutes, { prefix: "/conversations" });
   });
 
   return app;

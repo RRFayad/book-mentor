@@ -64,6 +64,13 @@
       "when": 1793047593145,
       "tag": "0008_past_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793235035254,
+      "tag": "0009_minor_shocker",
+      "breakpoints": true
     }
   ]
 }

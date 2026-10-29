@@ -11,7 +11,6 @@ import {
   completeSourceIngestionResponseSchema,
   createSourceResponseSchema,
   createSourceRequestBodySchema,
-  errorResponseSchema,
   getSourcesResponseSchema,
   ingestPagesResponseSchema,
   ingestPagesRequestBodySchema,
@@ -33,11 +32,7 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         body: createSourceRequestBodySchema,
-        response: {
-          201: createSourceResponseSchema,
-          409: errorResponseSchema,
-          422: errorResponseSchema,
-        },
+        response: { 201: createSourceResponseSchema },
       },
     },
     createSourceHandler,
@@ -48,11 +43,7 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
       schema: {
         params: sourceParamsSchema,
         body: ingestPagesRequestBodySchema,
-        response: {
-          200: ingestPagesResponseSchema,
-          404: errorResponseSchema,
-          409: errorResponseSchema,
-        },
+        response: { 200: ingestPagesResponseSchema },
       },
     },
     ingestPagesHandler,
@@ -62,10 +53,7 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         params: sourceParamsSchema,
-        response: {
-          200: completeSourceIngestionResponseSchema,
-          404: errorResponseSchema,
-        },
+        response: { 200: completeSourceIngestionResponseSchema },
       },
     },
     completeSourceIngestionHandler,
@@ -75,7 +63,7 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         params: sourceParamsSchema,
-        response: { 204: z.null(), 404: errorResponseSchema },
+        response: { 204: z.null() },
       },
     },
     deleteSourceHandler,
