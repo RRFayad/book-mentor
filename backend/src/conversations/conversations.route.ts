@@ -6,6 +6,7 @@ import {
   getConversationHandler,
   getConversationsHandler,
   renameConversationHandler,
+  sendMessageHandler,
 } from "./conversations.controller";
 import {
   conversationParamsSchema,
@@ -15,6 +16,8 @@ import {
   getConversationsResponseSchema,
   renameConversationRequestBodySchema,
   renameConversationResponseSchema,
+  sendMessageRequestBodySchema,
+  sendMessageResponseSchema,
 } from "@app/shared/schemas";
 
 const conversationsRoutes: FastifyPluginAsyncZod = async (server) => {
@@ -67,6 +70,17 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     deleteConversationHandler,
+  );
+  server.post(
+    "/:id/messages",
+    {
+      schema: {
+        params: conversationParamsSchema,
+        body: sendMessageRequestBodySchema,
+        response: { 201: sendMessageResponseSchema },
+      },
+    },
+    sendMessageHandler,
   );
 };
 

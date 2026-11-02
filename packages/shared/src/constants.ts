@@ -39,6 +39,18 @@ export const MESSAGE_LIMIT = 50;
 // How long a Source is kept after it's added. Sets the default of sources.expires_at.
 export const SOURCE_LIFETIME_DAYS = 7;
 
+// ---------- Messages ----------
+
+// Our own names, not an LLM library's ("human"/"ai", "assistant"), so stored
+// messages don't depend on the vendor. The Mentor service maps them.
+export const MESSAGE_ROLES = ["user", "mentor"] as const;
+export const MENTOR_ANSWER_STATUSES = [
+  "streaming",
+  "complete",
+  "stopped",
+  "error",
+] as const;
+
 // ---------- Embeddings ----------
 
 // The model that embeds chunks and questions. Both must use the same one, and

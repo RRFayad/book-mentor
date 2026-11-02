@@ -263,7 +263,10 @@ export const ConversationThread = ({
         return;
       }
 
-      setUsage(result.usage);
+      //TODO: Remove the guard once the API sends usage
+      if (result.usage) {
+        setUsage(result.usage);
+      }
 
       if (result.answer.status === "error") {
         finishStream();

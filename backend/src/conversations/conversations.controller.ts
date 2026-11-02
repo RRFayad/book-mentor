@@ -6,6 +6,8 @@ import {
   GetConversationsResponse,
   RenameConversationRequestBody,
   RenameConversationResponse,
+  SendMessageRequestBody,
+  SendMessageResponse,
 } from "@app/shared/schemas";
 import { FastifyReply, FastifyRequest } from "fastify";
 import {
@@ -14,6 +16,7 @@ import {
   getConversationByUserId,
   getConversationsByUserId,
   renameConversationByUserId,
+  sendMessage,
 } from "./conversations.service";
 
 type GetConversationsIO = { Reply: GetConversationsResponse };
@@ -88,4 +91,23 @@ export const deleteConversationHandler = async (
   await deleteConversationByUserId(request.params.id, request.user.id);
 
   return reply.code(204).send(null);
+};
+
+type SendMessageIO = {
+  Params: ConversationParams;
+  Body: SendMessageRequestBody;
+  Reply: SendMessageResponse;
+};
+
+export const sendMessageHandler = async (
+  request: FastifyRequest<SendMessageIO>,
+  reply: FastifyReply<SendMessageIO>,
+) => {
+  const answer = await sendMessage(
+    request.params.id,
+    request.body,
+    request.user.id,
+  );
+
+  return reply.code(201).send({ status: "answered", answer });
 };

@@ -71,6 +71,13 @@
       "when": 1793235035254,
       "tag": "0009_minor_shocker",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793654537217,
+      "tag": "0010_old_victor_mancha",
+      "breakpoints": true
     }
   ]
 }

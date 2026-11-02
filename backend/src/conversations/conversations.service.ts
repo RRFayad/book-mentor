@@ -1,4 +1,8 @@
-import { CreateConversationRequestBody } from "@app/shared/schemas";
+import {
+  CreateConversationRequestBody,
+  MentorAnswer,
+  SendMessageRequestBody,
+} from "@app/shared/schemas";
 import { and, desc, eq, gt, inArray } from "drizzle-orm";
 import { db } from "../db";
 import {
@@ -7,6 +11,7 @@ import {
   sources,
 } from "@app/shared/db/schema";
 import { HttpError } from "../errors";
+import { answerQuestion } from "./mentor.service";
 
 export const createConversation = async (
   data: CreateConversationRequestBody,
@@ -92,7 +97,12 @@ export const getConversationByUserId = async (
     ({ expiresAt, ...source }) => ({ ...source, expired: expiresAt <= now }),
   );
 
-  return { ...conversation, sources: conversationSourcesWithExpiry };
+  //TODO: Load the messages
+  return {
+    ...conversation,
+    sources: conversationSourcesWithExpiry,
+    messages: [],
+  };
 };
 
 export const renameConversationByUserId = async (
@@ -135,4 +145,20 @@ export const deleteConversationByUserId = async (
   if (deleted.length === 0) {
     throw new HttpError(404, "Conversation not found");
   }
+};
+
+export const sendMessage = async (
+  conversationId: string,
+  message: SendMessageRequestBody,
+  userId: number,
+): Promise<MentorAnswer> => {
+  //TODO: Check ownership, save the question and the answer (step 4)
+  const reply = await answerQuestion(message.text);
+
+  return {
+    id: message.answerId,
+    role: "mentor",
+    status: "complete",
+    ...reply,
+  };
 };

@@ -67,8 +67,7 @@ export const createApp = async ({ logger = true } = {}) => {
   app.register(async (protectedApp) => {
     protectedApp.addHook("preHandler", authenticate);
     protectedApp.register(sourcesRoutes, { prefix: "/sources" });
-    //TODO: Uncomment after implementation
-    // protectedApp.register(conversationsRoutes, { prefix: "/conversations" });
+    protectedApp.register(conversationsRoutes, { prefix: "/conversations" });
   });
 
   return app;

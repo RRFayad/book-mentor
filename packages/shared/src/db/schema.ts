@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -14,11 +15,14 @@ import { sql } from "drizzle-orm";
 
 import {
   EMBEDDING_DIMENSIONS,
+  MENTOR_ANSWER_STATUSES,
+  MESSAGE_ROLES,
   SOURCE_KINDS,
   SOURCE_LIFETIME_DAYS,
   SOURCE_STATES,
   SUBSCRIPTION_PLANS,
 } from "../constants";
+import type { AnswerPart, Citation } from "../schemas";
 
 export const userRole = pgEnum("user_role", ["user", "admin"]);
 
@@ -157,3 +161,36 @@ export const conversationSources = pgTable(
 );
 
 export type ConversationSourceRow = typeof conversationSources.$inferSelect;
+
+export const messageRole = pgEnum("message_role", MESSAGE_ROLES);
+export const mentorAnswerStatus = pgEnum(
+  "mentor_answer_status",
+  MENTOR_ANSWER_STATUSES,
+);
+
+export const messages = pgTable(
+  "messages",
+  {
+    id: uuid().primaryKey(), // generated in the client
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    role: messageRole("role").notNull(),
+    text: text("text"), // questions only
+    parts: jsonb("parts").$type<AnswerPart[]>(), // answers only
+    citations: jsonb("citations").$type<Citation[]>(), // answers only
+    status: mentorAnswerStatus("status"), // answers only
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("messages_conversation_id_created_at_idx").on(
+      table.conversationId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export type MessageRow = typeof messages.$inferSelect;
+export type NewMessageRow = typeof messages.$inferInsert;
