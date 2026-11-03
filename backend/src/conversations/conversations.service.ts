@@ -14,7 +14,7 @@ import {
   sources,
 } from "@app/shared/db/schema";
 import { HttpError } from "../errors";
-import { answerQuestion } from "./mentor.service";
+import { answerQuestion } from "../mentor/mentor.service";
 
 export const createConversation = async (
   data: CreateConversationRequestBody,

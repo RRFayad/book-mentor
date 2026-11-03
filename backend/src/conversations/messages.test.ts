@@ -5,11 +5,12 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { db } from "../db";
 import { createUser, startApi } from "../testing/api";
-import { answerQuestion } from "./mentor.service";
+import { answerQuestion } from "../mentor/mentor.service";
 
 // The real answer by default; a test can make it fail once.
 vi.mock("./mentor.service", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./mentor.service")>();
+  const actual =
+    await importOriginal<typeof import("../mentor/mentor.service")>();
 
   return { answerQuestion: vi.fn(actual.answerQuestion) };
 });
