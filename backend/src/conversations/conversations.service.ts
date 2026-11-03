@@ -1,13 +1,16 @@
 import {
   CreateConversationRequestBody,
   MentorAnswer,
+  Message,
   SendMessageRequestBody,
 } from "@app/shared/schemas";
-import { and, desc, eq, gt, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray } from "drizzle-orm";
 import { db } from "../db";
 import {
   conversations,
   conversationSources,
+  MessageRow,
+  messages,
   sources,
 } from "@app/shared/db/schema";
 import { HttpError } from "../errors";
@@ -64,7 +67,7 @@ export const getConversationsByUserId = async (userId: number) => {
     .orderBy(desc(conversations.lastActivityAt));
 };
 
-export const getConversationByUserId = async (
+const findConversationByUserId = async (
   conversationId: string,
   userId: number,
 ) => {
@@ -78,6 +81,29 @@ export const getConversationByUserId = async (
   if (!conversation) {
     throw new HttpError(404, "Conversation not found");
   }
+
+  return conversation;
+};
+
+const toMessage = (row: MessageRow): Message => {
+  if (row.role === "user") {
+    return { id: row.id, role: "user", text: row.text ?? "" };
+  }
+
+  return {
+    id: row.id,
+    role: "mentor",
+    status: row.status ?? "error",
+    parts: row.parts ?? [],
+    citations: row.citations ?? [],
+  };
+};
+
+export const getConversationByUserId = async (
+  conversationId: string,
+  userId: number,
+) => {
+  const conversation = await findConversationByUserId(conversationId, userId);
 
   const linkedSources = await db
     .select({
@@ -97,11 +123,18 @@ export const getConversationByUserId = async (
     ({ expiresAt, ...source }) => ({ ...source, expired: expiresAt <= now }),
   );
 
-  //TODO: Load the messages
+  const messageRows = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(asc(messages.createdAt));
+
+  const conversationMessages = messageRows.map(toMessage);
+
   return {
     ...conversation,
     sources: conversationSourcesWithExpiry,
-    messages: [],
+    messages: conversationMessages,
   };
 };
 
@@ -147,18 +180,54 @@ export const deleteConversationByUserId = async (
   }
 };
 
+const getMentorReply = async (question: string) => {
+  try {
+    const reply = await answerQuestion(question);
+
+    return { status: "complete" as const, ...reply };
+  } catch (error) {
+    console.error("The Mentor couldn't answer", error);
+
+    return { status: "error" as const, parts: [], citations: [] };
+  }
+};
+
+// No transaction: the answer takes seconds, and the question is kept even if it fails
 export const sendMessage = async (
   conversationId: string,
   message: SendMessageRequestBody,
   userId: number,
 ): Promise<MentorAnswer> => {
-  //TODO: Check ownership, save the question and the answer (step 4)
-  const reply = await answerQuestion(message.text);
+  await findConversationByUserId(conversationId, userId);
 
-  return {
+  const [question] = await db
+    .insert(messages)
+    .values({
+      id: message.userMessageId,
+      conversationId,
+      role: "user",
+      text: message.text,
+    })
+    .onConflictDoNothing()
+    .returning({ id: messages.id });
+
+  if (!question) {
+    throw new HttpError(409, "Message already sent");
+  }
+
+  const reply = await getMentorReply(message.text);
+  const answer: MentorAnswer = {
     id: message.answerId,
     role: "mentor",
-    status: "complete",
     ...reply,
   };
+
+  await db.insert(messages).values({ ...answer, conversationId });
+
+  await db
+    .update(conversations)
+    .set({ lastActivityAt: new Date() })
+    .where(eq(conversations.id, conversationId));
+
+  return answer;
 };
