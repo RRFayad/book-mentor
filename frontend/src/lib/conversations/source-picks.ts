@@ -1,9 +1,10 @@
 import type { Source } from "@/lib/backend/types";
 
-export const SOURCE_PICK_LIMIT = 3;
+// TODO: 1 until the Mentor compares Sources
+export const SOURCE_PICK_LIMIT = 1;
 const TITLE_MAX_LENGTH = 60;
 
-// Picking a Source in New Conversation: only Ready Sources, at most 3, and
+// Picking a Source in New Conversation: only Ready Sources, at most the limit, and
 // picking a picked Source again removes it.
 export const toggleSourcePick = (
   picked: string[],

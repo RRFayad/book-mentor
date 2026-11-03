@@ -180,8 +180,7 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
     <main className={styles.page}>
       <h1 className={styles.welcome}>What do you want to explore?</h1>
       <p className={styles.intro}>
-        Pick up to {SOURCE_PICK_LIMIT} Sources from your Library, then ask your
-        first question.
+        Pick a Source from your Library, then ask your first question.
       </p>
 
       <form
@@ -245,9 +244,7 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
                   className={styles.popup}
                 >
                   <div className={styles.popupHeader}>
-                    <span className={styles.popupTitle}>
-                      Choose up to {SOURCE_PICK_LIMIT} Sources
-                    </span>
+                    <span className={styles.popupTitle}>Choose a Source</span>
                     <span className={styles.popupCount}>
                       {picked.length} of {SOURCE_PICK_LIMIT} selected
                     </span>
