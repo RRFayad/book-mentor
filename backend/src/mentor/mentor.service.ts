@@ -1,11 +1,18 @@
 import { AnswerPart, Citation } from "@app/shared/schemas";
+import { retrieveFromSourceId } from "./retrieval.service";
 
 type MentorReply = { parts: AnswerPart[]; citations: Citation[] };
 
-//TODO: Replace with the RAG chain
 export const answerQuestion = async (
   question: string,
+  sourceIds: string[],
 ): Promise<MentorReply> => {
+  const passagesPerSource = await Promise.all(
+    sourceIds.map((sourceId) => retrieveFromSourceId(question, sourceId)),
+  );
+  const passages = passagesPerSource.flat();
+
+  //TODO: Replace with the RAG chain
   return {
     parts: [
       {

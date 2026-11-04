@@ -24,9 +24,10 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 
 ## Conversations
 
-- Started by picking **1 to 3 Ready Sources** and asking a first question; the
-  title is generated from that question and can be renamed. Conversations can
-  be deleted. The Source set never changes.
+- Started by picking **1 to 3 Ready Sources** (1 in the first release; see
+  v1.1 below) and asking a first question; the title is generated from that
+  question and can be renamed. Conversations can be deleted. The Source set
+  never changes.
 - When a Source expires, the Conversation continues; the Mentor says plainly
   when a question needs the expired Source. Even with no Sources left, the
   Conversation stays open: it can still use passages already cited in it.
@@ -92,6 +93,37 @@ removed.
 - Proposed, not yet confirmed: replace the page and post limits with one text
   size limit per Source (about a 500-page book), taking a blog's newest posts
   first. Depends on Tavily credit costs and whether post dates are available.
+
+## Next after the first release (v1.1)
+
+The first release answers from one Source per Conversation, in a plain
+retrieve-then-answer flow, so it can ship fast. In priority order:
+
+1. **Retrieval check.** Before answering, the Mentor checks each retrieved
+   passage against the question, and drops the ones that don't answer it (for
+   example, a beginner routine retrieved for a question about the main
+   training rule). If none remain, it searches again or says the Sources don't
+   cover it.
+2. **Book notes and the One Page.** While a book is ingested, the Mentor writes
+   short notes with the main ideas of each block of pages, the way a reader
+   takes study notes. When the book is complete, it reorganizes those notes
+   into the book's **One Page**: the big picture of the whole book, which can
+   run longer than a page. The notes and the One Page let the Mentor answer
+   big-picture questions ("What is the book's main argument?") that no single
+   passage answers, and give the retrieval check the book's context to judge
+   passages with.
+3. **Comparisons.** Conversations go back to 1 to 3 Sources, with the
+   Comparison answers described in The Mentor.
+
+Decided for the notes and the One Page:
+
+- Notes are written as each batch of pages arrives; the One Page is written
+  when the book is complete.
+- Notes follow the book's chapters. A book whose chapters can't be detected is
+  treated as one continuous block, split by batch.
+- Notes and the One Page are never cited. They're context that helps the
+  Mentor understand the book and pick passages; every claim still cites the
+  book's own text (ADR 0003).
 
 ## Deferred to v2
 

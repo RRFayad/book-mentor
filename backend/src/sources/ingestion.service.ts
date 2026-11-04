@@ -1,12 +1,11 @@
-import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from "@app/shared/constants";
 import { chunks } from "@app/shared/db/schema";
 import { PageText } from "@app/shared/schemas";
 import { Document } from "@langchain/core/documents";
-import { OpenAIEmbeddings } from "@langchain/openai";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { and, eq, inArray } from "drizzle-orm";
 
 import { db } from "../db";
+import { embeddingModel } from "../embedding-model";
 
 // ~1000 characters is a few paragraphs: enough context to make sense on its own,
 // small enough that retrieval stays precise. The overlap keeps a sentence cut at a
@@ -14,12 +13,6 @@ import { db } from "../db";
 const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: 1000,
   chunkOverlap: 150,
-});
-
-// Reads OPENAI_API_KEY from the environment.
-const embeddingModel = new OpenAIEmbeddings({
-  model: EMBEDDING_MODEL,
-  dimensions: EMBEDDING_DIMENSIONS,
 });
 
 const cleanText = (text: string) =>

@@ -180,9 +180,18 @@ export const deleteConversationByUserId = async (
   }
 };
 
-const getMentorReply = async (question: string) => {
+const getConversationSourceIds = async (conversationId: string) => {
+  const linkedSources = await db
+    .select({ sourceId: conversationSources.sourceId })
+    .from(conversationSources)
+    .where(eq(conversationSources.conversationId, conversationId));
+
+  return linkedSources.map((link) => link.sourceId);
+};
+
+const getMentorReply = async (question: string, sourceIds: string[]) => {
   try {
-    const reply = await answerQuestion(question);
+    const reply = await answerQuestion(question, sourceIds);
 
     return { status: "complete" as const, ...reply };
   } catch (error) {
@@ -200,6 +209,8 @@ export const sendMessage = async (
 ): Promise<MentorAnswer> => {
   await findConversationByUserId(conversationId, userId);
 
+  const sourceIds = await getConversationSourceIds(conversationId);
+
   const [question] = await db
     .insert(messages)
     .values({
@@ -215,7 +226,7 @@ export const sendMessage = async (
     throw new HttpError(409, "Message already sent");
   }
 
-  const reply = await getMentorReply(message.text);
+  const reply = await getMentorReply(message.text, sourceIds);
   const answer: MentorAnswer = {
     id: message.answerId,
     role: "mentor",
