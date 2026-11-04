@@ -1,11 +1,11 @@
 import { chunks } from "@app/shared/db/schema";
-import { cosineDistance, eq, inArray } from "drizzle-orm";
+import { cosineDistance, eq } from "drizzle-orm";
 
 import { db } from "../db";
 import { embeddingModel } from "../embedding-model";
 
 // Enough passages to answer from, few enough to keep the prompt small.
-const PASSAGE_COUNT = 4;
+const PASSAGE_COUNT = 6;
 
 // The chunks closest in meaning to the question, from the given Sources only.
 export const retrieveFromSourceId = async (

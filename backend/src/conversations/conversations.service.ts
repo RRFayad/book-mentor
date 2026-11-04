@@ -4,13 +4,14 @@ import {
   Message,
   SendMessageRequestBody,
 } from "@app/shared/schemas";
-import { and, asc, desc, eq, gt, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, gt, inArray } from "drizzle-orm";
 import { db } from "../db";
 import {
   conversations,
   conversationSources,
   MessageRow,
   messages,
+  SourceRow,
   sources,
 } from "@app/shared/db/schema";
 import { HttpError } from "../errors";
@@ -180,18 +181,20 @@ export const deleteConversationByUserId = async (
   }
 };
 
-const getConversationSourceIds = async (conversationId: string) => {
-  const linkedSources = await db
-    .select({ sourceId: conversationSources.sourceId })
+const getConversationSources = async (conversationId: string) => {
+  return db
+    .select(getTableColumns(sources))
     .from(conversationSources)
+    .innerJoin(sources, eq(conversationSources.sourceId, sources.id))
     .where(eq(conversationSources.conversationId, conversationId));
-
-  return linkedSources.map((link) => link.sourceId);
 };
 
-const getMentorReply = async (question: string, sourceIds: string[]) => {
+const getMentorReply = async (
+  question: string,
+  selectedSources: SourceRow[],
+) => {
   try {
-    const reply = await answerQuestion(question, sourceIds);
+    const reply = await answerQuestion(question, selectedSources);
 
     return { status: "complete" as const, ...reply };
   } catch (error) {
@@ -209,7 +212,7 @@ export const sendMessage = async (
 ): Promise<MentorAnswer> => {
   await findConversationByUserId(conversationId, userId);
 
-  const sourceIds = await getConversationSourceIds(conversationId);
+  const selectedSources = await getConversationSources(conversationId);
 
   const [question] = await db
     .insert(messages)
@@ -226,7 +229,7 @@ export const sendMessage = async (
     throw new HttpError(409, "Message already sent");
   }
 
-  const reply = await getMentorReply(message.text, sourceIds);
+  const reply = await getMentorReply(message.text, selectedSources);
   const answer: MentorAnswer = {
     id: message.answerId,
     role: "mentor",

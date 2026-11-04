@@ -1,16 +1,43 @@
+import { SourceRow } from "@app/shared/db/schema";
 import { AnswerPart, Citation } from "@app/shared/schemas";
 import { retrieveFromSourceId } from "./retrieval.service";
+import { answerPrompt } from "./mentor.prompts";
 
 type MentorReply = { parts: AnswerPart[]; citations: Citation[] };
 
 export const answerQuestion = async (
   question: string,
-  sourceIds: string[],
+  sources: SourceRow[],
 ): Promise<MentorReply> => {
   const passagesPerSource = await Promise.all(
-    sourceIds.map((sourceId) => retrieveFromSourceId(question, sourceId)),
+    sources.map(async (source) => {
+      const rows = await retrieveFromSourceId(question, source.id);
+      const rowsInBookOrder = rows.toSorted(
+        (a, b) => (a.page ?? 0) - (b.page ?? 0),
+      );
+
+      return rowsInBookOrder.map((row) => ({
+        ...row,
+        title: source.title,
+        author: source.author,
+      }));
+    }),
   );
   const passages = passagesPerSource.flat();
+
+  const formattedPassages = passages
+    .map(
+      (passage, index) =>
+        `[${index + 1}] "${passage.title}" by ${passage.author}, p. ${passage.page}\n${passage.content}`,
+    )
+    .join("\n\n");
+
+  const filledPrompt = await answerPrompt.invoke({
+    passages: formattedPassages,
+    question,
+  });
+
+  console.log("PROMPT", filledPrompt.toString());
 
   //TODO: Replace with the RAG chain
   return {
