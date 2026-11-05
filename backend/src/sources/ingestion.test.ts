@@ -1,10 +1,19 @@
 import { chunks, notes, sources } from "@app/shared/db/schema";
 import { EMBEDDING_DIMENSIONS } from "@app/shared/constants";
 import { asc, eq } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import { db } from "../db";
 import { createUser, startApi } from "../testing/api";
+import { notesChain } from "./ingestion.chains";
 
 // Ticket #18: A book becomes ready.
 
@@ -63,6 +72,17 @@ describe("sending a book's text in parts", () => {
     expect(first.status).toBe(200);
     expect(first.data).toEqual({ ingestionProgress: 50 });
     expect(second.data).toEqual({ ingestionProgress: 100 });
+  });
+
+  it("never moves the progress back when parts finish out of order", async () => {
+    const sourceId = await addBook(4);
+
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(3, 4));
+    const earlier = await api
+      .as("reader")
+      .post(`/sources/${sourceId}/pages`, pages(1, 2));
+
+    expect(earlier.data).toEqual({ ingestionProgress: 100 });
   });
 
   it("stores passages that remember the page they start on", async () => {
@@ -172,6 +192,44 @@ describe("sending a book's text in parts", () => {
 
     expect(response.status).toBe(404);
     expect(await chunksOf(sourceId)).toEqual([]);
+  });
+});
+
+describe("when the Notes skip pages", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const section = (firstPage: number, lastPage: number) => ({
+    heading: "Training Briefly",
+    firstPage,
+    lastPage,
+    content: "Train briefly.",
+  });
+
+  it("writes them once more and keeps the try that covers more", async () => {
+    const invoke = vi
+      .spyOn(notesChain, "invoke")
+      .mockResolvedValueOnce({ sections: [section(1, 2)] })
+      .mockResolvedValueOnce({ sections: [section(1, 10)] });
+    const sourceId = await addBook(10);
+
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 10));
+    const stored = await notesOf(sourceId);
+
+    expect(invoke).toHaveBeenCalledTimes(2);
+    expect(stored[0]).toMatchObject({ firstPage: 1, lastPage: 10 });
+  });
+
+  it("writes them once when only a few pages are skipped", async () => {
+    const invoke = vi
+      .spyOn(notesChain, "invoke")
+      .mockResolvedValueOnce({ sections: [section(1, 6)] });
+    const sourceId = await addBook(10);
+
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 10));
+
+    expect(invoke).toHaveBeenCalledTimes(1);
   });
 });
 

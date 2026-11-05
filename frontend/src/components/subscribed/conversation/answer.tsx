@@ -15,6 +15,8 @@ import { cn, tw } from "@/lib/utils";
 
 const styles = {
   answer: tw("flex flex-col gap-3"),
+  // Answers are plain text: line breaks separate list items.
+  text: tw("whitespace-pre-line"),
   heading: tw("text-base font-semibold [&:not(:first-child)]:mt-1"),
   reflection: tw("text-[13px] text-muted-foreground"),
   positions: tw("grid gap-3 sm:grid-cols-2"),
@@ -68,7 +70,9 @@ const CitationMarker = ({
 const Rich = ({ content, answerId }: { content: RichText; answerId: string }) =>
   content.map((piece, index) =>
     piece.type === "text" ? (
-      <span key={index}>{piece.text}</span>
+      <span key={index} className={styles.text}>
+        {piece.text}
+      </span>
     ) : (
       <CitationMarker key={index} answerId={answerId} number={piece.number} />
     ),

@@ -47,9 +47,9 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - Its evidence is the Chunks of the Conversation's remaining Sources plus the
   passages already cited in the Conversation. The rolling summary and message
   history are context only, never evidence (see ADR 0003).
-- It may state what its Notes and the One Page conclude, saying so in the
-  answer ("From my notes on Chapter 3, pp. 40–52: …", "From my reading of
-  the whole book: …"). They are never cited.
+- It may state what its Notes and the One Page conclude. They are never cited:
+  instead of a Citation marker, it gives the section and pages in parentheses,
+  like "(Chapter 3, pp. 40–52)".
 - Answers open with **What the Source says** (with Citations). **What it means**
   and **How to apply it** are added only when they help. Practical lookups don't
   get them.

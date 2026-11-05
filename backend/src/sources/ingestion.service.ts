@@ -76,6 +76,44 @@ const clamp = (value: number, min: number, max: number) =>
 const toMarkedPages = (pages: PageText[]) =>
   pages.map((page) => `[p. ${page.page}]\n${page.text}`).join("\n\n");
 
+// A few uncovered pages are expected (part title pages, photos), more are not.
+const MAX_UNCOVERED_PAGES = 5;
+
+type PageRange = { firstPage: number; lastPage: number };
+
+// Pages with text that no section covers.
+const countUncoveredPages = (sections: PageRange[], pages: PageText[]) =>
+  pages.filter(
+    (page) =>
+      !sections.some(
+        (section) =>
+          section.firstPage <= page.page && page.page <= section.lastPage,
+      ),
+  ).length;
+
+// Try 2 times to write batch notes, when there are many uncovered pages
+const writeSections = async (pages: PageText[]) => {
+  const markedPages = toMarkedPages(pages);
+
+  const firstTry = await notesChain.invoke({ pages: markedPages });
+  const firstTryUncovered = countUncoveredPages(firstTry.sections, pages);
+
+  if (firstTryUncovered <= MAX_UNCOVERED_PAGES) {
+    return firstTry.sections;
+  }
+
+  console.log(
+    `Pages ${pages[0].page}-${pages[pages.length - 1].page}: ${firstTryUncovered} pages in no Note, writing them again`,
+  );
+
+  const secondTry = await notesChain.invoke({ pages: markedPages });
+  const secondTryUncovered = countUncoveredPages(secondTry.sections, pages);
+
+  return secondTryUncovered < firstTryUncovered
+    ? secondTry.sections
+    : firstTry.sections;
+};
+
 // One Note per section in the batch. Its pages are kept inside the batch, so a
 // retried batch finds the Notes it has to replace.
 const writeNotes = async (sourceId: string, pages: PageText[]) => {
@@ -85,8 +123,7 @@ const writeNotes = async (sourceId: string, pages: PageText[]) => {
 
   const batchFirstPage = pages[0].page;
   const batchLastPage = pages[pages.length - 1].page;
-  const markedPages = toMarkedPages(pages);
-  const { sections } = await notesChain.invoke({ pages: markedPages });
+  const sections = await writeSections(pages);
 
   if (sections.length === 0) {
     return [];

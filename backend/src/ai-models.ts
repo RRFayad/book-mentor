@@ -13,10 +13,3 @@ export const embeddingModel = new OpenAIEmbeddings({
 export const chatModel = new ChatOpenAI({
   model: "gpt-6-luna",
 });
-
-// For writing Notes. One run on pp. 176–200: 25s → 18s, same sections,
-// slightly shorter notes. Not yet confirmed by an eval set.
-export const chatModelWithoutReasoning = new ChatOpenAI({
-  model: "gpt-6-luna",
-  reasoning: { effort: "none" },
-});
