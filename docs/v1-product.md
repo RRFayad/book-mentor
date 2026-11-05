@@ -48,7 +48,7 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
   passages already cited in the Conversation. The rolling summary and message
   history are context only, never evidence (see ADR 0003).
 - It may state what its Notes and the One Page conclude, saying so in the
-  answer ("From my notes on Workout Two, pp. 176–186: …", "From my reading of
+  answer ("From my notes on Chapter 3, pp. 40–52: …", "From my reading of
   the whole book: …"). They are never cited.
 - Answers open with **What the Source says** (with Citations). **What it means**
   and **How to apply it** are added only when they help. Practical lookups don't
@@ -64,7 +64,7 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 ## Notes and the One Page
 
 Chunks alone miss two kinds of questions: a section's outline, like a
-workout's full exercise list, is spread over several Chunks that retrieval
+chapter's full list of steps, is spread over several Chunks that retrieval
 returns only in part; and the big picture ("What is the book's main
 argument?") is in no single passage.
 

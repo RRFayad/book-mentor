@@ -125,6 +125,30 @@ export const chunks = pgTable(
 export type ChunkRow = typeof chunks.$inferSelect;
 export type NewChunkRow = typeof chunks.$inferInsert;
 
+// The Mentor's Notes on a book's sections, written as its pages are ingested.
+// A section cut by a batch boundary gets one Note per batch.
+export const notes = pgTable(
+  "notes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => sources.id, { onDelete: "cascade" }),
+    heading: text("heading").notNull(),
+    firstPage: integer("first_page").notNull(),
+    lastPage: integer("last_page").notNull(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", {
+      dimensions: EMBEDDING_DIMENSIONS,
+    }).notNull(),
+  },
+  (table) => [
+    index("notes_source_id_first_page_idx").on(table.sourceId, table.firstPage),
+  ],
+);
+
+export type NoteRow = typeof notes.$inferSelect;
+
 export const conversations = pgTable(
   "conversations",
   {

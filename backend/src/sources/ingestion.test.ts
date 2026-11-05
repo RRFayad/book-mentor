@@ -1,4 +1,4 @@
-import { chunks } from "@app/shared/db/schema";
+import { chunks, notes } from "@app/shared/db/schema";
 import { EMBEDDING_DIMENSIONS } from "@app/shared/constants";
 import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -45,6 +45,9 @@ const chunksOf = (sourceId: string) =>
     .from(chunks)
     .where(eq(chunks.sourceId, sourceId))
     .orderBy(asc(chunks.page));
+
+const notesOf = (sourceId: string) =>
+  db.select().from(notes).where(eq(notes.sourceId, sourceId));
 
 describe("sending a book's text in parts", () => {
   it("moves the progress with each part", async () => {
@@ -97,6 +100,32 @@ describe("sending a book's text in parts", () => {
     );
   });
 
+  it("writes the Mentor's Notes on the part's sections", async () => {
+    const sourceId = await addBook(2);
+
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
+    const stored = await notesOf(sourceId);
+
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({
+      heading: "Training Briefly",
+      firstPage: 1,
+      lastPage: 2,
+      content: "Train briefly. (p. 1)\nRest fully. (p. 2)",
+    });
+    expect(stored[0].embedding).toHaveLength(EMBEDDING_DIMENSIONS);
+  });
+
+  // The fake model always answers pages 1-2, whatever part it reads.
+  it("keeps a Note's pages inside its part", async () => {
+    const sourceId = await addBook(4);
+
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(3, 4));
+    const stored = await notesOf(sourceId);
+
+    expect(stored[0]).toMatchObject({ firstPage: 3, lastPage: 3 });
+  });
+
   it("keeps no passages for blank pages", async () => {
     const sourceId = await addBook(2);
 
@@ -111,7 +140,7 @@ describe("sending a book's text in parts", () => {
     expect(stored.map((chunk) => chunk.page)).toEqual([1]);
   });
 
-  it("doesn't duplicate passages when a part is sent again", async () => {
+  it("doesn't duplicate passages or Notes when a part is sent again", async () => {
     const sourceId = await addBook(2);
 
     await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
@@ -120,6 +149,7 @@ describe("sending a book's text in parts", () => {
     const retried = await chunksOf(sourceId);
 
     expect(retried).toHaveLength(firstTime.length);
+    expect(await notesOf(sourceId)).toHaveLength(1);
   });
 
   it("refuses an empty part", async () => {
@@ -175,12 +205,13 @@ describe("when every part has arrived", () => {
 });
 
 describe("deleting a book", () => {
-  it("deletes its passages too", async () => {
+  it("deletes its passages and Notes too", async () => {
     const sourceId = await addBook(2);
     await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
 
     await api.as("reader").delete(`/sources/${sourceId}`);
 
     expect(await chunksOf(sourceId)).toEqual([]);
+    expect(await notesOf(sourceId)).toEqual([]);
   });
 });

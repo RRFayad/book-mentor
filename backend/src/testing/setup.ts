@@ -17,12 +17,24 @@ vi.mock("@clerk/fastify", () => ({
   },
 }));
 
-// OpenAI: fake vectors of the real size and a fixed answer citing passage 1,
-// so tests are free, fast, and offline.
+// OpenAI: fake vectors of the real size, a fixed answer citing passage 1, and
+// one fixed Note per batch, so tests are free, fast, and offline.
 vi.mock("@langchain/openai", async () => {
   const { EMBEDDING_DIMENSIONS } = await import("@app/shared/constants");
   const { RunnableLambda } = await import("@langchain/core/runnables");
   const fakeVector = () => Array<number>(EMBEDDING_DIMENSIONS).fill(0.01);
+
+  const FAKE_NOTES = {
+    sections: [
+      {
+        heading: "Training Briefly",
+        firstPage: 1,
+        lastPage: 2,
+        content: "Train briefly. (p. 1)\nRest fully. (p. 2)",
+      },
+    ],
+  };
+  const FAKE_ANSWER = { covered: true, answer: "The Source says this [1]." };
 
   return {
     OpenAIEmbeddings: class {
@@ -30,11 +42,10 @@ vi.mock("@langchain/openai", async () => {
       embedQuery = async () => fakeVector();
     },
     ChatOpenAI: class {
-      withStructuredOutput = () =>
-        RunnableLambda.from(async () => ({
-          covered: true,
-          answer: "The Source says this [1].",
-        }));
+      withStructuredOutput = (schema: { shape: object }) =>
+        RunnableLambda.from(async () =>
+          "sections" in schema.shape ? FAKE_NOTES : FAKE_ANSWER,
+        );
     },
   };
 });
@@ -42,6 +53,6 @@ vi.mock("@langchain/openai", async () => {
 // Every test starts from an empty database.
 beforeEach(async () => {
   await db.execute(
-    sql`truncate table chunks, sources, subscriptions, users restart identity cascade`,
+    sql`truncate table notes, chunks, sources, subscriptions, users restart identity cascade`,
   );
 });

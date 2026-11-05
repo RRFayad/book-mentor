@@ -1,10 +1,11 @@
-import { chunks } from "@app/shared/db/schema";
+import { chunks, notes } from "@app/shared/db/schema";
 import { PageText } from "@app/shared/schemas";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { and, eq, inArray } from "drizzle-orm";
 
 import { db } from "../db";
 import { embeddingModel } from "../ai-models";
+import { notesChain } from "./ingestion.chains";
 
 // ~1000 characters is a few paragraphs: enough context to make sense on its own,
 // small enough that retrieval stays precise. The overlap keeps a sentence cut at a
@@ -67,12 +68,52 @@ const pageAt = (position: number, pages: PageText[], pageStarts: number[]) => {
   return pages[pageIndex].page;
 };
 
-// Replaces the batch's chunks in one transaction: a retried batch never
-// leaves duplicates, and a failed insert leaves the old chunks in place.
-const storeChunks = async (
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
+// The batch as one text with [p. N] before each page, so the model can tell
+// which page every line of a Note comes from.
+const toMarkedPages = (pages: PageText[]) =>
+  pages.map((page) => `[p. ${page.page}]\n${page.text}`).join("\n\n");
+
+// One Note per section in the batch. Its pages are kept inside the batch, so a
+// retried batch finds the Notes it has to replace.
+const writeNotes = async (sourceId: string, pages: PageText[]) => {
+  if (pages.length === 0) {
+    return [];
+  }
+
+  const batchFirstPage = pages[0].page;
+  const batchLastPage = pages[pages.length - 1].page;
+  const markedPages = toMarkedPages(pages);
+  const { sections } = await notesChain.invoke({ pages: markedPages });
+
+  if (sections.length === 0) {
+    return [];
+  }
+
+  const sectionTexts = sections.map(
+    (section) => `${section.heading}\n${section.content}`,
+  );
+  const embeddings = await embeddingModel.embedDocuments(sectionTexts);
+
+  return sections.map((section, index) => ({
+    sourceId,
+    heading: section.heading,
+    firstPage: clamp(section.firstPage, batchFirstPage, batchLastPage),
+    lastPage: clamp(section.lastPage, batchFirstPage, batchLastPage),
+    content: section.content,
+    embedding: embeddings[index],
+  }));
+};
+
+// Replaces the batch's chunks and Notes in one transaction: a retried batch
+// never leaves duplicates, and a failed insert leaves the old ones in place.
+const storeBatch = async (
   sourceId: string,
   pages: PageText[],
-  rows: (typeof chunks.$inferInsert)[],
+  chunkRows: (typeof chunks.$inferInsert)[],
+  noteRows: (typeof notes.$inferInsert)[],
 ) => {
   const batchPages = pages.map((page) => page.page);
 
@@ -82,9 +123,18 @@ const storeChunks = async (
       .where(
         and(eq(chunks.sourceId, sourceId), inArray(chunks.page, batchPages)),
       );
+    await tx
+      .delete(notes)
+      .where(
+        and(eq(notes.sourceId, sourceId), inArray(notes.firstPage, batchPages)),
+      );
 
-    if (rows.length > 0) {
-      await tx.insert(chunks).values(rows);
+    if (chunkRows.length > 0) {
+      await tx.insert(chunks).values(chunkRows);
+    }
+
+    if (noteRows.length > 0) {
+      await tx.insert(notes).values(noteRows);
     }
   });
 };
@@ -95,18 +145,21 @@ export const ingestContent = async (sourceId: string, pages: PageText[]) => {
   const chunkTexts = await textSplitter.splitText(text);
   const chunkStarts = findChunkStarts(text, chunkTexts);
 
-  const embeddings = await embeddingModel.embedDocuments(chunkTexts);
+  const [embeddings, noteRows] = await Promise.all([
+    embeddingModel.embedDocuments(chunkTexts),
+    writeNotes(sourceId, cleanedPages),
+  ]);
 
-  const rows = chunkTexts.map((chunkText, index) => ({
+  const chunkRows = chunkTexts.map((chunkText, index) => ({
     sourceId,
     page: pageAt(chunkStarts[index], cleanedPages, pageStarts),
     content: chunkText,
     embedding: embeddings[index],
   }));
 
-  await storeChunks(sourceId, pages, rows);
+  await storeBatch(sourceId, pages, chunkRows, noteRows);
 
   console.log(
-    `Source ${sourceId}: pages ${pages[0].page}-${pages[pages.length - 1].page} → ${rows.length} chunks stored`,
+    `Source ${sourceId}: pages ${pages[0].page}-${pages[pages.length - 1].page} → ${chunkRows.length} chunks, ${noteRows.length} notes stored`,
   );
 };
