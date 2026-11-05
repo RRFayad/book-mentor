@@ -87,7 +87,7 @@ export const conversationParamsSchema = z.object({
   id: z.uuid(),
 });
 
-export const conversationSummarySchema = z.object({
+export const conversationListItemSchema = z.object({
   id: z.uuid(),
   title: z.string(),
   lastActivityAt: isoDateTimeSchema,
@@ -102,7 +102,7 @@ export const conversationSourceSchema = z.object({
   expired: z.boolean(),
 });
 
-export const conversationResponseSchema = conversationSummarySchema.extend({
+export const conversationResponseSchema = conversationListItemSchema.extend({
   sources: z.array(conversationSourceSchema),
   messages: z.array(messageSchema),
 });
@@ -110,7 +110,7 @@ export const conversationResponseSchema = conversationSummarySchema.extend({
 // ---------- GET /conversations ----------
 
 export const getConversationsResponseSchema = z.array(
-  conversationSummarySchema,
+  conversationListItemSchema,
 );
 
 // ---------- POST /conversations ----------
@@ -132,7 +132,7 @@ export const renameConversationRequestBodySchema = z.object({
   title: z.string().min(1),
 });
 
-export const renameConversationResponseSchema = conversationSummarySchema;
+export const renameConversationResponseSchema = conversationListItemSchema;
 
 // ---------- POST /conversations/:id/messages ----------
 
@@ -162,7 +162,7 @@ export type MentorAnswer = z.infer<typeof mentorAnswerSchema>;
 export type Message = z.infer<typeof messageSchema>;
 
 export type ConversationParams = z.infer<typeof conversationParamsSchema>;
-export type ConversationSummary = z.infer<typeof conversationSummarySchema>;
+export type ConversationListItem = z.infer<typeof conversationListItemSchema>;
 export type ConversationSource = z.infer<typeof conversationSourceSchema>;
 export type Conversation = z.infer<typeof conversationResponseSchema>;
 export type GetConversationsResponse = z.infer<

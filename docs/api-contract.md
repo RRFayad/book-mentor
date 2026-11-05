@@ -57,10 +57,10 @@ limits) is decided in ticket "Add a blog".
 
 | Endpoint                            | Request                                                       | Response                   | Status   |
 | ----------------------------------- | ------------------------------------------------------------- | -------------------------- | -------- |
-| `GET /conversations`                |                                                               | `ConversationSummary[]`    | Proposed |
+| `GET /conversations`                |                                                               | `ConversationListItem[]`   | Proposed |
 | `GET /conversations/{id}`           |                                                               | `Conversation`             | Proposed |
 | `POST /conversations`               | `{ sourceIds: string[], firstQuestion: string }`              | `CreateConversationResult` | Proposed |
-| `PATCH /conversations/{id}`         | `{ title: string }`                                           | `ConversationSummary`      | Proposed |
+| `PATCH /conversations/{id}`         | `{ title: string }`                                           | `ConversationListItem`     | Proposed |
 | `DELETE /conversations/{id}`        |                                                               | `204`                      | Proposed |
 | `POST /conversations/{id}/messages` | `NewMessage` (without `conversationId`, which is in the path) | `SendMessageResult`        | Proposed |
 

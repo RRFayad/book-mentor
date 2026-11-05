@@ -51,7 +51,7 @@ export type CreateConversationResult =
   | { status: "limit-reached" }
   | { status: "failed" };
 
-export type ConversationSummary = {
+export type ConversationListItem = {
   id: string;
   title: string;
   lastActivityAt: string;
@@ -66,7 +66,7 @@ export type ConversationSource = {
   expired: boolean;
 };
 
-export type Conversation = ConversationSummary & {
+export type Conversation = ConversationListItem & {
   sources: ConversationSource[];
   messages: Message[];
 };

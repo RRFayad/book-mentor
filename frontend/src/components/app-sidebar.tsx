@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ConversationMenu } from "@/components/subscribed/conversation/conversation-menu";
 import { useIsBrowser } from "@/hooks/use-is-browser";
-import type { ConversationSummary, Usage } from "@/lib/backend/types";
+import type { ConversationListItem, Usage } from "@/lib/backend/types";
 import { groupConversationsByDate } from "@/lib/conversations/group-by-date";
 import { routes } from "@/lib/routes";
 import { tw } from "@/lib/utils";
@@ -49,7 +49,7 @@ const styles = {
 type AppSidebarProps = {
   appName: string;
   billingEnabled: boolean;
-  conversations: ConversationSummary[];
+  conversations: ConversationListItem[];
   usage: Usage;
 };
 

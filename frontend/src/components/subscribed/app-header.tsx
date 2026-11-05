@@ -7,13 +7,13 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import type { ConversationSummary } from "@/lib/backend/types";
+import type { ConversationListItem } from "@/lib/backend/types";
 import { routes } from "@/lib/routes";
 import { tw } from "@/lib/utils";
 
 type AppHeaderProps = {
   github: string;
-  conversations: ConversationSummary[];
+  conversations: ConversationListItem[];
 };
 
 const styles = {
