@@ -68,21 +68,28 @@ export const answerQuestion = async (
   question: string,
   sources: SourceRow[],
 ): Promise<MentorReply> => {
-  const passagesPerSource = await Promise.all(
+  const retrievedPerSource = await Promise.all(
     sources.map(async (source) => {
-      const rows = await retrieveFromSourceId(question, source.id);
-      const rowsInBookOrder = rows.toSorted(
+      const retrieved = await retrieveFromSourceId(question, source.id);
+      const book = { title: source.title, author: source.author };
+
+      const passagesInBookOrder = retrieved.passages.toSorted(
         (a, b) => (a.page ?? 0) - (b.page ?? 0),
       );
+      const notesInBookOrder = retrieved.notes.toSorted(
+        (a, b) => a.firstPage - b.firstPage,
+      );
 
-      return rowsInBookOrder.map((row) => ({
-        ...row,
-        title: source.title,
-        author: source.author,
-      }));
+      return {
+        passages: passagesInBookOrder.map((row) => ({ ...row, ...book })),
+        notes: notesInBookOrder.map((note) => ({ ...note, ...book })),
+      };
     }),
   );
-  const passages = passagesPerSource.flat();
+  const passages = retrievedPerSource.flatMap(
+    (retrieved) => retrieved.passages,
+  );
+  const notes = retrievedPerSource.flatMap((retrieved) => retrieved.notes);
 
   const formattedPassages = passages
     .map(
@@ -91,7 +98,23 @@ export const answerQuestion = async (
     )
     .join("\n\n");
 
+  // No numbers, so the model can't cite a Note like a passage.
+  const formattedNotes = notes
+    .map(
+      (note) =>
+        `Notes on "${note.heading}" in "${note.title}" by ${note.author}, pp. ${note.firstPage}–${note.lastPage}\n${note.content}`,
+    )
+    .join("\n\n");
+
+  // The One Page goes with every question. Never cited either.
+  const formattedOnePages = sources
+    .filter((source) => source.onePage)
+    .map((source) => `"${source.title}" by ${source.author}\n${source.onePage}`)
+    .join("\n\n");
+
   const reply = await answerChain.invoke({
+    onePages: formattedOnePages || "None.",
+    notes: formattedNotes || "None.",
     passages: formattedPassages,
     question,
   });

@@ -32,7 +32,7 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
   when a question needs the expired Source. Even with no Sources left, the
   Conversation stays open: it can still use passages already cited in it.
   Conversations never expire on their own and are never read-only.
-- Memory: recent messages verbatim plus a rolling summary of older ones.
+- Memory: recent messages verbatim plus a Conversation Summary of older ones.
 - History only grows: messages can't be edited, answers can't be regenerated,
   and there is no branching. A streaming answer can be stopped, and answers can
   be copied.
@@ -45,7 +45,7 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - Never invents anything beyond its Sources. When nothing relevant is found, it
   says so plainly, with no general-knowledge fallback.
 - Its evidence is the Chunks of the Conversation's remaining Sources plus the
-  passages already cited in the Conversation. The rolling summary and message
+  passages already cited in the Conversation. The Conversation Summary and message
   history are context only, never evidence (see ADR 0003).
 - It may state what its Notes and the One Page conclude. They are never cited:
   instead of a Citation marker, it gives the section and pages in parentheses,
