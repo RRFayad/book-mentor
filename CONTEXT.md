@@ -28,6 +28,14 @@ The automatic deletion of a Source, with its Chunks, seven days after it was add
 A retrievable passage of a Source's text, tied to its location in that Source.
 _Avoid_: Segment, Fragment
 
+**Note**:
+The Mentor's best understanding of one section of a book, written while the book is ingested, with every line tied to the page it comes from. A Note is not Source text: the Mentor mentions it by section and pages, never cites it.
+_Avoid_: Summary (that is the Conversation's rolling summary)
+
+**One Page**:
+The Mentor's big picture of a whole book, built from its Notes when the book becomes Ready. Like a Note, it is the Mentor's understanding and is never cited.
+_Avoid_: Summary, Overview
+
 ### Conversations
 
 **Conversation**:

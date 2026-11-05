@@ -47,6 +47,9 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - Its evidence is the Chunks of the Conversation's remaining Sources plus the
   passages already cited in the Conversation. The rolling summary and message
   history are context only, never evidence (see ADR 0003).
+- It may state what its Notes and the One Page conclude, saying so in the
+  answer ("From my notes on Workout Two, pp. 176–186: …", "From my reading of
+  the whole book: …"). They are never cited.
 - Answers open with **What the Source says** (with Citations). **What it means**
   and **How to apply it** are added only when they help. Practical lookups don't
   get them.
@@ -57,6 +60,27 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - **Citations** are inline markers that open a side panel showing the cited text,
   title, author, and page (book) or post link (blog). They keep a copy of the
   text, so they still work after Expiry.
+
+## Notes and the One Page
+
+Chunks alone miss two kinds of questions: a section's outline, like a
+workout's full exercise list, is spread over several Chunks that retrieval
+returns only in part; and the big picture ("What is the book's main
+argument?") is in no single passage.
+
+- **Notes**: as each batch of pages arrives, the Mentor writes a Note for each
+  chapter or major section in it, the way a reader takes study notes. Every
+  list is kept whole, and every line names its page. A section cut by a batch
+  boundary gets a Note in each batch.
+- **One Page**: when the book is complete, the Mentor reorganizes its Notes
+  into the book's big picture, which can run longer than a page.
+- The best-matching Notes are retrieved alongside the Chunks; the One Page goes
+  with every question.
+- Both are the Mentor's understanding, not Source text, so they are never cited
+  (ADR 0003).
+- They must stay cheap and fast: one model call per batch for Notes and one per
+  book for the One Page, on a low-cost model, without slowing ingestion
+  noticeably.
 
 ## Screens
 
@@ -104,26 +128,9 @@ retrieve-then-answer flow, so it can ship fast. In priority order:
    example, a beginner routine retrieved for a question about the main
    training rule). If none remain, it searches again or says the Sources don't
    cover it.
-2. **Book notes and the One Page.** While a book is ingested, the Mentor writes
-   short notes with the main ideas of each block of pages, the way a reader
-   takes study notes. When the book is complete, it reorganizes those notes
-   into the book's **One Page**: the big picture of the whole book, which can
-   run longer than a page. The notes and the One Page let the Mentor answer
-   big-picture questions ("What is the book's main argument?") that no single
-   passage answers, and give the retrieval check the book's context to judge
-   passages with.
-3. **Comparisons.** Conversations go back to 1 to 3 Sources, with the
+   The One Page gives it the book's context to judge passages with.
+2. **Comparisons.** Conversations go back to 1 to 3 Sources, with the
    Comparison answers described in The Mentor.
-
-Decided for the notes and the One Page:
-
-- Notes are written as each batch of pages arrives; the One Page is written
-  when the book is complete.
-- Notes follow the book's chapters. A book whose chapters can't be detected is
-  treated as one continuous block, split by batch.
-- Notes and the One Page are never cited. They're context that helps the
-  Mentor understand the book and pick passages; every claim still cites the
-  book's own text (ADR 0003).
 
 ## Deferred to v2
 
