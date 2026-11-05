@@ -2,7 +2,7 @@ import { chunks } from "@app/shared/db/schema";
 import { cosineDistance, eq } from "drizzle-orm";
 
 import { db } from "../db";
-import { embeddingModel } from "../embedding-model";
+import { embeddingModel } from "../ai-models";
 
 // Enough passages to answer from, few enough to keep the prompt small.
 const PASSAGE_COUNT = 6;

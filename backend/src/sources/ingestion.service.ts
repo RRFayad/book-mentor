@@ -5,7 +5,7 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { and, eq, inArray } from "drizzle-orm";
 
 import { db } from "../db";
-import { embeddingModel } from "../embedding-model";
+import { embeddingModel } from "../ai-models";
 
 // ~1000 characters is a few paragraphs: enough context to make sense on its own,
 // small enough that retrieval stays precise. The overlap keeps a sentence cut at a

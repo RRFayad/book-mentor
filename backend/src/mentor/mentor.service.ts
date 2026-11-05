@@ -1,9 +1,68 @@
-import { SourceRow } from "@app/shared/db/schema";
-import { AnswerPart, Citation } from "@app/shared/schemas";
+import { ChunkRow, SourceRow } from "@app/shared/db/schema";
+import { AnswerPart, Citation, RichText } from "@app/shared/schemas";
+
+import { answerChain } from "./mentor.chains";
 import { retrieveFromSourceId } from "./retrieval.service";
-import { answerPrompt } from "./mentor.prompts";
 
 type MentorReply = { parts: AnswerPart[]; citations: Citation[] };
+
+type Passage = Pick<ChunkRow, "sourceId" | "page" | "content"> &
+  Pick<SourceRow, "title" | "author">;
+
+// Splitting on a capture group keeps the numbers: text, "2", text, "5", text.
+const CITATION_MARKER = /\[(\d+)\]/;
+
+const toCitation = (passage: Passage, number: number): Citation => {
+  if (passage.page === null) {
+    throw new Error("Only book passages can be cited for now");
+  }
+
+  return {
+    number,
+    sourceId: passage.sourceId,
+    sourceTitle: passage.title,
+    author: passage.author,
+    location: { kind: "page", page: passage.page },
+    quotedText: passage.content,
+  };
+};
+
+// The model cites passage numbers; Citations are renumbered 1, 2, 3 in the
+// order they first appear, and markers for passages that don't exist are dropped.
+const toCitedAnswer = (answer: string, passages: Passage[]): MentorReply => {
+  const citedPassages: Passage[] = [];
+
+  const content: RichText = answer
+    .split(CITATION_MARKER)
+    .flatMap((piece, index): RichText => {
+      const isText = index % 2 === 0;
+
+      if (isText) {
+        return piece ? [{ type: "text", text: piece }] : [];
+      }
+
+      const passage = passages[Number(piece) - 1];
+
+      if (!passage) {
+        return [];
+      }
+
+      if (!citedPassages.includes(passage)) {
+        citedPassages.push(passage);
+      }
+
+      return [{ type: "citation", number: citedPassages.indexOf(passage) + 1 }];
+    });
+
+  const citations = citedPassages.map((passage, index) =>
+    toCitation(passage, index + 1),
+  );
+
+  return {
+    parts: [{ type: "section", section: "source-says", content }],
+    citations,
+  };
+};
 
 export const answerQuestion = async (
   question: string,
@@ -32,42 +91,15 @@ export const answerQuestion = async (
     )
     .join("\n\n");
 
-  const filledPrompt = await answerPrompt.invoke({
+  const reply = await answerChain.invoke({
     passages: formattedPassages,
     question,
   });
 
-  console.log("PROMPT", filledPrompt.toString());
+  // For now we don't handle the case where it can't answer from the passages
+  if (!reply.covered) {
+    return { parts: [{ type: "not-covered" }], citations: [] };
+  }
 
-  //TODO: Replace with the RAG chain
-  return {
-    parts: [
-      {
-        type: "section",
-        section: "source-says",
-        content: [
-          { type: "text", text: `You asked: "${question}". The Source says ` },
-          { type: "citation", number: 1 },
-          { type: "text", text: "." },
-        ],
-      },
-      {
-        type: "section",
-        section: "meaning",
-        content: [
-          { type: "text", text: "This is a placeholder until the RAG chain." },
-        ],
-      },
-    ],
-    citations: [
-      {
-        number: 1,
-        sourceId: "00000000-0000-4000-8000-000000000000",
-        sourceTitle: "Placeholder Book",
-        author: "Placeholder Author",
-        location: { kind: "page", page: 1 },
-        quotedText: "A hardcoded quote standing in for a retrieved chunk.",
-      },
-    ],
-  };
+  return toCitedAnswer(reply.answer, passages);
 };

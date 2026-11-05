@@ -17,15 +17,24 @@ vi.mock("@clerk/fastify", () => ({
   },
 }));
 
-// OpenAI: fake vectors of the real size, so tests are free, fast, and offline.
+// OpenAI: fake vectors of the real size and a fixed answer citing passage 1,
+// so tests are free, fast, and offline.
 vi.mock("@langchain/openai", async () => {
   const { EMBEDDING_DIMENSIONS } = await import("@app/shared/constants");
+  const { RunnableLambda } = await import("@langchain/core/runnables");
   const fakeVector = () => Array<number>(EMBEDDING_DIMENSIONS).fill(0.01);
 
   return {
     OpenAIEmbeddings: class {
       embedDocuments = async (texts: string[]) => texts.map(fakeVector);
       embedQuery = async () => fakeVector();
+    },
+    ChatOpenAI: class {
+      withStructuredOutput = () =>
+        RunnableLambda.from(async () => ({
+          covered: true,
+          answer: "The Source says this [1].",
+        }));
     },
   };
 });
