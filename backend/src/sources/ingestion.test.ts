@@ -62,15 +62,39 @@ describe("sending a book's text in parts", () => {
     expect(second.data).toEqual({ ingestionProgress: 100 });
   });
 
-  it("stores passages that remember their page number", async () => {
+  it("stores passages that remember the page they start on", async () => {
     const sourceId = await addBook(2);
 
-    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
+    await api.as("reader").post(`/sources/${sourceId}/pages`, {
+      pages: [
+        { page: 1, text: "Train briefly. ".repeat(80) },
+        { page: 2, text: "Rest fully. ".repeat(80) },
+      ],
+    });
     const stored = await chunksOf(sourceId);
 
-    expect(stored.map((chunk) => chunk.page)).toEqual([1, 2]);
-    expect(stored[0].content).toContain("Text of page 1");
+    expect(stored.at(0)?.page).toBe(1);
+    expect(stored.at(-1)?.page).toBe(2);
+    expect(stored.at(-1)?.content).toContain("Rest fully.");
     expect(stored[0].embedding).toHaveLength(EMBEDDING_DIMENSIONS);
+  });
+
+  it("keeps a sentence cut by a page break whole, cited by the page it starts on", async () => {
+    const sourceId = await addBook(2);
+
+    await api.as("reader").post(`/sources/${sourceId}/pages`, {
+      pages: [
+        { page: 1, text: "Curl the legs as high as they" },
+        { page: 2, text: "can go.\nPause at the top." },
+      ],
+    });
+    const stored = await chunksOf(sourceId);
+
+    expect(stored).toHaveLength(1);
+    expect(stored[0].page).toBe(1);
+    expect(stored[0].content).toBe(
+      "Curl the legs as high as they can go.\nPause at the top.",
+    );
   });
 
   it("keeps no passages for blank pages", async () => {
