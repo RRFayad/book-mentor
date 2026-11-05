@@ -1,0 +1,1 @@
+ALTER TABLE "sources" ADD COLUMN "one_page" text;

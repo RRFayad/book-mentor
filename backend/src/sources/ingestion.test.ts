@@ -1,4 +1,4 @@
-import { chunks, notes } from "@app/shared/db/schema";
+import { chunks, notes, sources } from "@app/shared/db/schema";
 import { EMBEDDING_DIMENSIONS } from "@app/shared/constants";
 import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -190,6 +190,21 @@ describe("when every part has arrived", () => {
     expect(response.status).toBe(200);
     expect(response.data).toMatchObject({ id: sourceId, state: "ready" });
     expect(library.data[0].state).toBe("ready");
+  });
+
+  it("writes the book's One Page from its Notes, kept out of the Library", async () => {
+    const sourceId = await addBook(2);
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
+
+    await api.as("reader").post(`/sources/${sourceId}/complete`, {});
+    const [book] = await db
+      .select()
+      .from(sources)
+      .where(eq(sources.id, sourceId));
+    const library = await api.as("reader").get("/sources");
+
+    expect(book.onePage).toBe("The book is about training briefly.");
+    expect(library.data[0]).not.toHaveProperty("onePage");
   });
 
   it("refuses more parts for a Ready book", async () => {

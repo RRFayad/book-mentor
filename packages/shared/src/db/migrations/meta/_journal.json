@@ -85,6 +85,13 @@
       "when": 1793901398244,
       "tag": "0011_add-notes",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793905386373,
+      "tag": "0012_add-one-page",
+      "breakpoints": true
     }
   ]
 }

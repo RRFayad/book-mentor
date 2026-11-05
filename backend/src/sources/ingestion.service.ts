@@ -1,11 +1,11 @@
 import { chunks, notes } from "@app/shared/db/schema";
 import { PageText } from "@app/shared/schemas";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "../db";
 import { embeddingModel } from "../ai-models";
-import { notesChain } from "./ingestion.chains";
+import { notesChain, onePageChain } from "./ingestion.chains";
 
 // ~1000 characters is a few paragraphs: enough context to make sense on its own,
 // small enough that retrieval stays precise. The overlap keeps a sentence cut at a
@@ -162,4 +162,35 @@ export const ingestContent = async (sourceId: string, pages: PageText[]) => {
   console.log(
     `Source ${sourceId}: pages ${pages[0].page}-${pages[pages.length - 1].page} → ${chunkRows.length} chunks, ${noteRows.length} notes stored`,
   );
+};
+
+// Built from the Notes, since a whole book doesn't fit in one prompt. If it
+// fails, the book is still made Ready without one: answers work without it.
+export const writeOnePage = async (sourceId: string) => {
+  const bookNotes = await db
+    .select()
+    .from(notes)
+    .where(eq(notes.sourceId, sourceId))
+    .orderBy(asc(notes.firstPage));
+
+  if (bookNotes.length === 0) {
+    return null;
+  }
+
+  const notesText = bookNotes
+    .map(
+      (note) =>
+        `## ${note.heading} (pp. ${note.firstPage}–${note.lastPage})\n${note.content}`,
+    )
+    .join("\n\n");
+
+  try {
+    const { onePage } = await onePageChain.invoke({ notes: notesText });
+
+    return onePage;
+  } catch (error) {
+    console.error(`Source ${sourceId}: writing the One Page failed`, error);
+
+    return null;
+  }
 };

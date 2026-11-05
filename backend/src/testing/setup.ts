@@ -17,8 +17,8 @@ vi.mock("@clerk/fastify", () => ({
   },
 }));
 
-// OpenAI: fake vectors of the real size, a fixed answer citing passage 1, and
-// one fixed Note per batch, so tests are free, fast, and offline.
+// OpenAI: fake vectors of the real size, a fixed answer citing passage 1, one
+// fixed Note per batch, and a fixed One Page, so tests are free, fast, and offline.
 vi.mock("@langchain/openai", async () => {
   const { EMBEDDING_DIMENSIONS } = await import("@app/shared/constants");
   const { RunnableLambda } = await import("@langchain/core/runnables");
@@ -34,7 +34,19 @@ vi.mock("@langchain/openai", async () => {
       },
     ],
   };
+  const FAKE_ONE_PAGE = { onePage: "The book is about training briefly." };
   const FAKE_ANSWER = { covered: true, answer: "The Source says this [1]." };
+  const fakeReplyFor = (shape: object) => {
+    if ("sections" in shape) {
+      return FAKE_NOTES;
+    }
+
+    if ("onePage" in shape) {
+      return FAKE_ONE_PAGE;
+    }
+
+    return FAKE_ANSWER;
+  };
 
   return {
     OpenAIEmbeddings: class {
@@ -43,9 +55,7 @@ vi.mock("@langchain/openai", async () => {
     },
     ChatOpenAI: class {
       withStructuredOutput = (schema: { shape: object }) =>
-        RunnableLambda.from(async () =>
-          "sections" in schema.shape ? FAKE_NOTES : FAKE_ANSWER,
-        );
+        RunnableLambda.from(async () => fakeReplyFor(schema.shape));
     },
   };
 });

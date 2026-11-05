@@ -4,7 +4,7 @@ import { and, count, desc, eq, gt } from "drizzle-orm";
 import { CreateSourceRequestBody, PageText } from "@app/shared/schemas";
 import { db } from "../db";
 import { HttpError } from "../errors";
-import { ingestContent } from "./ingestion.service";
+import { ingestContent, writeOnePage } from "./ingestion.service";
 
 export const createSource = async (
   data: CreateSourceRequestBody,
@@ -70,17 +70,23 @@ export const completeSourceIngestionByUserId = async (
   sourceId: string,
   userId: number,
 ) => {
-  const [source] = await db
-    .update(sources)
-    .set({ state: "ready", ingestionProgress: 100 })
-    .where(and(eq(sources.id, sourceId), eq(sources.userId, userId)))
-    .returning();
+  const source = await db.query.sources.findFirst({
+    where: and(eq(sources.id, sourceId), eq(sources.userId, userId)),
+  });
 
   if (!source) {
     throw new HttpError(404, "Source not found");
   }
 
-  return source;
+  const onePage = await writeOnePage(sourceId);
+
+  const [readySource] = await db
+    .update(sources)
+    .set({ state: "ready", ingestionProgress: 100, onePage })
+    .where(eq(sources.id, sourceId))
+    .returning();
+
+  return readySource;
 };
 
 export const ingestPagesByUserId = async (
