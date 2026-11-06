@@ -2,6 +2,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { z } from "zod";
 
 import { chatModel } from "../ai-models";
+import { MAX_SEARCH_QUERIES } from "./retrieval.service";
 
 const ANSWER_SYSTEM_PROMPT = `
 You are a reading mentor. You answer questions using only the passages below, taken from the reader's books, your own notes on sections of those books, and each book's One Page: your big picture of the whole book.
@@ -50,4 +51,37 @@ const answerSchema = z.object({
 
 export const answerChain = answerPrompt.pipe(
   chatModel.withStructuredOutput(answerSchema),
+);
+
+const SEARCH_QUERIES_SYSTEM_PROMPT = `
+You turn a reader's question into search queries that find the passages answering it.
+
+The passages all come from these books: {books}. Their authors' names and titles appear all over them, so never put those in a query: they match everything and find nothing specific.
+
+Rules:
+- Write one query per part of the question, at most ${MAX_SEARCH_QUERIES}.
+- Keep other names the question mentions, of people, places, or works.
+- Use the words the book itself would likely use.
+- Never answer the question.
+- If the message asks more than ${MAX_SEARCH_QUERIES} separate questions, like a numbered list, set tooManyQuestions to true. One question with several parts is still one question.
+`;
+
+const searchQueriesPrompt = ChatPromptTemplate.fromMessages<{
+  books: string;
+  question: string;
+}>([
+  ["system", SEARCH_QUERIES_SYSTEM_PROMPT],
+  ["human", "{question}"],
+]);
+
+const searchQueriesSchema = z.object({
+  // TODO: remove once a message is split into separate questions.
+  tooManyQuestions: z.boolean(),
+  queries: z
+    .array(z.string())
+    .describe(`1 to ${MAX_SEARCH_QUERIES} short search queries`),
+});
+
+export const searchQueriesChain = searchQueriesPrompt.pipe(
+  chatModel.withStructuredOutput(searchQueriesSchema),
 );

@@ -1,13 +1,17 @@
 import { ChunkRow, SourceRow } from "@app/shared/db/schema";
 import { AnswerPart, Citation, RichText } from "@app/shared/schemas";
 
-import { answerChain } from "./mentor.chains";
-import { retrieveFromSourceId } from "./retrieval.service";
+import { answerChain, searchQueriesChain } from "./mentor.chains";
+import { MAX_SEARCH_QUERIES, retrieveFromSourceId } from "./retrieval.service";
 
 type MentorReply = { parts: AnswerPart[]; citations: Citation[] };
 
 type Passage = Pick<ChunkRow, "sourceId" | "page" | "content"> &
   Pick<SourceRow, "title" | "author">;
+
+//TODO: remove once a message is split into separate questions.
+const ONE_QUESTION_AT_A_TIME =
+  "Please ask one question at a time, so I can search the book properly for each.";
 
 // Splitting on a capture group keeps the numbers: text, "2", text, "5", text.
 const CITATION_MARKER = /\[(\d+)\]/;
@@ -68,9 +72,47 @@ export const answerQuestion = async (
   question: string,
   sources: SourceRow[],
 ): Promise<MentorReply> => {
+  const books = sources
+    .map((source) => `"${source.title}" by ${source.author}`)
+    .join("; ");
+
+  const { tooManyQuestions, queries } = await searchQueriesChain.invoke({
+    books,
+    question,
+  });
+
+  // TODO: replace with splitting the message into separate questions.
+  if (tooManyQuestions) {
+    return {
+      parts: [
+        {
+          type: "text",
+          content: [{ type: "text", text: ONE_QUESTION_AT_A_TIME }],
+        },
+      ],
+      citations: [],
+    };
+  }
+
+  const rewrittenQueries = queries.slice(0, MAX_SEARCH_QUERIES);
+
+  // ---------- Retrieval test: keep one option uncommented ----------
+
+  // Option A: the original question only
+  // const searchQueries = [question];
+
+  // Option B: the rewritten queries only
+  // const searchQueries =
+  //   rewrittenQueries.length > 0 ? rewrittenQueries : [question];
+
+  // Option C: the original question and the rewritten queries
+  const searchQueries = [question, ...rewrittenQueries];
+
+  // ----------------------------------------------------------------
+
   const retrievedPerSource = await Promise.all(
     sources.map(async (source) => {
-      const retrieved = await retrieveFromSourceId(question, source.id);
+      const retrieved = await retrieveFromSourceId(searchQueries, source.id);
       const book = { title: source.title, author: source.author };
 
       const passagesInBookOrder = retrieved.passages.toSorted(
