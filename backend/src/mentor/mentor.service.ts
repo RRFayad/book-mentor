@@ -161,8 +161,7 @@ export const answerQuestion = async (
     question,
   });
 
-  // For now we don't handle the case where it can't answer from the passages
-  if (!reply.covered) {
+  if (!reply.covered && !reply.answer.trim()) {
     return { parts: [{ type: "not-covered" }], citations: [] };
   }
 
