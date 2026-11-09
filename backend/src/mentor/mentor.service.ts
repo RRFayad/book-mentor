@@ -68,12 +68,39 @@ const toCitedAnswer = (answer: string, passages: Passage[]): MentorReply => {
   };
 };
 
-// Searches each book with the given queries and answers from what it finds.
-export const answerFromSearchQueries = async (
+export const answerQuestion = async (
   question: string,
   sources: SourceRow[],
-  searchQueries: string[],
 ): Promise<MentorReply> => {
+  const books = sources
+    .map((source) => `"${source.title}" by ${source.author}`)
+    .join("; ");
+
+  const { tooManyQuestions, queries } = await searchQueriesChain.invoke({
+    books,
+    question,
+  });
+
+  // TODO: replace with splitting the message into separate questions.
+  if (tooManyQuestions) {
+    return {
+      parts: [
+        {
+          type: "text",
+          content: [{ type: "text", text: ONE_QUESTION_AT_A_TIME }],
+        },
+      ],
+      citations: [],
+    };
+  }
+
+  const rewrittenQueries = queries.slice(0, MAX_SEARCH_QUERIES);
+
+  // The question is searched too, in its own words: rewrites find what it
+  // doesn't name, and it catches what a drifting rewrite misses. Compared in
+  // docs/retrieval.md.
+  const searchQueries = [question, ...rewrittenQueries];
+
   const retrievedPerSource = await Promise.all(
     sources.map(async (source) => {
       const retrieved = await retrieveFromSourceId(searchQueries, source.id);
@@ -130,40 +157,4 @@ export const answerFromSearchQueries = async (
   }
 
   return toCitedAnswer(reply.answer, passages);
-};
-
-export const answerQuestion = async (
-  question: string,
-  sources: SourceRow[],
-): Promise<MentorReply> => {
-  const books = sources
-    .map((source) => `"${source.title}" by ${source.author}`)
-    .join("; ");
-
-  const { tooManyQuestions, queries } = await searchQueriesChain.invoke({
-    books,
-    question,
-  });
-
-  // TODO: replace with splitting the message into separate questions.
-  if (tooManyQuestions) {
-    return {
-      parts: [
-        {
-          type: "text",
-          content: [{ type: "text", text: ONE_QUESTION_AT_A_TIME }],
-        },
-      ],
-      citations: [],
-    };
-  }
-
-  const rewrittenQueries = queries.slice(0, MAX_SEARCH_QUERIES);
-
-  // The question is searched too, in its own words: rewrites find what it
-  // doesn't name, and it catches what a drifting rewrite misses. Compared in
-  // evals/retrieval-check.ts.
-  const searchQueries = [question, ...rewrittenQueries];
-
-  return answerFromSearchQueries(question, sources, searchQueries);
 };
