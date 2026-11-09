@@ -1,0 +1,188 @@
+[
+  {
+    "question": "How did Mentzer first hear of Hans Selye?",
+    "answer": "Through Dr. John Ziegler, who kept referring to Selye's research. Later Mentzer found Selye's book The Stress of Life in a bookstore.",
+    "pages": [103, 104],
+    "answerable": true
+  },
+  {
+    "question": "Which philosopher influenced Mentzer, and how does the book use her ideas?",
+    "answer": "Ayn Rand / Objectivism. Mentzer quotes Rand on identity and on logic as 'the art of non-contradictory identification'; the foreword says the book was built with the help of Objectivist philosophy, and her novels were among his favorite reading.",
+    "pages": [18, 46, 60, 66],
+    "answerable": true
+  },
+  {
+    "question": "What are the fundamental principles of bodybuilding according to the book?",
+    "answer": "Seven, not the traditional three: Identity, Intensity, Duration, Frequency, Specificity, Adaptation and Progression.",
+    "pages": [8, 18],
+    "answerable": true
+  },
+  {
+    "question": "How are intensity and duration related?",
+    "answer": "Inversely: you can train hard or train long, but not both. Mentzer ties this to Aristotle's Law of Non-Contradiction.",
+    "pages": [71],
+    "answerable": true
+  },
+  {
+    "question": "What is pre-exhaustion, and why must there be no rest between the two exercises?",
+    "answer": "An isolation exercise to failure, followed immediately by a compound exercise, so a weaker 'weak link' muscle (e.g., triceps) doesn't limit the target muscle. No rest because the pre-exhausted muscle regains up to 50% of its strength within 3–5 seconds.",
+    "pages": [131, 132],
+    "answerable": true
+  },
+  {
+    "question": "What are the four techniques for maximum muscle stimulation?",
+    "answer": "Start from a pre-stretched position (myotatic reflex); move at a relatively slow, deliberate speed; use the fullest range of movement; use sufficient resistance.",
+    "pages": [97, 98],
+    "answerable": true
+  },
+  {
+    "question": "What's in the Ideal (Principled) Workout?",
+    "answer": "A four-workout cycle, one set to failure per exercise, 4–7 days' rest after each. 1) Chest & back: dumbbell flyes 6–10 then incline presses 1–3; straight-arm pulldowns 6–10 then palms-up pulldowns 6–10; deadlifts 6–10. 2) Legs & abs: leg extensions, leg presses, standing calf raises, sit-ups, all 12–20. 3) Shoulders & arms: dumbbell laterals 6–10, bent-over laterals 6–10, palms-up pulldowns 6–10, pressdowns 6–10 then dips 3–5. 4) Repeat Workout Two. Workouts shrink over time to 10–12 minutes.",
+    "pages": [168, 197, 198, 199],
+    "answerable": true
+  },
+  {
+    "question": "How much muscle can a bodybuilder realistically gain in a year?",
+    "answer": "About five pounds of pure muscle a year is a considerable achievement. A few genetically gifted people may gain 10 pounds or more.",
+    "pages": [31, 32],
+    "answerable": true
+  },
+  {
+    "question": "What is the consolidation routine, and when should you switch to it?",
+    "answer": "A two-workout routine of compound movements only (isolation exercises like flyes, straight-arm pulldowns, leg extensions and triceps extensions are dropped), with 5–6 days' rest between workouts, rising to once every 6–7 days or less. Switch after 2–3 cycles with no strength gains, following a two-week layoff.",
+    "pages": [236, 237, 238, 239],
+    "answerable": true
+  },
+  {
+    "question": "Which exercises are in Workout One and which in Workout Two of the consolidation routine?",
+    "answer": "Workout One: squats (alternated with leg presses) 1×12–20, close-grip palms-up pulldowns 1×6–10, dips 1×6–10. Workout Two: deadlifts (alternated with shrugs) 1×6–10, press behind neck 1×6–10, standing calf raises 1×12–20. NOTE: this table is an image on p.238; text extraction returns only the headings.",
+    "pages": [238],
+    "answerable": true
+  },
+  {
+    "question": "Why are curls left out of the consolidation routine, and what does Mentzer say about the deadlift?",
+    "answer": "Close-grip, palms-up pulldowns already stimulate the biceps enough. The deadlift is 'the greatest overall growth exercise', working everything on the back of the body from the Achilles tendon to the back of the head.",
+    "pages": [239, 240],
+    "answerable": true
+  },
+  {
+    "question": "How did Mentzer use rest-pause training?",
+    "answer": "He used a weight for one maximum rep, rested 10 seconds, and repeated, reducing the weight 10% or getting slight partner help by the 2nd–3rd rep. 4 reps per set, never more than 3 sets per bodypart. 15 s rest was too long, 7 s too short; 6 reps led to overtraining. He improved 66% on each exercise.",
+    "pages": [140, 141],
+    "answerable": true
+  },
+  {
+    "question": "At what pace should aerobic work be done when getting ripped, and why?",
+    "answer": "A relaxed, conversational pace; then up to 90% of the fuel comes from stored fat. Gasping for breath shifts the body toward burning sugar.",
+    "pages": [251],
+    "answerable": true
+  },
+  {
+    "question": "How should you reduce calories when dieting for a contest?",
+    "answer": "Start by cutting 500 calories a day, then about 200 more per week. A calorie is a calorie: excess protein makes you fat just like excess carbs or fat.",
+    "pages": [251, 252],
+    "answerable": true
+  },
+  {
+    "question": "What macronutrient split does the book recommend?",
+    "answer": "60% carbohydrates, 25% protein, 15% fat, from the four basic food groups (given in the context of contest dieting).",
+    "pages": [251],
+    "answerable": true
+  },
+  {
+    "question": "How did Mentzer first learn about high-intensity training?",
+    "answer": "Through Casey Viator, whom he met at the 1971 Mr. America. Casey trained only about an hour a day, three times a week, when other top bodybuilders trained up to five hours a day.",
+    "pages": [53, 54],
+    "answerable": true
+  },
+  {
+    "question": "What analogy did Arthur Jones use for exercise and muscle growth?",
+    "answer": "A stick of dynamite and a hammer: light taps never cause an explosion no matter how many, but one hard blow does. Only high intensity stimulates growth.",
+    "pages": [127, 128],
+    "answerable": true
+  },
+  {
+    "question": "What happened to Mentzer at the 1980 Mr. Olympia?",
+    "answer": "In Sydney, Australia, he was the favorite, having come in 10 pounds of muscle heavier and more defined, but was placed fifth. The book suggests the establishment resented him for questioning supplements and fraudulent training practices.",
+    "pages": [15],
+    "answerable": true
+  },
+  {
+    "question": "How did Mentzer's mother's death affect his 1979 Mr. Olympia preparation?",
+    "answer": "She died after he returned to the U.S. at the end of May 1979. He drifted through June and July with anxiety, little training and no diet, reaching the worst condition of his life. Only in mid-August, watching his brother Ray prepare for the Mr. America, did he refocus for the Olympia in Columbus.",
+    "pages": [282, 283],
+    "answerable": true
+  },
+  {
+    "question": "Are free weights or machines better?",
+    "answer": "Neither is magic. Beginners should build a foundation with basic free-weight exercises; intermediates can use machines about 25% of the time to refine bodyparts; advanced bodybuilders train mainly with free weights off-season and add machines pre-contest. Competitive bodybuilders should use both.",
+    "pages": [162, 163],
+    "answerable": true
+  },
+  {
+    "question": "Which scientist's work explains how the body adapts to training, and how did Mentzer come across it?",
+    "answer": "Through Dr. John Ziegler, who kept referring to Selye's research. Later Mentzer found Selye's book The Stress of Life in a bookstore.",
+    "pages": [103, 104],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "What comparison did Mentzer's early mentor use to explain how exercise builds muscle?",
+    "answer": "A stick of dynamite and a hammer: light taps never cause an explosion no matter how many, but one hard blow does. Only high intensity stimulates growth.",
+    "pages": [127, 128],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "How did Mentzer push a set further by resting a few seconds between single reps?",
+    "answer": "He used a weight for one maximum rep, rested 10 seconds, and repeated, reducing the weight 10% or getting slight partner help by the 2nd–3rd rep. 4 reps per set, never more than 3 sets per bodypart. 15 s rest was too long, 7 s too short; 6 reps led to overtraining. He improved 66% on each exercise.",
+    "pages": [140, 141],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "Why should an isolation exercise be followed right away by a compound one for the same muscle?",
+    "answer": "An isolation exercise to failure, followed immediately by a compound exercise, so a weaker 'weak link' muscle (e.g., triceps) doesn't limit the target muscle. No rest because the pre-exhausted muscle regains up to 50% of its strength within 3–5 seconds.",
+    "pages": [131, 132],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "How did a death in Mentzer's family affect his preparation for a major contest?",
+    "answer": "She died after he returned to the U.S. at the end of May 1979. He drifted through June and July with anxiety, little training and no diet, reaching the worst condition of his life. Only in mid-August, watching his brother Ray prepare for the Mr. America, did he refocus for the Olympia in Columbus.",
+    "pages": [282, 283],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "How hard should you push your cardio when cutting for a contest?",
+    "answer": "A relaxed, conversational pace; then up to 90% of the fuel comes from stored fat. Gasping for breath shifts the body toward burning sugar.",
+    "pages": [251],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "What does Mentzer say about CrossFit?",
+    "answer": "Nothing: the book doesn't mention it.",
+    "pages": [],
+    "answerable": false
+  },
+  {
+    "question": "What creatine dose does the book recommend?",
+    "answer": "Nothing: creatine isn't mentioned.",
+    "pages": [],
+    "answerable": false
+  },
+  {
+    "question": "What training routine did Dorian Yates follow?",
+    "answer": "Not covered. Yates is named only once (p.290) as an example of the power of the mind, with no training details.",
+    "pages": [],
+    "answerable": false
+  },
+  {
+    "question": "How many grams of protein per pound of bodyweight does Mentzer recommend?",
+    "answer": "Not covered. The book gives only a percentage split (25% of calories from protein), not grams per bodyweight.",
+    "pages": [],
+    "answerable": false
+  }
+]
