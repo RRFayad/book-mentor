@@ -32,7 +32,8 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
   when a question needs the expired Source. Even with no Sources left, the
   Conversation stays open: it can still use passages already cited in it.
   Conversations never expire on their own and are never read-only.
-- Memory: recent messages verbatim plus a Conversation Summary of older ones.
+- Memory: the last 3 questions and answers, verbatim. Older messages aren't
+  used (see Deferred to v2).
 - History only grows: messages can't be edited, answers can't be regenerated,
   and there is no branching. A streaming answer can be stopped, and answers can
   be copied.
@@ -45,8 +46,8 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - Never invents anything beyond its Sources. When nothing relevant is found, it
   says so plainly, with no general-knowledge fallback.
 - Its evidence is the Chunks of the Conversation's remaining Sources plus the
-  passages already cited in the Conversation. The Conversation Summary and message
-  history are context only, never evidence (see ADR 0003).
+  passages already cited in the Conversation. Recent messages are context only,
+  never evidence (see ADR 0003).
 - It may state what its Notes and the One Page conclude. They are never cited:
   instead of a Citation marker, it gives the section and pages in parentheses,
   like "(Chapter 3, pp. 40–52)".
@@ -141,6 +142,12 @@ job queue, so closing the tab no longer stops it; ADR 0001), re-adding a Source
 to an existing Conversation, suggested starter questions, preloaded demo
 Library, original-PDF viewer, editing or regenerating messages, branching
 Conversations.
+
+**Longer Conversation memory.** v1 passes only the last 3 questions and
+answers, which covers follow-ups. Older context was planned and left out until
+real Conversations show the need. Options, cheapest first: the reader's earlier
+questions verbatim; a Conversation Summary updated only when needed, storing
+the last message it covers; a tool the Mentor calls to read older messages.
 
 ## Open engineering questions
 
