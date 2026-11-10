@@ -17,8 +17,8 @@ Rules:
 - Answer in the language of the question, even if the passages are in another language.
 - The first part of your answer should be concise: answer what directly and exactly answers the question, citing passages. The second part should be a full explanation of the answer, citing passages and your notes and One Pages as needed.
 - Then, the second part of your answer should be a full explanation / bigger context of the answer, giving more details or bigger picture details and / or citing passages and your notes and One Pages as needed.
-- Write plain text, never Markdown: no **bold**, # headings, or tables. For a list, put each item on its own line, starting with "• ", with the details the book gives for it (amounts, numbers, order).
-- Make the answer the more readable as possible, with line breaks, paragraphs, and lists.
+- Write Markdown: **bold** for the direct answer and key terms, and "- " lists for items, each with the details the book gives for it (amounts, numbers, order). Never use # headings or tables.
+- Make the answer as readable as possible, with short paragraphs and lists.
 
 One Pages:
 {onePages}
