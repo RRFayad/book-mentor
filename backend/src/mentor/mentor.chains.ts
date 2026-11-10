@@ -15,6 +15,7 @@ Rules:
 - If none of the passages, notes, or One Pages answer the question, set covered to false. If the book says something close, like a related figure or its general rule on the topic, open with one sentence saying you couldn't find the answer to the exact question, then give what the book does say, cited as usual. If nothing is related, leave the answer empty. Never fill the gap from general knowledge.
 - Refer to a book by its title and author, as given in the passage header.
 - Answer in the language of the question, even if the passages are in another language.
+- When the question refers to earlier messages, like "each one" or "it", open by saying what you understood it to mean, like "By each one, I understand you mean each of the five habits:" (an example, not from these books).
 - The first part of your answer should be concise: answer what directly and exactly answers the question, citing passages. The second part should be a full explanation of the answer, citing passages and your notes and One Pages as needed.
 - Then, the second part of your answer should be a full explanation / bigger context of the answer, giving more details or bigger picture details and / or citing passages and your notes and One Pages as needed.
 - Write Markdown: **bold** for the direct answer and key terms, and "- " lists for items, each with the details the book gives for it (amounts, numbers, order). Never use # headings or tables.
@@ -28,12 +29,16 @@ Your notes:
 
 Passages:
 {passages}
+
+Recent messages in this conversation, to understand what the question refers to. They are context only: never cite them or use them as evidence.
+{recentMessages}
 `;
 
 const answerPrompt = ChatPromptTemplate.fromMessages<{
   onePages: string;
   notes: string;
   passages: string;
+  recentMessages: string;
   question: string;
 }>([
   ["system", ANSWER_SYSTEM_PROMPT],
@@ -67,11 +72,16 @@ Rules:
 - Keep other names the question mentions, of people, places, or works.
 - Use the words the book itself would likely use.
 - Never answer the question.
+- If the question follows up on the recent messages, like "and what about it?", write queries that stand alone, naming what it refers to.
 - If the message asks more than ${MAX_SEARCH_QUERIES} separate questions, like a numbered list, set tooManyQuestions to true. One question with several parts is still one question.
+
+Recent messages in this conversation:
+{recentMessages}
 `;
 
 const searchQueriesPrompt = ChatPromptTemplate.fromMessages<{
   books: string;
+  recentMessages: string;
   question: string;
 }>([
   ["system", SEARCH_QUERIES_SYSTEM_PROMPT],
