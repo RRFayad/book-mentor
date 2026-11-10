@@ -143,9 +143,10 @@
   for plan-gated routes.
 - Auth hooks run in `preHandler`, after `clerkPlugin` reads the token there; an
   `onRequest` hook sees no session.
-- Every route declares response schemas from `@app/shared/schemas`, including
-  `errorResponseSchema` for 401/403/404 on protected routes, and uses
-  `withTypeProvider<ZodTypeProvider>()`. Errors use the `{ detail }` body.
+- Every route declares its success response schema from `@app/shared/schemas`
+  and uses `withTypeProvider<ZodTypeProvider>()`. Routes don't list their
+  error codes: errors are thrown as `HttpError`, `errorHandler` sends them with
+  the `{ detail }` body, and the tests document which errors each route returns.
 - Fastify treats `/path` and `/path/` as different routes; call routes without a
   trailing slash.
 - CORS accepts only `FRONTEND_URL`; keep it aligned with the Next.js app URL.

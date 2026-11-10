@@ -5,3 +5,4 @@
 
 export * from "./common.schema";
 export * from "./sources.schema";
+export * from "./conversations.schema";

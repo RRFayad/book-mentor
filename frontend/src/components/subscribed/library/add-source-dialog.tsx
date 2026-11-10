@@ -6,7 +6,7 @@ import { useId, useState, useTransition, type ReactNode } from "react";
 import {
   addSourceAction,
   completeSourceAction,
-  sendPageBatchAction,
+  sendPageBatchesAction,
 } from "@/actions/sources";
 import { showToast } from "@/components/toaster";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,11 @@ import {
 import { Input } from "@/components/ui/input";
 import type { NewSource, SourceKind } from "@/lib/backend/types";
 import { isNewSourceValid } from "@/lib/sources/new-source";
-import { isScanned, toPageBatches } from "@/lib/sources/pdf-pages";
+import {
+  isScanned,
+  PARALLEL_BATCHES,
+  toPageBatches,
+} from "@/lib/sources/pdf-pages";
 import { readPdf, type PdfBook } from "@/lib/sources/read-pdf";
 import { cn, tw } from "@/lib/utils";
 
@@ -112,21 +116,24 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
     }
   };
 
-  // Sends the book's pages to the backend, a batch at a time (ADR 0001).
+  // Sends the book's pages to the backend in batches, a few at once (ADR 0001).
   const sendPages = async (sourceId: string, pages: PdfBook["pages"]) => {
     const batches = toPageBatches(pages);
 
-    for (const [index, batch] of batches.entries()) {
-      const percent = Math.round((index / batches.length) * 100);
+    for (let start = 0; start < batches.length; start += PARALLEL_BATCHES) {
+      const percent = Math.round((start / batches.length) * 100);
       setSending(`Sending the book… ${percent}%`);
 
-      const { ok } = await sendPageBatchAction(sourceId, batch);
+      const group = batches.slice(start, start + PARALLEL_BATCHES);
+      const { ok } = await sendPageBatchesAction(sourceId, group);
 
       if (!ok) {
         return false;
       }
     }
 
+    // Completing writes the book's One Page, which takes a few seconds.
+    setSending("Finishing the book…");
     const { ok } = await completeSourceAction(sourceId);
 
     return ok;

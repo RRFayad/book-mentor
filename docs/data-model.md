@@ -25,7 +25,8 @@ users (Drizzle) ──┬─< sources ──< chunks
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | **sources**              | `id` (UUID), `user_id` → users, `kind` (book or blog), `title`, `author`, `page_count` (books), `post_count` and `address` (blogs), `state` (ingesting or ready), `ingestion_progress`, `created_at`, `expires_at` (7 days after creation; the expiry job deletes past it) | #17    |
 | **chunks**               | `id`, `source_id` → sources, `text`, `page` (books) or `post_title` and `post_url` (blogs), `embedding` (1536 numbers from `text-embedding-3-small`, pgvector)                                                                                                             | #18    |
-| **conversations**        | `id` (UUID), `user_id` → users, `title`, `summary` (rolling summary), `created_at`, `last_activity_at`                                                                                                                                                                     | #19    |
+| **notes**                | `id`, `source_id` → sources, `heading`, `first_page`, `last_page`, `content`, `embedding` (same model as chunks). The Mentor's Notes on a book's sections; never cited (ADR 0003)                                                                                          | —      |
+| **conversations**        | `id` (UUID), `user_id` → users, `title`, `summary` (the Conversation Summary), `created_at`, `last_activity_at`                                                                                                                                                            | #19    |
 | **conversation_sources** | `conversation_id` → conversations, `source_id` → sources (empty once deleted), a copy of the Source's `title`, `author`, `kind`                                                                                                                                            | #19    |
 | **messages**             | `id` (UUID, chosen by the browser), `conversation_id` → conversations, `role` (user or mentor), `text` (user), `status`, `parts` and `citations` (mentor, JSON), `created_at`                                                                                              | #19    |
 
@@ -44,6 +45,7 @@ users (Drizzle) ──┬─< sources ──< chunks
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | sources              | the row is deleted                                                                                                         |
 | chunks               | deleted with it (`ON DELETE CASCADE`): search no longer finds it                                                           |
+| notes                | deleted with it (`ON DELETE CASCADE`)                                                                                      |
 | conversation_sources | the row stays; `source_id` becomes empty (`ON DELETE SET NULL`); the copied title and author keep the "Expired" chip named |
 | messages             | unchanged: Citations keep their copied text, so old answers stay checkable                                                 |
 

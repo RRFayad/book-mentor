@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import type { ConversationSummary } from "@/lib/backend/types";
+import type { ConversationListItem } from "@/lib/backend/types";
 import { groupConversationsByDate } from "@/lib/conversations/group-by-date";
 
 // Dates use the local-time Date constructor, so the tests pass in any time zone.
 const local = (day: number, hour = 12, minute = 0): Date =>
   new Date(2026, 9, day, hour, minute);
 
-const conversation = (id: string, lastActivity: Date): ConversationSummary => ({
+const conversation = (
+  id: string,
+  lastActivity: Date,
+): ConversationListItem => ({
   id,
   title: `Conversation ${id}`,
   lastActivityAt: lastActivity.toISOString(),
@@ -15,7 +18,7 @@ const conversation = (id: string, lastActivity: Date): ConversationSummary => ({
 
 const NOW = local(15, 10);
 
-const groupIds = (conversations: ConversationSummary[]) =>
+const groupIds = (conversations: ConversationListItem[]) =>
   groupConversationsByDate(conversations, NOW).map((group) => ({
     label: group.label,
     ids: group.conversations.map((item) => item.id),

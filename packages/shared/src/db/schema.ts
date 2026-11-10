@@ -2,8 +2,10 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -13,11 +15,14 @@ import { sql } from "drizzle-orm";
 
 import {
   EMBEDDING_DIMENSIONS,
+  MENTOR_ANSWER_STATUSES,
+  MESSAGE_ROLES,
   SOURCE_KINDS,
   SOURCE_LIFETIME_DAYS,
   SOURCE_STATES,
   SUBSCRIPTION_PLANS,
 } from "../constants";
+import type { AnswerPart, Citation } from "../schemas";
 
 export const userRole = pgEnum("user_role", ["user", "admin"]);
 
@@ -76,6 +81,7 @@ export const sources = pgTable(
     pageCount: integer("page_count"), // books only
     postCount: integer("post_count"), // blogs only
     address: text("address"), // blogs only
+    onePage: text("one_page"), // books only, written when the book becomes Ready
     state: sourceState("state").notNull().default("ingesting"),
     ingestionProgress: integer("ingestion_progress").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -119,3 +125,97 @@ export const chunks = pgTable(
 
 export type ChunkRow = typeof chunks.$inferSelect;
 export type NewChunkRow = typeof chunks.$inferInsert;
+
+// The Mentor's Notes on a book's sections, written as its pages are ingested.
+// A section cut by a batch boundary gets one Note per batch.
+export const notes = pgTable(
+  "notes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => sources.id, { onDelete: "cascade" }),
+    heading: text("heading").notNull(),
+    firstPage: integer("first_page").notNull(),
+    lastPage: integer("last_page").notNull(),
+    content: text("content").notNull(),
+    embedding: vector("embedding", {
+      dimensions: EMBEDDING_DIMENSIONS,
+    }).notNull(),
+  },
+  (table) => [
+    index("notes_source_id_first_page_idx").on(table.sourceId, table.firstPage),
+  ],
+);
+
+export type NoteRow = typeof notes.$inferSelect;
+
+export const conversations = pgTable(
+  "conversations",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    lastActivityAt: timestamp("last_activity_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("conversations_user_id_idx").on(table.userId)],
+);
+
+export type ConversationRow = typeof conversations.$inferSelect;
+export type NewConversationRow = typeof conversations.$inferInsert;
+
+// The 1 to 3 Sources a Conversation answers from.
+export const conversationSources = pgTable(
+  "conversation_sources",
+  {
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => sources.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.conversationId, table.sourceId] })],
+);
+
+export type ConversationSourceRow = typeof conversationSources.$inferSelect;
+
+export const messageRole = pgEnum("message_role", MESSAGE_ROLES);
+export const mentorAnswerStatus = pgEnum(
+  "mentor_answer_status",
+  MENTOR_ANSWER_STATUSES,
+);
+
+export const messages = pgTable(
+  "messages",
+  {
+    id: uuid().primaryKey(), // generated in the client
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    role: messageRole("role").notNull(),
+    text: text("text"), // questions only
+    parts: jsonb("parts").$type<AnswerPart[]>(), // answers only
+    citations: jsonb("citations").$type<Citation[]>(), // answers only
+    status: mentorAnswerStatus("status"), // answers only
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("messages_conversation_id_created_at_idx").on(
+      table.conversationId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export type MessageRow = typeof messages.$inferSelect;
+export type NewMessageRow = typeof messages.$inferInsert;

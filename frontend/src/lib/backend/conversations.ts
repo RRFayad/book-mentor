@@ -3,16 +3,17 @@ import "server-only";
 import { callBackend } from "@/lib/backend/call-backend";
 import type {
   Conversation,
-  ConversationSummary,
+  ConversationListItem,
   CreateConversationResult,
 } from "@/lib/backend/types";
 
 // The Conversation routes arrive in #19 (docs/api-contract.md). Until then the
 // API answers 404, so these return their empty result.
 
-export const listConversations = async (): Promise<ConversationSummary[]> =>
+export const listConversations = async (): Promise<ConversationListItem[]> =>
   callBackend("list Conversations", [], async (backend) => {
-    const { data } = await backend.get<ConversationSummary[]>("/conversations");
+    const { data } =
+      await backend.get<ConversationListItem[]>("/conversations");
 
     return data;
   });

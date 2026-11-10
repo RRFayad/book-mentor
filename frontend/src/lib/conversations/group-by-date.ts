@@ -1,10 +1,10 @@
-import type { ConversationSummary } from "@/lib/backend/types";
+import type { ConversationListItem } from "@/lib/backend/types";
 
 export type ConversationGroupLabel = "Today" | "Previous 7 days" | "Older";
 
 export type ConversationGroup = {
   label: ConversationGroupLabel;
-  conversations: ConversationSummary[];
+  conversations: ConversationListItem[];
 };
 
 const startOfLocalDay = (date: Date, daysBefore = 0): Date =>
@@ -14,7 +14,7 @@ const startOfLocalDay = (date: Date, daysBefore = 0): Date =>
 // Today: today's date. Previous 7 days: one of the 7 dates before today.
 // Older: anything before that. Newest first; empty groups are left out.
 export const groupConversationsByDate = (
-  conversations: ConversationSummary[],
+  conversations: ConversationListItem[],
   now: Date,
 ): ConversationGroup[] => {
   const todayStart = startOfLocalDay(now).getTime();

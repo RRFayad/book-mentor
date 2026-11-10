@@ -17,15 +17,53 @@ vi.mock("@clerk/fastify", () => ({
   },
 }));
 
-// OpenAI: fake vectors of the real size, so tests are free, fast, and offline.
+// OpenAI: fake vectors of the real size, a fixed answer citing passage 1, one
+// fixed Note per batch, and a fixed One Page, so tests are free, fast, and offline.
 vi.mock("@langchain/openai", async () => {
   const { EMBEDDING_DIMENSIONS } = await import("@app/shared/constants");
+  const { RunnableLambda } = await import("@langchain/core/runnables");
   const fakeVector = () => Array<number>(EMBEDDING_DIMENSIONS).fill(0.01);
+
+  const FAKE_NOTES = {
+    sections: [
+      {
+        heading: "Training Briefly",
+        firstPage: 1,
+        lastPage: 2,
+        content: "Train briefly. (p. 1)\nRest fully. (p. 2)",
+      },
+    ],
+  };
+  const FAKE_ONE_PAGE = { onePage: "The book is about training briefly." };
+  const FAKE_SEARCH_QUERIES = {
+    tooManyQuestions: false,
+    queries: ["training briefly"],
+  };
+  const FAKE_ANSWER = { covered: true, answer: "The Source says this [1]." };
+  const fakeReplyFor = (shape: object) => {
+    if ("sections" in shape) {
+      return FAKE_NOTES;
+    }
+
+    if ("onePage" in shape) {
+      return FAKE_ONE_PAGE;
+    }
+
+    if ("queries" in shape) {
+      return FAKE_SEARCH_QUERIES;
+    }
+
+    return FAKE_ANSWER;
+  };
 
   return {
     OpenAIEmbeddings: class {
       embedDocuments = async (texts: string[]) => texts.map(fakeVector);
       embedQuery = async () => fakeVector();
+    },
+    ChatOpenAI: class {
+      withStructuredOutput = (schema: { shape: object }) =>
+        RunnableLambda.from(async () => fakeReplyFor(schema.shape));
     },
   };
 });
@@ -33,6 +71,6 @@ vi.mock("@langchain/openai", async () => {
 // Every test starts from an empty database.
 beforeEach(async () => {
   await db.execute(
-    sql`truncate table chunks, sources, subscriptions, users restart identity cascade`,
+    sql`truncate table notes, chunks, sources, subscriptions, users restart identity cascade`,
   );
 });

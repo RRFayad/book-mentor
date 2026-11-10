@@ -24,14 +24,15 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 
 ## Conversations
 
-- Started by picking **1 to 3 Ready Sources** and asking a first question; the
-  title is generated from that question and can be renamed. Conversations can
-  be deleted. The Source set never changes.
+- Started by picking **1 to 3 Ready Sources** (1 in the first release; see
+  v1.1 below) and asking a first question; the title is generated from that
+  question and can be renamed. Conversations can be deleted. The Source set
+  never changes.
 - When a Source expires, the Conversation continues; the Mentor says plainly
   when a question needs the expired Source. Even with no Sources left, the
   Conversation stays open: it can still use passages already cited in it.
   Conversations never expire on their own and are never read-only.
-- Memory: recent messages verbatim plus a rolling summary of older ones.
+- Memory: recent messages verbatim plus a Conversation Summary of older ones.
 - History only grows: messages can't be edited, answers can't be regenerated,
   and there is no branching. A streaming answer can be stopped, and answers can
   be copied.
@@ -44,8 +45,11 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - Never invents anything beyond its Sources. When nothing relevant is found, it
   says so plainly, with no general-knowledge fallback.
 - Its evidence is the Chunks of the Conversation's remaining Sources plus the
-  passages already cited in the Conversation. The rolling summary and message
+  passages already cited in the Conversation. The Conversation Summary and message
   history are context only, never evidence (see ADR 0003).
+- It may state what its Notes and the One Page conclude. They are never cited:
+  instead of a Citation marker, it gives the section and pages in parentheses,
+  like "(Chapter 3, pp. 40–52)".
 - Answers open with **What the Source says** (with Citations). **What it means**
   and **How to apply it** are added only when they help. Practical lookups don't
   get them.
@@ -56,6 +60,27 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - **Citations** are inline markers that open a side panel showing the cited text,
   title, author, and page (book) or post link (blog). They keep a copy of the
   text, so they still work after Expiry.
+
+## Notes and the One Page
+
+Chunks alone miss two kinds of questions: a section's outline, like a
+chapter's full list of steps, is spread over several Chunks that retrieval
+returns only in part; and the big picture ("What is the book's main
+argument?") is in no single passage.
+
+- **Notes**: as each batch of pages arrives, the Mentor writes a Note for each
+  chapter or major section in it, the way a reader takes study notes. Every
+  list is kept whole, and every line names its page. A section cut by a batch
+  boundary gets a Note in each batch.
+- **One Page**: when the book is complete, the Mentor reorganizes its Notes
+  into the book's big picture, which can run longer than a page.
+- The best-matching Notes are retrieved alongside the Chunks; the One Page goes
+  with every question.
+- Both are the Mentor's understanding, not Source text, so they are never cited
+  (ADR 0003).
+- They must stay cheap and fast: one model call per batch for Notes and one per
+  book for the One Page, on a low-cost model, without slowing ingestion
+  noticeably.
 
 ## Screens
 
@@ -92,6 +117,20 @@ removed.
 - Proposed, not yet confirmed: replace the page and post limits with one text
   size limit per Source (about a 500-page book), taking a blog's newest posts
   first. Depends on Tavily credit costs and whether post dates are available.
+
+## Next after the first release (v1.1)
+
+The first release answers from one Source per Conversation, in a plain
+retrieve-then-answer flow, so it can ship fast. In priority order:
+
+1. **Retrieval check.** Before answering, the Mentor checks each retrieved
+   passage against the question, and drops the ones that don't answer it (for
+   example, a beginner routine retrieved for a question about the main
+   training rule). If none remain, it searches again or says the Sources don't
+   cover it.
+   The One Page gives it the book's context to judge passages with.
+2. **Comparisons.** Conversations go back to 1 to 3 Sources, with the
+   Comparison answers described in The Mentor.
 
 ## Deferred to v2
 

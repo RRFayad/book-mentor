@@ -54,13 +54,22 @@ export const deleteSourceAction = async (
   return { ok };
 };
 
-export const sendPageBatchAction = async (
+// Next.js runs a browser's Server Actions one at a time, so batches meant to
+// go together are sent in one action, and from here to the API in parallel.
+export const sendPageBatchesAction = async (
   sourceId: string,
-  batch: PageBatch,
+  batches: PageBatch[],
 ): Promise<{ ok: boolean }> => {
   const canUse = await canCurrentUserUseSubscriptionPlan("basic");
 
-  return { ok: canUse && (await sendPageBatch(sourceId, batch)) };
+  if (!canUse) {
+    return { ok: false };
+  }
+
+  const sends = batches.map((batch) => sendPageBatch(sourceId, batch));
+  const results = await Promise.all(sends);
+
+  return { ok: results.every(Boolean) };
 };
 
 export const completeSourceAction = async (

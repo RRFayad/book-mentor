@@ -3,6 +3,10 @@ import type { PageBatch, PageText } from "@/lib/backend/types";
 // How many pages the browser sends in one request (ADR 0001).
 export const PAGES_PER_BATCH = 25;
 
+// How many batches go to the API at once, in one Server Action. Each batch
+// waits on the AI for its Notes, so three together is about three times faster.
+export const PARALLEL_BATCHES = 3;
+
 // A text piece as pdf.js returns it: the text, and whether a line ends after it.
 type TextPiece = {
   str: string;

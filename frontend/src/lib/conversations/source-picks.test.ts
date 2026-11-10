@@ -36,19 +36,15 @@ describe("toggleSourcePick", () => {
     expect(toggleSourcePick([], source("a", "ingesting"))).toEqual([]);
   });
 
-  it("allows at most 3 Sources", () => {
-    expect(toggleSourcePick(["a", "b", "c"], source("d"))).toEqual([
-      "a",
-      "b",
-      "c",
-    ]);
+  it("allows only 1 Source", () => {
+    expect(toggleSourcePick(["a"], source("b"))).toEqual(["a"]);
   });
 });
 
 describe("canStartConversation", () => {
-  it("needs 1 to 3 Sources and a question", () => {
+  it("needs 1 Source and a question", () => {
     expect(canStartConversation(["a"], "Why?")).toBe(true);
-    expect(canStartConversation(["a", "b", "c"], "Why?")).toBe(true);
+    expect(canStartConversation(["a", "b"], "Why?")).toBe(false);
     expect(canStartConversation([], "Why?")).toBe(false);
     expect(canStartConversation(["a"], "   ")).toBe(false);
   });

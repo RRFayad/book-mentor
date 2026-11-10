@@ -64,6 +64,34 @@
       "when": 1793047593145,
       "tag": "0008_past_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793235035254,
+      "tag": "0009_minor_shocker",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793654537217,
+      "tag": "0010_old_victor_mancha",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793901398244,
+      "tag": "0011_add-notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793905386373,
+      "tag": "0012_add-one-page",
+      "breakpoints": true
     }
   ]
 }
