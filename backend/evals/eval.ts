@@ -114,7 +114,7 @@ const evaluate = async (
   entry: AnswerKeyEntry,
   book: typeof sources.$inferSelect,
 ) => {
-  const reply = await answerQuestion(entry.question, [book]);
+  const reply = await answerQuestion(entry.question, [book], []);
   const answer = reply.parts.map(partToPlainText).join("\n");
   const { grade, reason } = await graderChain.invoke({
     question: entry.question,

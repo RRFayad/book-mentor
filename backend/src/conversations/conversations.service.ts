@@ -4,7 +4,18 @@ import {
   Message,
   SendMessageRequestBody,
 } from "@app/shared/schemas";
-import { and, asc, desc, eq, getTableColumns, gt, inArray } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  gt,
+  inArray,
+  isNull,
+  ne,
+  or,
+} from "drizzle-orm";
 import { db } from "../db";
 import {
   conversations,
@@ -190,10 +201,31 @@ const getConversationSources = async (conversationId: string) => {
     .where(eq(conversationSources.conversationId, conversationId));
 };
 
+// The last 3 questions and answers, so the Mentor understands follow-ups.
+const RECENT_MESSAGE_COUNT = 6;
+
+// Failed answers are left out: they hold no text.
+const getRecentMessages = async (conversationId: string) => {
+  const newestFirst = await db
+    .select()
+    .from(messages)
+    .where(
+      and(
+        eq(messages.conversationId, conversationId),
+        or(isNull(messages.status), ne(messages.status, "error")),
+      ),
+    )
+    .orderBy(desc(messages.createdAt))
+    .limit(RECENT_MESSAGE_COUNT);
+
+  return newestFirst.toReversed();
+};
+
 const getMentorReply = async (
   conversationId: string,
   question: string,
   selectedSources: SourceRow[],
+  recentMessages: MessageRow[],
 ) => {
   // LangSmith groups traces with the same conversation_id into one Thread.
   const tracedAnswerQuestion = traceable(answerQuestion, {
@@ -202,7 +234,11 @@ const getMentorReply = async (
   });
 
   try {
-    const reply = await tracedAnswerQuestion(question, selectedSources);
+    const reply = await tracedAnswerQuestion(
+      question,
+      selectedSources,
+      recentMessages,
+    );
 
     return { status: "complete" as const, ...reply };
   } catch (error) {
@@ -221,6 +257,7 @@ export const sendMessage = async (
   await findConversationByUserId(conversationId, userId);
 
   const selectedSources = await getConversationSources(conversationId);
+  const recentMessages = await getRecentMessages(conversationId);
 
   const [question] = await db
     .insert(messages)
@@ -241,6 +278,7 @@ export const sendMessage = async (
     conversationId,
     message.text,
     selectedSources,
+    recentMessages,
   );
   const answer: MentorAnswer = {
     id: message.answerId,

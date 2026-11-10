@@ -1,4 +1,4 @@
-import { ChunkRow, SourceRow } from "@app/shared/db/schema";
+import { ChunkRow, MessageRow, SourceRow } from "@app/shared/db/schema";
 import { AnswerPart, Citation, RichText } from "@app/shared/schemas";
 
 import { answerChain, searchQueriesChain } from "./mentor.chains";
@@ -68,16 +68,55 @@ const toCitedAnswer = (answer: string, passages: Passage[]): MentorReply => {
   };
 };
 
+// Remove citations from previous messages
+const toTextWithoutCitations = (messages: RichText) =>
+  messages
+    .flatMap((piece) => (piece.type === "text" ? [piece.text] : []))
+    .join("");
+
+const answerPartToText = (part: AnswerPart) => {
+  switch (part.type) {
+    case "section":
+    case "text":
+    case "not-addressed":
+      return toTextWithoutCitations(part.content);
+    case "positions":
+      return part.positions
+        .map((position) => toTextWithoutCitations(position.content))
+        .join("\n");
+    case "not-covered":
+      return "I couldn't find anything about this in the books.";
+  }
+};
+
+const formatRecentMessages = (recentMessages: MessageRow[]) =>
+  recentMessages
+    .map((message) => {
+      if (message.role === "user") {
+        return `Reader: ${message.text}`;
+      }
+
+      const answer = (message.parts ?? []).map(answerPartToText).join("\n");
+
+      return `Mentor: ${answer}`;
+    })
+    .join("\n\n");
+
 export const answerQuestion = async (
   question: string,
   sources: SourceRow[],
+  recentMessages: MessageRow[],
 ): Promise<MentorReply> => {
   const books = sources
     .map((source) => `"${source.title}" by ${source.author}`)
     .join("; ");
 
+  const formattedRecentMessages =
+    formatRecentMessages(recentMessages) || "None.";
+
   const { tooManyQuestions, queries } = await searchQueriesChain.invoke({
     books,
+    recentMessages: formattedRecentMessages,
     question,
   });
 
@@ -149,6 +188,7 @@ export const answerQuestion = async (
     onePages: formattedOnePages || "None.",
     notes: formattedNotes || "None.",
     passages: formattedPassages,
+    recentMessages: formattedRecentMessages,
     question,
   });
 

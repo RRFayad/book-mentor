@@ -2,6 +2,8 @@
 
 import type { DataMessagePartProps } from "@assistant-ui/react";
 import { SearchIcon } from "lucide-react";
+import Markdown, { type Components } from "react-markdown";
+import remarkBreaks from "remark-breaks";
 
 import { useConversation } from "@/components/subscribed/conversation/conversation-context";
 import type { AnswerPart, MentorAnswer, RichText } from "@/lib/backend/types";
@@ -15,8 +17,9 @@ import { cn, tw } from "@/lib/utils";
 
 const styles = {
   answer: tw("flex flex-col gap-3"),
-  // Answers are plain text: line breaks separate list items.
-  text: tw("whitespace-pre-line"),
+  markdown: tw(
+    "space-y-2 [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5",
+  ),
   heading: tw("text-base font-semibold [&:not(:first-child)]:mt-1"),
   reflection: tw("text-[13px] text-muted-foreground"),
   positions: tw("grid gap-3 sm:grid-cols-2"),
@@ -67,16 +70,47 @@ const CitationMarker = ({
   );
 };
 
-const Rich = ({ content, answerId }: { content: RichText; answerId: string }) =>
-  content.map((piece, index) =>
-    piece.type === "text" ? (
-      <span key={index} className={styles.text}>
-        {piece.text}
-      </span>
-    ) : (
-      <CitationMarker key={index} answerId={answerId} number={piece.number} />
-    ),
+const CITATION_LINK = "#citation-";
+
+// Citations become links, so Markdown that spans one (like bold) stays whole.
+const toMarkdown = (content: RichText) =>
+  content
+    .map((piece) =>
+      piece.type === "text"
+        ? piece.text
+        : `[${piece.number}](${CITATION_LINK}${piece.number})`,
+    )
+    .join("");
+
+const Rich = ({
+  content,
+  answerId,
+}: {
+  content: RichText;
+  answerId: string;
+}) => {
+  const components: Components = {
+    // Only Citation links render as links; any other link shows as text.
+    a: ({ href, children }) => {
+      if (!href?.startsWith(CITATION_LINK)) {
+        return <>{children}</>;
+      }
+
+      const number = Number(href.slice(CITATION_LINK.length));
+
+      return <CitationMarker answerId={answerId} number={number} />;
+    },
+  };
+
+  // remark-breaks keeps single line breaks, as in older plain-text answers.
+  return (
+    <div className={styles.markdown}>
+      <Markdown remarkPlugins={[remarkBreaks]} components={components}>
+        {toMarkdown(content)}
+      </Markdown>
+    </div>
   );
+};
 
 const Part = ({ part, answerId }: { part: AnswerPart; answerId: string }) => {
   const { sources } = useConversation();
@@ -88,9 +122,7 @@ const Part = ({ part, answerId }: { part: AnswerPart; answerId: string }) => {
       return (
         <>
           <h3 className={styles.heading}>{sectionLabels[part.section]}</h3>
-          <p>
-            <Rich content={part.content} answerId={answerId} />
-          </p>
+          <Rich content={part.content} answerId={answerId} />
           {part.section === "application" && (
             <p className={styles.reflection}>
               A reflection, not a claim from your Sources.
@@ -111,9 +143,9 @@ const Part = ({ part, answerId }: { part: AnswerPart; answerId: string }) => {
                 <p className={styles.positionAuthor}>
                   {source(position.sourceId)?.author}
                 </p>
-                <p className={styles.positionText}>
+                <div className={styles.positionText}>
                   <Rich content={position.content} answerId={answerId} />
-                </p>
+                </div>
               </div>
             ))}
           </div>
@@ -125,9 +157,7 @@ const Part = ({ part, answerId }: { part: AnswerPart; answerId: string }) => {
           <h3 className={styles.heading}>
             {notAddressedLabel(source(part.sourceId)?.title ?? "a Source")}
           </h3>
-          <p>
-            <Rich content={part.content} answerId={answerId} />
-          </p>
+          <Rich content={part.content} answerId={answerId} />
         </>
       );
     case "not-covered":
@@ -138,11 +168,7 @@ const Part = ({ part, answerId }: { part: AnswerPart; answerId: string }) => {
         </p>
       );
     case "text":
-      return (
-        <p>
-          <Rich content={part.content} answerId={answerId} />
-        </p>
-      );
+      return <Rich content={part.content} answerId={answerId} />;
   }
 };
 

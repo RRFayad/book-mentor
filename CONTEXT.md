@@ -51,5 +51,5 @@ A pointer from a Mentor answer to the Chunk(s) it is grounded in, keeping a copy
 _Avoid_: Reference, Footnote
 
 **Conversation Summary**:
-The Mentor's rolling summary of a Conversation's older messages, so a long Conversation still fits the prompt. Context only, never evidence. "Summary" alone always means this.
+The Mentor's summary of a Conversation's older messages, so a long Conversation still fits the prompt. Context only, never evidence. "Summary" alone always means this. Not in v1: the Mentor sees only the last 3 questions and answers.
 _Avoid_: Memory, History
