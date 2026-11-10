@@ -14,6 +14,7 @@ import {
   SourceRow,
   sources,
 } from "@app/shared/db/schema";
+import { traceable } from "langsmith/traceable";
 import { HttpError } from "../errors";
 import { answerQuestion } from "../mentor/mentor.service";
 
@@ -190,11 +191,18 @@ const getConversationSources = async (conversationId: string) => {
 };
 
 const getMentorReply = async (
+  conversationId: string,
   question: string,
   selectedSources: SourceRow[],
 ) => {
+  // LangSmith groups traces with the same conversation_id into one Thread.
+  const tracedAnswerQuestion = traceable(answerQuestion, {
+    name: "Mentor answer",
+    metadata: { conversation_id: conversationId },
+  });
+
   try {
-    const reply = await answerQuestion(question, selectedSources);
+    const reply = await tracedAnswerQuestion(question, selectedSources);
 
     return { status: "complete" as const, ...reply };
   } catch (error) {
@@ -229,7 +237,11 @@ export const sendMessage = async (
     throw new HttpError(409, "Message already sent");
   }
 
-  const reply = await getMentorReply(message.text, selectedSources);
+  const reply = await getMentorReply(
+    conversationId,
+    message.text,
+    selectedSources,
+  );
   const answer: MentorAnswer = {
     id: message.answerId,
     role: "mentor",

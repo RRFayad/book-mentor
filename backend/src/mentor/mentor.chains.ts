@@ -18,6 +18,7 @@ Rules:
 - The first part of your answer should be concise: answer what directly and exactly answers the question, citing passages. The second part should be a full explanation of the answer, citing passages and your notes and One Pages as needed.
 - Then, the second part of your answer should be a full explanation / bigger context of the answer, giving more details or bigger picture details and / or citing passages and your notes and One Pages as needed.
 - Write plain text, never Markdown: no **bold**, # headings, or tables. For a list, put each item on its own line, starting with "• ", with the details the book gives for it (amounts, numbers, order).
+- Make the answer the more readable as possible, with line breaks, paragraphs, and lists.
 
 One Pages:
 {onePages}
@@ -52,9 +53,9 @@ const answerSchema = z.object({
     ),
 });
 
-export const answerChain = answerPrompt.pipe(
-  chatModel.withStructuredOutput(answerSchema),
-);
+export const answerChain = answerPrompt
+  .pipe(chatModel.withStructuredOutput(answerSchema))
+  .withConfig({ runName: "Answer" });
 
 const SEARCH_QUERIES_SYSTEM_PROMPT = `
 You turn a reader's question into search queries that find the passages answering it.
@@ -85,6 +86,6 @@ const searchQueriesSchema = z.object({
     .describe(`1 to ${MAX_SEARCH_QUERIES} short search queries`),
 });
 
-export const searchQueriesChain = searchQueriesPrompt.pipe(
-  chatModel.withStructuredOutput(searchQueriesSchema),
-);
+export const searchQueriesChain = searchQueriesPrompt
+  .pipe(chatModel.withStructuredOutput(searchQueriesSchema))
+  .withConfig({ runName: "Search queries" });
