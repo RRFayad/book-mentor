@@ -113,7 +113,12 @@ const MentorMessage: FC<Pick<ThreadProps, "AnswerPart">> = ({ AnswerPart }) => {
     <MessagePrimitive.Root className={styles.mentorMessage}>
       <div className={styles.mentorContent}>
         <MessagePrimitive.Parts
-          components={{ data: { by_name: { answer: AnswerPart } } }}
+          // Empty: assistant-ui would add its own "●" while the answer runs;
+          // the answer part shows its own writing indicator.
+          components={{
+            data: { by_name: { answer: AnswerPart } },
+            Empty: () => null,
+          }}
         />
       </div>
       {!isRunning && (

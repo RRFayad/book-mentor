@@ -21,7 +21,6 @@ const styles = {
     "space-y-2 [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5",
   ),
   heading: tw("text-base font-semibold [&:not(:first-child)]:mt-1"),
-  reflection: tw("text-[13px] text-muted-foreground"),
   positions: tw("grid gap-3 sm:grid-cols-2"),
   position: tw("space-y-1 rounded-xl border p-4"),
   positionTitle: tw("text-sm font-semibold"),
@@ -123,11 +122,6 @@ const Part = ({ part, answerId }: { part: AnswerPart; answerId: string }) => {
         <>
           <h3 className={styles.heading}>{sectionLabels[part.section]}</h3>
           <Rich content={part.content} answerId={answerId} />
-          {part.section === "application" && (
-            <p className={styles.reflection}>
-              A reflection, not a claim from your Sources.
-            </p>
-          )}
         </>
       );
     case "positions":

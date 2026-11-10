@@ -95,8 +95,7 @@ export type RichText = (
   { type: "text"; text: string } | { type: "citation"; number: number }
 )[];
 
-export type AnswerSection =
-  "source-says" | "meaning" | "application" | "agreements" | "conflicts";
+export type AnswerSection = "agreements" | "conflicts";
 
 export type AnswerPart =
   | { type: "section"; section: AnswerSection; content: RichText }

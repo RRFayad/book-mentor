@@ -41,20 +41,22 @@ describe("answerToPlainText", () => {
         answer([
           {
             type: "section",
-            section: "source-says",
+            section: "agreements",
             content: [
               { type: "text", text: "Train to failure" },
               { type: "citation", number: 1 },
               { type: "text", text: "." },
             ],
           },
-          { type: "section", section: "meaning", content: text("Intensity.") },
+          {
+            type: "section",
+            section: "conflicts",
+            content: text("Intensity."),
+          },
         ]),
         sources,
       ),
-    ).toBe(
-      "What the Source says\nTrain to failure [1].\n\nWhat it means\nIntensity.",
-    );
+    ).toBe("Agreements\nTrain to failure [1].\n\nConflicts\nIntensity.");
   });
 
   it("names each Source in a comparison", () => {

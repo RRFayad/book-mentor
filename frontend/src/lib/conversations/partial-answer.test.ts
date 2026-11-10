@@ -21,8 +21,7 @@ const answer: MentorAnswer = {
   status: "complete",
   parts: [
     {
-      type: "section",
-      section: "source-says",
+      type: "text",
       content: [
         { type: "text", text: "One two three" },
         { type: "citation", number: 1 },
@@ -31,7 +30,7 @@ const answer: MentorAnswer = {
     },
     {
       type: "section",
-      section: "meaning",
+      section: "agreements",
       content: [{ type: "text", text: "Six seven" }],
     },
   ],
@@ -49,8 +48,7 @@ describe("partialAnswer", () => {
       status: "streaming",
       parts: [
         {
-          type: "section",
-          section: "source-says",
+          type: "text",
           content: [{ type: "text", text: "One two" }],
         },
       ],
@@ -62,8 +60,7 @@ describe("partialAnswer", () => {
     const partial = partialAnswer(answer, 4);
 
     expect(partial.parts[0]).toEqual({
-      type: "section",
-      section: "source-says",
+      type: "text",
       content: [
         { type: "text", text: "One two three" },
         { type: "citation", number: 1 },

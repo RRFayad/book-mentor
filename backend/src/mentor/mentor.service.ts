@@ -63,7 +63,7 @@ const toCitedAnswer = (answer: string, passages: Passage[]): MentorReply => {
   );
 
   return {
-    parts: [{ type: "section", section: "source-says", content }],
+    parts: [{ type: "text", content }],
     citations,
   };
 };

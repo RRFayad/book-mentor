@@ -51,9 +51,8 @@ Terms follow [CONTEXT.md](../CONTEXT.md); architectural decisions live in [docs/
 - It may state what its Notes and the One Page conclude. They are never cited:
   instead of a Citation marker, it gives the section and pages in parentheses,
   like "(Chapter 3, pp. 40–52)".
-- Answers open with **What the Source says** (with Citations). **What it means**
-  and **How to apply it** are added only when they help. Practical lookups don't
-  get them.
+- Answers have no fixed sections: a short, direct answer first, then the
+  explanation, in Markdown (bold and lists, no headings).
 - **Comparison** answers give each Source's position, then agreements,
   conflicts, and what a Source does not address.
 - Refers to Sources by author and title. Answers in the language of the
@@ -156,5 +155,5 @@ reflect, decide, compare), chat streaming transport, chat model, Tavily
 endpoints and credit costs, and how Expiry cleanup is scheduled. With
 assistant-ui (ADR 0004), also: which custom-backend runtime the thread uses
 (ExternalStoreRuntime, or the AI SDK runtime fed by a FastAPI stream), and the
-message-part contract for answer sections and Citations that both the stream
+message-part contract for answers and Citations that both the stream
 and the UI share.

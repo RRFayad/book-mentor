@@ -8,9 +8,6 @@ import type {
 
 // Headings shown for answer sections, on screen and in copied text.
 export const sectionLabels: Record<AnswerSection, string> = {
-  "source-says": "What the Source says",
-  meaning: "What it means",
-  application: "How to apply it",
   agreements: "Agreements",
   conflicts: "Conflicts",
 };

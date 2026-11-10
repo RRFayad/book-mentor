@@ -31,13 +31,7 @@ export const richTextSchema = z.array(
   ]),
 );
 
-export const answerSectionSchema = z.enum([
-  "source-says",
-  "meaning",
-  "application",
-  "agreements",
-  "conflicts",
-]);
+export const answerSectionSchema = z.enum(["agreements", "conflicts"]);
 
 export const answerPartSchema = z.discriminatedUnion("type", [
   z.object({
