@@ -48,3 +48,6 @@ next-env.d.ts
 
 # pdf.js worker, copied from node_modules on install
 /frontend/public/pdf.worker.min.mjs
+
+# eval reports
+backend/evals/results/

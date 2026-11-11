@@ -71,6 +71,7 @@ Rules:
 - Write one query per part of the question, at most ${MAX_SEARCH_QUERIES}.
 - Keep other names the question mentions, of people, places, or works.
 - Use the words the book itself would likely use.
+- Write each query as a short sentence, the way the book would say it, not keywords or quoted phrases: the search compares meaning, not exact words.
 - Never answer the question.
 - If the question is about a situation the book doesn't name, use the One Pages to translate it into the book's own themes and words.
 - If the question follows up on the recent messages, like "and what about it?", write queries that stand alone, naming what it refers to.
@@ -100,7 +101,9 @@ const searchQueriesSchema = z.object({
   followsUp: z.boolean(),
   queries: z
     .array(z.string())
-    .describe(`1 to ${MAX_SEARCH_QUERIES} short search queries`),
+    .describe(
+      `1 to ${MAX_SEARCH_QUERIES} search queries, each a short sentence`,
+    ),
 });
 
 export const searchQueriesChain = searchQueriesPrompt

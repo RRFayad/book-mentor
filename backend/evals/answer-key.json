@@ -1,187 +1,207 @@
 [
   {
-    "question": "How did Mentzer first hear of Hans Selye?",
-    "answer": "Through Dr. John Ziegler, who kept referring to Selye's research. Later Mentzer found Selye's book The Stress of Life in a bookstore.",
-    "pages": [103, 104],
+    "question": "How does Marcus advise preparing for the difficult people you'll meet each day?",
+    "answer": "Begin the morning by telling yourself you'll meet the busybody, ungrateful, arrogant, deceitful, envious and unsocial. They act from ignorance of good and evil; they're your kin, sharing the same reason, so they can't injure you and you shouldn't be angry with them or hate them. We're made for cooperation, like feet, hands and eyelids. (Book II.1)",
+    "pages": [14],
     "answerable": true
   },
   {
-    "question": "Which philosopher influenced Mentzer, and how does the book use her ideas?",
-    "answer": "Ayn Rand / Objectivism. Mentzer quotes Rand on identity and on logic as 'the art of non-contradictory identification'; the foreword says the book was built with the help of Objectivist philosophy, and her novels were among his favorite reading.",
-    "pages": [18, 46, 60, 66],
+    "question": "What are the nine rules for dealing with someone who has offended you?",
+    "answer": "1) We're made for one another. 2) Consider what they're like and what opinions compel them. 3) If they do wrong, it's involuntary and from ignorance. 4) You also do wrong and have the disposition to. 5) You can't be sure they're doing wrong at all. 6) Life is a moment; we'll soon be dead. 7) Their acts don't disturb us, our opinions do. 8) Anger brings more pain than the act. 9) A genuine good disposition is invincible: correct them gently, affectionately, without reproach, ideally in private. A tenth gift: expecting bad men not to do wrong is madness. (Book XI.18)",
+    "pages": [102, 103, 104],
     "answerable": true
   },
   {
-    "question": "What are the fundamental principles of bodybuilding according to the book?",
-    "answer": "Seven, not the traditional three: Identity, Intensity, Duration, Frequency, Specificity, Adaptation and Progression.",
-    "pages": [8, 18],
+    "question": "Where does Marcus say our disturbances come from?",
+    "answer": "Not from things, which don't touch the soul and remain outside it, but only from the opinion within us. 'The universe is transformation: life is opinion.' (Book IV.3)",
+    "pages": [28],
     "answerable": true
   },
   {
-    "question": "How are intensity and duration related?",
-    "answer": "Inversely: you can train hard or train long, but not both. Mentzer ties this to Aristotle's Law of Non-Contradiction.",
-    "pages": [71],
+    "question": "What reasons does Marcus give for not being tormented by the desire for fame?",
+    "answer": "Everything is soon forgotten; infinite time lies on either side of the present; applause is empty; those who praise are changeable and lack judgement; the earth is a point, and few in its small corner will praise you. (Book IV.3)",
+    "pages": [28],
     "answerable": true
   },
   {
-    "question": "What is pre-exhaustion, and why must there be no rest between the two exercises?",
-    "answer": "An isolation exercise to failure, followed immediately by a compound exercise, so a weaker 'weak link' muscle (e.g., triceps) doesn't limit the target muscle. No rest because the pre-exhausted muscle regains up to 50% of its strength within 3–5 seconds.",
-    "pages": [131, 132],
+    "question": "What warning does Marcus give himself about becoming emperor?",
+    "answer": "'Take care that thou art not made into a Caesar, that thou art not dyed with this dye; for such things happen.' Keep yourself simple, good, pure, serious, free from affectation, just, kind and affectionate. (Book VI.30)",
+    "pages": [51],
     "answerable": true
   },
   {
-    "question": "What are the four techniques for maximum muscle stimulation?",
-    "answer": "Start from a pre-stretched position (myotatic reflex); move at a relatively slow, deliberate speed; use the fullest range of movement; use sufficient resistance.",
-    "pages": [97, 98],
+    "question": "What does Marcus say is worth valuing, if not fame?",
+    "answer": "Not applause: the praise of the many is 'a clapping of tongues'. What's worth valuing is directing and restraining yourself according to your own constitution. Valuing externals makes you unfree, envious, jealous and suspicious of those who might take them away. (Book VI.16)",
+    "pages": [49, 50],
     "answerable": true
   },
   {
-    "question": "What's in the Ideal (Principled) Workout?",
-    "answer": "A four-workout cycle, one set to failure per exercise, 4–7 days' rest after each. 1) Chest & back: dumbbell flyes 6–10 then incline presses 1–3; straight-arm pulldowns 6–10 then palms-up pulldowns 6–10; deadlifts 6–10. 2) Legs & abs: leg extensions, leg presses, standing calf raises, sit-ups, all 12–20. 3) Shoulders & arms: dumbbell laterals 6–10, bent-over laterals 6–10, palms-up pulldowns 6–10, pressdowns 6–10 then dips 3–5. 4) Repeat Workout Two. Workouts shrink over time to 10–12 minutes.",
-    "pages": [168, 197, 198, 199],
+    "question": "Where does Marcus say a person can truly retreat?",
+    "answer": "Into his own soul. People seek country houses, seashores and mountains, but you can retire into yourself whenever you choose, and nowhere is quieter or freer from trouble. (Book IV.3)",
+    "pages": [27],
     "answerable": true
   },
   {
-    "question": "How much muscle can a bodybuilder realistically gain in a year?",
-    "answer": "About five pounds of pure muscle a year is a considerable achievement. A few genetically gifted people may gain 10 pounds or more.",
-    "pages": [31, 32],
+    "question": "What two rules should a person always keep ready?",
+    "answer": "1) Do only what reason, the ruling and legislating faculty, suggests for the use of men. 2) Change your opinion if someone sets you right, but only from persuasion of what is just or of common advantage, not because it's pleasant or brings reputation. (Book IV.12)",
+    "pages": [29],
     "answerable": true
   },
   {
-    "question": "What is the consolidation routine, and when should you switch to it?",
-    "answer": "A two-workout routine of compound movements only (isolation exercises like flyes, straight-arm pulldowns, leg extensions and triceps extensions are dropped), with 5–6 days' rest between workouts, rising to once every 6–7 days or less. Switch after 2–3 cycles with no strength gains, following a two-week layoff.",
-    "pages": [236, 237, 238, 239],
+    "question": "Who introduced Marcus to the discourses of Epictetus?",
+    "answer": "Rusticus, who shared them from his own collection. (Book I.7)",
+    "pages": [8],
     "answerable": true
   },
   {
-    "question": "Which exercises are in Workout One and which in Workout Two of the consolidation routine?",
-    "answer": "Workout One: squats (alternated with leg presses) 1×12–20, close-grip palms-up pulldowns 1×6–10, dips 1×6–10. Workout Two: deadlifts (alternated with shrugs) 1×6–10, press behind neck 1×6–10, standing calf raises 1×12–20. NOTE: this table is an image on p.238; text extraction returns only the headings.",
-    "pages": [238],
+    "question": "What virtues did Marcus observe in his adoptive father?",
+    "answer": "Mildness of temper, firm resolution after deliberation, no vainglory about honours, love of labour and perseverance, readiness to hear proposals for the common good, giving each person their due, checking applause and flattery, simplicity, and patience under blame. (Book I.16)",
+    "pages": [10, 11],
     "answerable": true
   },
   {
-    "question": "Why are curls left out of the consolidation routine, and what does Mentzer say about the deadlift?",
-    "answer": "Close-grip, palms-up pulldowns already stimulate the biceps enough. The deadlift is 'the greatest overall growth exercise', working everything on the back of the body from the Achilles tendon to the back of the head.",
-    "pages": [239, 240],
+    "question": "Where were Books I and II written?",
+    "answer": "Book I 'among the Quadi at the Granua'; Book II 'in Carnuntum'.",
+    "pages": [13, 19],
     "answerable": true
   },
   {
-    "question": "How did Mentzer use rest-pause training?",
-    "answer": "He used a weight for one maximum rep, rested 10 seconds, and repeated, reducing the weight 10% or getting slight partner help by the 2nd–3rd rep. 4 reps per set, never more than 3 sets per bodypart. 15 s rest was too long, 7 s too short; 6 reps led to overtraining. He improved 66% on each exercise.",
-    "pages": [140, 141],
+    "question": "What does Marcus tell himself when he doesn't want to get out of bed?",
+    "answer": "'I am rising to the work of a human being.' Was he made to lie in the bedclothes and keep warm? Plants, birds, ants, spiders and bees do their work; rest is necessary, but nature sets limits to it. (Book V.1)",
+    "pages": [37],
     "answerable": true
   },
   {
-    "question": "At what pace should aerobic work be done when getting ripped, and why?",
-    "answer": "A relaxed, conversational pace; then up to 90% of the fuel comes from stored fat. Gasping for breath shifts the body toward burning sugar.",
-    "pages": [251],
+    "question": "What does Marcus call the best way to take revenge?",
+    "answer": "Not to become like the wrongdoer. (Book VI.6)",
+    "pages": [47],
     "answerable": true
   },
   {
-    "question": "How should you reduce calories when dieting for a contest?",
-    "answer": "Start by cutting 500 calories a day, then about 200 more per week. A calorie is a calorie: excess protein makes you fat just like excess carbs or fat.",
-    "pages": [251, 252],
+    "question": "How does Marcus strip impressive things of their show?",
+    "answer": "By seeing them as they are: fine food is the dead body of a fish, bird or pig; Falernian wine is grape juice; a purple robe is sheep's wool dyed with shellfish blood. Do the same with everything that seems worth admiring. (Book VI.13)",
+    "pages": [48],
     "answerable": true
   },
   {
-    "question": "What macronutrient split does the book recommend?",
-    "answer": "60% carbohydrates, 25% protein, 15% fat, from the four basic food groups (given in the context of contest dieting).",
-    "pages": [251],
+    "question": "Should you apply principles like a gladiator or a pancratiast, and why?",
+    "answer": "Like a pancratiast: the gladiator can drop his sword and be killed, but the pancratiast always has his hands and only needs to use them. (Book XII.9)",
+    "pages": [109],
     "answerable": true
   },
   {
-    "question": "How did Mentzer first learn about high-intensity training?",
-    "answer": "Through Casey Viator, whom he met at the 1971 Mr. America. Casey trained only about an hour a day, three times a week, when other top bodybuilders trained up to five hours a day.",
-    "pages": [53, 54],
-    "answerable": true
-  },
-  {
-    "question": "What analogy did Arthur Jones use for exercise and muscle growth?",
-    "answer": "A stick of dynamite and a hammer: light taps never cause an explosion no matter how many, but one hard blow does. Only high intensity stimulates growth.",
-    "pages": [127, 128],
-    "answerable": true
-  },
-  {
-    "question": "What happened to Mentzer at the 1980 Mr. Olympia?",
-    "answer": "In Sydney, Australia, he was the favorite, having come in 10 pounds of muscle heavier and more defined, but was placed fifth. The book suggests the establishment resented him for questioning supplements and fraudulent training practices.",
+    "question": "How should you do every act of your life?",
+    "answer": "As if it were the last, setting aside carelessness, passionate aversion to reason, hypocrisy, self-love and discontent with your lot. (Book II.5)",
     "pages": [15],
     "answerable": true
   },
   {
-    "question": "How did Mentzer's mother's death affect his 1979 Mr. Olympia preparation?",
-    "answer": "She died after he returned to the U.S. at the end of May 1979. He drifted through June and July with anxiety, little training and no diet, reaching the worst condition of his life. Only in mid-August, watching his brother Ray prepare for the Mr. America, did he refocus for the Olympia in Columbus.",
-    "pages": [282, 283],
+    "question": "What does Marcus find strange about how people value opinions of themselves?",
+    "answer": "Everyone loves himself more than all others, yet values his own opinion of himself less than others' opinion of him. (Book XII.4)",
+    "pages": [108],
     "answerable": true
   },
   {
-    "question": "Are free weights or machines better?",
-    "answer": "Neither is magic. Beginners should build a foundation with basic free-weight exercises; intermediates can use machines about 25% of the time to refine bodyparts; advanced bodybuilders train mainly with free weights off-season and add machines pre-contest. Competitive bodybuilders should use both.",
-    "pages": [162, 163],
+    "question": "What four aberrations of the ruling faculty should you guard against?",
+    "answer": "Thoughts that aren't necessary; thoughts that destroy social union; saying what doesn't come from your real thoughts; and reproaching yourself, which shows the divine part yielding to the body. (Book XI.19)",
+    "pages": [104],
     "answerable": true
   },
   {
-    "question": "Which scientist's work explains how the body adapts to training, and how did Mentzer come across it?",
-    "answer": "Through Dr. John Ziegler, who kept referring to Selye's research. Later Mentzer found Selye's book The Stress of Life in a bookstore.",
-    "pages": [103, 104],
+    "question": "What does Marcus say about the Christians?",
+    "answer": "Their only mention in the text: readiness to die should come from a man's own judgement, considerately and with dignity, 'not from mere obstinacy, as with the Christians'. (Book XI.3)",
+    "pages": [99],
+    "answerable": true
+  },
+  {
+    "question": "What does Marcus say about worrying about the future?",
+    "answer": "'Let not future things disturb thee', since you'll meet them with the same reason you use now (VII.8). Don't think of your whole life at once; ask what in this moment is intolerable. Neither future nor past pains you, only the present (VIII.36).",
+    "pages": [58, 73],
+    "answerable": true
+  },
+  {
+    "question": "How does Marcus compare death to the end of a play?",
+    "answer": "Like an actor dismissed from the stage by the praetor who hired him. Objecting 'I've played only three of the five acts' is answered: in life, three acts are the whole drama, and its end is set by the one who composed it. Depart content. (Book XII.36)",
+    "pages": [113],
+    "answerable": true
+  },
+  {
+    "question": "Someone cut me off in traffic and I was furious. What would Marcus say?",
+    "answer": "The book doesn't discuss traffic, but anger at an offender is a core topic: the nine rules (they act from ignorance, you err too, anger hurts more than the act, correct gently); anger is weakness and gentleness is strength; expecting bad men not to do wrong is madness; and to be vexed at those who hinder you is a weakness. (XI.9, XI.18)",
+    "pages": [100, 102, 103, 104],
     "answerable": true,
     "indirect": true
   },
   {
-    "question": "What comparison did Mentzer's early mentor use to explain how exercise builds muscle?",
-    "answer": "A stick of dynamite and a hammer: light taps never cause an explosion no matter how many, but one hard blow does. Only high intensity stimulates growth.",
-    "pages": [127, 128],
+    "question": "My friend is getting famous and it's going to his head. What lesson would he take from the book?",
+    "answer": "Fame is empty and soon forgotten (IV.3); praise is 'a clapping of tongues', and valuing it makes you unfree and envious (VI.16); and Marcus's own warning: 'Take care that thou art not made into a Caesar… dyed with this dye' (VI.30).",
+    "pages": [28, 49, 51],
     "answerable": true,
     "indirect": true
   },
   {
-    "question": "How did Mentzer push a set further by resting a few seconds between single reps?",
-    "answer": "He used a weight for one maximum rep, rested 10 seconds, and repeated, reducing the weight 10% or getting slight partner help by the 2nd–3rd rep. 4 reps per set, never more than 3 sets per bodypart. 15 s rest was too long, 7 s too short; 6 reps led to overtraining. He improved 66% on each exercise.",
-    "pages": [140, 141],
+    "question": "I've been job hunting for months and I'm anxious. What would Marcus think?",
+    "answer": "Don't think of the whole of your life at once; ask what in this moment is intolerable; only the present can pain you (VIII.36). Future things shouldn't disturb you, since you'll meet them with the same reason (VII.8). The anxiety comes from opinion, not the events (IV.3).",
+    "pages": [73, 58, 28],
     "answerable": true,
     "indirect": true
   },
   {
-    "question": "Why should an isolation exercise be followed right away by a compound one for the same muscle?",
-    "answer": "An isolation exercise to failure, followed immediately by a compound exercise, so a weaker 'weak link' muscle (e.g., triceps) doesn't limit the target muscle. No rest because the pre-exhausted muscle regains up to 50% of its strength within 3–5 seconds.",
-    "pages": [131, 132],
+    "question": "Who gave Marcus the teachings that introduced him to his main Stoic influence?",
+    "answer": "Rusticus, who shared the discourses of Epictetus from his own collection. (Book I.7)",
+    "pages": [8],
     "answerable": true,
     "indirect": true
   },
   {
-    "question": "How did a death in Mentzer's family affect his preparation for a major contest?",
-    "answer": "She died after he returned to the U.S. at the end of May 1979. He drifted through June and July with anxiety, little training and no diet, reaching the worst condition of his life. Only in mid-August, watching his brother Ray prepare for the Mr. America, did he refocus for the Olympia in Columbus.",
-    "pages": [282, 283],
+    "question": "What's the best way to get back at someone who wronged me?",
+    "answer": "Not to become like the wrongdoer. (Book VI.6)",
+    "pages": [47],
     "answerable": true,
     "indirect": true
   },
   {
-    "question": "How hard should you push your cardio when cutting for a contest?",
-    "answer": "A relaxed, conversational pace; then up to 90% of the fuel comes from stored fat. Gasping for breath shifts the body toward burning sugar.",
-    "pages": [251],
+    "question": "How should I start a day when I know I'll deal with annoying people?",
+    "answer": "Expect them in advance: the busybody, the ungrateful, the arrogant. Remember they act from ignorance and are your kin, so they can't harm you and you shouldn't hate them. (Book II.1)",
+    "pages": [14],
     "answerable": true,
     "indirect": true
   },
   {
-    "question": "What does Mentzer say about CrossFit?",
-    "answer": "Nothing: the book doesn't mention it.",
+    "question": "I struggle to get out of bed in the morning. Does Marcus say anything about that?",
+    "answer": "Yes: 'I am rising to the work of a human being.' He wasn't made to lie warm in bed; plants and animals do their work, and nature limits rest. (Book V.1)",
+    "pages": [37],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "I need a break, but I can't travel. Where can I find peace?",
+    "answer": "In yourself: people seek country houses, seashores and mountains, but you can retreat into your own soul whenever you choose. (Book IV.3)",
+    "pages": [27],
+    "answerable": true,
+    "indirect": true
+  },
+  {
+    "question": "What does Marcus say about the Antonine Plague?",
+    "answer": "Not covered. He never discusses the plague; IX.2 uses 'pestilence' only as a metaphor for a corrupted mind (p.79).",
     "pages": [],
     "answerable": false
   },
   {
-    "question": "What creatine dose does the book recommend?",
-    "answer": "Nothing: creatine isn't mentioned.",
+    "question": "What does Marcus say about Seneca?",
+    "answer": "Nothing: Marcus never mentions Seneca. The name appears only in the translator's endnotes.",
     "pages": [],
     "answerable": false
   },
   {
-    "question": "What training routine did Dorian Yates follow?",
-    "answer": "Not covered. Yates is named only once (p.290) as an example of the power of the mind, with no training details.",
+    "question": "What did Marcus think of his son Commodus?",
+    "answer": "Not covered. Commodus is never named; Book I only thanks the gods for his children and their good teachers.",
     "pages": [],
     "answerable": false
   },
   {
-    "question": "How many grams of protein per pound of bodyweight does Mentzer recommend?",
-    "answer": "Not covered. The book gives only a percentage split (25% of calories from protein), not grams per bodyweight.",
+    "question": "What does Marcus say about Jesus?",
+    "answer": "Nothing: the name appears only in a translator's endnote. Marcus mentions the Christians once (XI.3), not Jesus.",
     "pages": [],
     "answerable": false
   }
