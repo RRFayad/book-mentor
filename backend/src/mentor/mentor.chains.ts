@@ -13,11 +13,11 @@ Rules:
 - Your notes and the One Pages are your understanding of a book, not its words: never cite them with a number. Use them for what the passages don't show, like a section's full list or the book's main argument. Never mention your notes or the One Pages; instead, end what you took from them with the pages in parentheses, like (pp. 40–52), once per paragraph or list, not after every line. Name the section only if the answer hasn't named it already.
 - When the question is about a part of a book, like a chapter, a list, or a method, give everything that part includes, named by its heading, not only what the question names.
 - If none of the passages, notes, or One Pages answer the question, set covered to false. If the book says something close, like a related figure or its general rule on the topic, open with one sentence saying you couldn't find the answer to the exact question, then give what the book does say, cited as usual. If nothing is related, leave the answer empty. Never fill the gap from general knowledge.
+- When the question asks to apply the book to a situation, like "what would the author say to…" or "what lesson would he draw", and the book discusses that topic, it is covered: answer from the book's ideas, without saying you couldn't find it. The situation itself (a friend, a car, a modern job) never needs to appear in the book.
 - Refer to a book by its title and author, as given in the passage header.
 - Answer in the language of the question, even if the passages are in another language.
 - When the question refers to earlier messages, like "each one" or "it", open by saying what you understood it to mean, like "By each one, I understand you mean each of the five habits:" (an example, not from these books).
-- The first part of your answer should be concise: answer what directly and exactly answers the question, citing passages. The second part should be a full explanation of the answer, citing passages and your notes and One Pages as needed.
-- Then, the second part of your answer should be a full explanation / bigger context of the answer, giving more details or bigger picture details and / or citing passages and your notes and One Pages as needed.
+- Start with a short, direct answer to the exact question, citing passages. Then explain it fully, adding context and details the passages, your notes, and the One Pages give, without repeating the first part.
 - Write Markdown: **bold** for the direct answer and key terms, and "- " lists for items, each with the details the book gives for it (amounts, numbers, order). Never use # headings or tables.
 - Make the answer as readable as possible, with short paragraphs and lists.
 
@@ -49,7 +49,7 @@ const answerSchema = z.object({
   covered: z
     .boolean()
     .describe(
-      "false when none of the passages, notes, or One Pages answer the question directly",
+      "false when none of the passages, notes, or One Pages answer the question directly. Applying what the book says on the question's topic to the reader's situation counts as answering it",
     ),
   answer: z
     .string()
@@ -74,6 +74,7 @@ Rules:
 - Never answer the question.
 - If the question is about a situation the book doesn't name, use the One Pages to translate it into the book's own themes and words.
 - If the question follows up on the recent messages, like "and what about it?", write queries that stand alone, naming what it refers to.
+- Set followsUp to true only if the question refers to or builds on the recent messages. A new topic is false.
 - If the message asks more than ${MAX_SEARCH_QUERIES} separate questions, like a numbered list, set tooManyQuestions to true. One question with several parts is still one question.
 
 One Pages: the big picture of each book.
@@ -96,6 +97,7 @@ const searchQueriesPrompt = ChatPromptTemplate.fromMessages<{
 const searchQueriesSchema = z.object({
   // TODO: remove once a message is split into separate questions.
   tooManyQuestions: z.boolean(),
+  followsUp: z.boolean(),
   queries: z
     .array(z.string())
     .describe(`1 to ${MAX_SEARCH_QUERIES} short search queries`),

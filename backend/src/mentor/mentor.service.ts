@@ -123,12 +123,13 @@ export const answerQuestion = async (
       )
       .join("\n\n") || "None.";
 
-  const { tooManyQuestions, queries } = await searchQueriesChain.invoke({
-    books,
-    onePages: formattedOnePages,
-    recentMessages: formattedRecentMessages,
-    question,
-  });
+  const { tooManyQuestions, followsUp, queries } =
+    await searchQueriesChain.invoke({
+      books,
+      onePages: formattedOnePages,
+      recentMessages: formattedRecentMessages,
+      question,
+    });
 
   // TODO: replace with splitting the message into separate questions.
   if (tooManyQuestions) {
@@ -192,7 +193,8 @@ export const answerQuestion = async (
     onePages: formattedOnePages,
     notes: formattedNotes || "None.",
     passages: formattedPassages,
-    recentMessages: formattedRecentMessages,
+    // Unrelated recent messages would only distract the answer.
+    recentMessages: followsUp ? formattedRecentMessages : "None.",
     question,
   });
 
