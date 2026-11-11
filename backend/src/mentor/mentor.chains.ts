@@ -72,8 +72,12 @@ Rules:
 - Keep other names the question mentions, of people, places, or works.
 - Use the words the book itself would likely use.
 - Never answer the question.
+- If the question is about a situation the book doesn't name, use the One Pages to translate it into the book's own themes and words.
 - If the question follows up on the recent messages, like "and what about it?", write queries that stand alone, naming what it refers to.
 - If the message asks more than ${MAX_SEARCH_QUERIES} separate questions, like a numbered list, set tooManyQuestions to true. One question with several parts is still one question.
+
+One Pages: the big picture of each book.
+{onePages}
 
 Recent messages in this conversation:
 {recentMessages}
@@ -81,6 +85,7 @@ Recent messages in this conversation:
 
 const searchQueriesPrompt = ChatPromptTemplate.fromMessages<{
   books: string;
+  onePages: string;
   recentMessages: string;
   question: string;
 }>([

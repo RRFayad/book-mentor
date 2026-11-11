@@ -114,8 +114,18 @@ export const answerQuestion = async (
   const formattedRecentMessages =
     formatRecentMessages(recentMessages) || "None.";
 
+  // The One Page goes with every question (so model use it before creates its own search queries)
+  const formattedOnePages =
+    sources
+      .filter((source) => source.onePage)
+      .map(
+        (source) => `"${source.title}" by ${source.author}\n${source.onePage}`,
+      )
+      .join("\n\n") || "None.";
+
   const { tooManyQuestions, queries } = await searchQueriesChain.invoke({
     books,
+    onePages: formattedOnePages,
     recentMessages: formattedRecentMessages,
     question,
   });
@@ -178,14 +188,8 @@ export const answerQuestion = async (
     )
     .join("\n\n");
 
-  // The One Page goes with every question. Never cited either.
-  const formattedOnePages = sources
-    .filter((source) => source.onePage)
-    .map((source) => `"${source.title}" by ${source.author}\n${source.onePage}`)
-    .join("\n\n");
-
   const reply = await answerChain.invoke({
-    onePages: formattedOnePages || "None.",
+    onePages: formattedOnePages,
     notes: formattedNotes || "None.",
     passages: formattedPassages,
     recentMessages: formattedRecentMessages,
