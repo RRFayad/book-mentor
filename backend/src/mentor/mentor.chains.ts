@@ -45,7 +45,7 @@ const answerPrompt = ChatPromptTemplate.fromMessages<{
   ["human", "{question}"],
 ]);
 
-const answerSchema = z.object({
+export const answerSchema = z.object({
   covered: z
     .boolean()
     .describe(
