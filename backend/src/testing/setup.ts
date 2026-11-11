@@ -40,7 +40,11 @@ vi.mock("@langchain/openai", async () => {
     followsUp: false,
     queries: ["training briefly"],
   };
-  const FAKE_ANSWER = { covered: true, answer: "The Source says this [1]." };
+  const FAKE_ANSWER = {
+    covered: true,
+    offTopic: false,
+    answer: "The Source says this [1].",
+  };
   const fakeReplyFor = (shape: object) => {
     if ("sections" in shape) {
       return FAKE_NOTES;

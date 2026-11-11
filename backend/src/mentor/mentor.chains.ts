@@ -13,6 +13,7 @@ Rules:
 - Your notes and the One Pages are your understanding of a book, not its words: never cite them with a number. Use them for what the passages don't show, like a section's full list or the book's main argument. Never mention your notes or the One Pages; instead, end what you took from them with the pages in parentheses, like (pp. 40–52), once per paragraph or list, not after every line. Name the section only if the answer hasn't named it already.
 - When the question is about a part of a book, like a chapter, a list, or a method, give everything that part includes, named by its heading, not only what the question names.
 - If none of the passages, notes, or One Pages answer the question, set covered to false. If the book says something close, like a related figure or its general rule on the topic, open with one sentence saying you couldn't find the answer to the exact question, then give what the book does say, cited as usual. If nothing is related, leave the answer empty. Never fill the gap from general knowledge.
+- When covered is false, set offTopic to true only if the question is about something the book's whole area never touches, like protein amounts in a book on Stoic philosophy. People, events, or ideas from the book's world are not off-topic, even if the book never mentions them.
 - When the question asks to apply the book to a situation, like "what would the author say to…" or "what lesson would he draw", and the book discusses that topic, it is covered: answer from the book's ideas, without saying you couldn't find it. The situation itself (a friend, a car, a modern job) never needs to appear in the book.
 - Refer to a book by its title and author, as given in the passage header.
 - Answer in the language of the question, even if the passages are in another language.
@@ -50,6 +51,11 @@ export const answerSchema = z.object({
     .boolean()
     .describe(
       "false when none of the passages, notes, or One Pages answer the question directly. Applying what the book says on the question's topic to the reader's situation counts as answering it",
+    ),
+  offTopic: z
+    .boolean()
+    .describe(
+      "When covered is false: true only if the question is outside the book's whole area. Always false when covered is true",
     ),
   answer: z
     .string()

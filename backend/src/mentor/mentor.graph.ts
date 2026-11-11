@@ -6,6 +6,9 @@ import { answerChain, answerSchema, searchQueriesChain } from "./mentor.chains";
 import { formatNotes, formatPassages } from "./mentor.utils";
 import { MAX_SEARCH_QUERIES, retrieveFromSourceId } from "./retrieval.service";
 
+// Extra tries when the answer isn't covered but the question isn't off-topic.
+const MAX_RETRIES = 2; // + the original attempt
+
 type Book = Pick<SourceRow, "title" | "author">;
 
 export type Passage = Pick<ChunkRow, "sourceId" | "page" | "content"> & Book;
@@ -32,6 +35,7 @@ const MentorState = new StateSchema({
   notes: z.array(z.custom<Note>()), // Notes (created by the model during ingestion)
 
   reply: answerSchema,
+  searchAttempts: z.number().default(0), // How many times the search ran, for the retry limit
 });
 
 type MentorState = typeof MentorState.State;
@@ -52,7 +56,9 @@ const writeSearchQueriesNode = async (
 
   const searchQueries = [state.question, ...rewrittenQueries];
 
-  return { tooManyQuestions, followsUp, searchQueries };
+  const searchAttempts = state.searchAttempts + 1;
+
+  return { tooManyQuestions, followsUp, searchQueries, searchAttempts };
 };
 
 const retrieveFromSourcesNode = async (
@@ -103,6 +109,16 @@ const writeAnswerNode = async (state: MentorState): Promise<MentorUpdate> => {
 const endIfTooManyQuestionsEdge = (state: MentorState) =>
   state.tooManyQuestions ? END : "retrieveFromSources";
 
+// Search again when the book could answer but the search missed: not for an
+// off-topic question, which no search would find.
+const retryIfNotCoveredEdge = (state: MentorState) => {
+  const { covered, offTopic } = state.reply;
+  const retriesDone = state.searchAttempts - 1;
+  const shouldRetry = !covered && !offTopic && retriesDone < MAX_RETRIES;
+
+  return shouldRetry ? "writeSearchQueries" : END;
+};
+
 export const mentorGraph = new StateGraph(MentorState)
   .addNode("writeSearchQueries", writeSearchQueriesNode)
   .addNode("retrieveFromSources", retrieveFromSourcesNode)
@@ -113,5 +129,8 @@ export const mentorGraph = new StateGraph(MentorState)
     END,
   ])
   .addEdge("retrieveFromSources", "writeAnswer")
-  .addEdge("writeAnswer", END)
+  .addConditionalEdges("writeAnswer", retryIfNotCoveredEdge, [
+    "writeSearchQueries",
+    END,
+  ])
   .compile({ name: "Mentor" });
