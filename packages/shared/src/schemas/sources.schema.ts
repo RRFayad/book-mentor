@@ -81,6 +81,12 @@ export const ingestPagesResponseSchema = z.object({
 
 export const completeSourceIngestionResponseSchema = sourceResponseSchema;
 
+// ---------- GET /cron/delete-expired-sources ----------
+
+export const deleteExpiredSourcesResponseSchema = z.object({
+  deletedPassages: z.number(),
+});
+
 // ---------- Types ----------
 
 export type SourceKind = z.infer<typeof sourceKindSchema>;
@@ -99,4 +105,7 @@ export type IngestPagesRequestBody = z.infer<
 export type IngestPagesResponse = z.infer<typeof ingestPagesResponseSchema>;
 export type CompleteSourceIngestionResponse = z.infer<
   typeof completeSourceIngestionResponseSchema
+>;
+export type DeleteExpiredSourcesResponse = z.infer<
+  typeof deleteExpiredSourcesResponseSchema
 >;

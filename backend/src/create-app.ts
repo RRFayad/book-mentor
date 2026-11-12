@@ -17,6 +17,7 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import sourcesRoutes from "./sources/sources.route";
 import conversationsRoutes from "./conversations/conversations.route";
+import cronRoutes from "./cron/cron.route";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -61,6 +62,7 @@ export const createApp = async ({ logger = true } = {}) => {
   // ---------- Public routes ----------
   app.register(async (publicApp) => {
     publicApp.register(healthcheckRoutes);
+    publicApp.register(cronRoutes, { prefix: "/cron" });
   });
 
   // ---------- Protected routes ----------
