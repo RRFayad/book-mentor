@@ -4,9 +4,11 @@ import {
   Message,
   SendMessageRequestBody,
 } from "@app/shared/schemas";
+import { MESSAGE_LIMIT } from "@app/shared/constants";
 import {
   and,
   asc,
+  count,
   desc,
   eq,
   getTableColumns,
@@ -248,6 +250,31 @@ const getMentorReply = async (
   }
 };
 
+const countAnswersInLastDayByUserId = async (userId: number) => {
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  const [result] = await db
+    .select({ total: count() })
+    .from(messages)
+    .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+    .where(
+      and(
+        eq(conversations.userId, userId),
+        eq(messages.role, "mentor"),
+        ne(messages.status, "error"),
+        gt(messages.createdAt, dayAgo),
+      ),
+    );
+
+  return result.total;
+};
+
+export const getMessageUsageByUserId = async (userId: number) => {
+  const usage = await countAnswersInLastDayByUserId(userId);
+
+  return { max: MESSAGE_LIMIT, usage };
+};
+
 // No transaction: the answer takes seconds, and the question is kept even if it fails
 export const sendMessage = async (
   conversationId: string,
@@ -255,6 +282,12 @@ export const sendMessage = async (
   userId: number,
 ): Promise<MentorAnswer> => {
   await findConversationByUserId(conversationId, userId);
+
+  const answersInLastDay = await countAnswersInLastDayByUserId(userId);
+
+  if (answersInLastDay >= MESSAGE_LIMIT) {
+    throw new HttpError(409, "limit-reached");
+  }
 
   const selectedSources = await getConversationSources(conversationId);
   const recentMessages = await getRecentMessages(conversationId);

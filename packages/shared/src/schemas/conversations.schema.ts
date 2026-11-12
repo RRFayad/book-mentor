@@ -143,6 +143,14 @@ export const sendMessageResponseSchema = z.discriminatedUnion("status", [
   z.object({ status: z.literal("failed") }),
 ]);
 
+// ---------- GET /conversations/message-usage ----------
+
+// Messages answered in the last 24 hours, and the most allowed.
+export const messageUsageResponseSchema = z.object({
+  max: z.number(),
+  usage: z.number(),
+});
+
 // ---------- Types ----------
 
 export type CitationLocation = z.infer<typeof citationLocationSchema>;
@@ -178,3 +186,4 @@ export type SendMessageRequestBody = z.infer<
   typeof sendMessageRequestBodySchema
 >;
 export type SendMessageResponse = z.infer<typeof sendMessageResponseSchema>;
+export type MessageUsageResponse = z.infer<typeof messageUsageResponseSchema>;

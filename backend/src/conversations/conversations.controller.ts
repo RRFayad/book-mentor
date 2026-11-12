@@ -4,6 +4,7 @@ import {
   CreateConversationRequestBody,
   CreateConversationResponse,
   GetConversationsResponse,
+  MessageUsageResponse,
   RenameConversationRequestBody,
   RenameConversationResponse,
   SendMessageRequestBody,
@@ -15,6 +16,7 @@ import {
   deleteConversationByUserId,
   getConversationByUserId,
   getConversationsByUserId,
+  getMessageUsageByUserId,
   renameConversationByUserId,
   sendMessage,
 } from "./conversations.service";
@@ -110,4 +112,15 @@ export const sendMessageHandler = async (
   );
 
   return reply.code(201).send({ status: "answered", answer });
+};
+
+type GetMessageUsageIO = { Reply: MessageUsageResponse };
+
+export const getMessageUsageHandler = async (
+  request: FastifyRequest<GetMessageUsageIO>,
+  reply: FastifyReply<GetMessageUsageIO>,
+) => {
+  const messageUsage = await getMessageUsageByUserId(request.user.id);
+
+  return reply.send(messageUsage);
 };
