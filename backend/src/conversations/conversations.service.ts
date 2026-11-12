@@ -4,7 +4,7 @@ import {
   Message,
   SendMessageRequestBody,
 } from "@app/shared/schemas";
-import { MESSAGE_LIMIT } from "@app/shared/constants";
+import { MAX_TITLE_LENGTH, MESSAGE_LIMIT } from "@app/shared/constants";
 import {
   and,
   asc,
@@ -36,8 +36,8 @@ export const createConversation = async (
   userId: number,
 ) => {
   const { firstQuestion, sourceIds } = data;
-  //TODO: Add logic for renaming the conversation
-  const title = firstQuestion;
+
+  const title = firstQuestion.slice(0, MAX_TITLE_LENGTH);
 
   const dbActiveSources = await db
     .select()

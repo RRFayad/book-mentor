@@ -1,4 +1,4 @@
-import { MESSAGE_LIMIT } from "@app/shared/constants";
+import { MAX_QUESTION_LENGTH, MESSAGE_LIMIT } from "@app/shared/constants";
 import { messages, NewMessageRow, sources } from "@app/shared/db/schema";
 import { SendMessageRequestBody } from "@app/shared/schemas";
 import { eq } from "drizzle-orm";
@@ -265,6 +265,15 @@ describe("sending a message", () => {
 
     expect(response.status).toBe(200);
     expect(response.data).toEqual({ max: MESSAGE_LIMIT, usage: 2 });
+  });
+
+  it("refuses a question that's too long", async () => {
+    const conversationId = await startConversation();
+    const longQuestion = "a".repeat(MAX_QUESTION_LENGTH + 1);
+
+    const response = await send(conversationId, newMessage(longQuestion));
+
+    expect(response.status).toBe(422);
   });
 
   it("refuses message ids that aren't UUIDs", async () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_TITLE_LENGTH } from "@app/shared/constants";
 import { BookOpenIcon, GlobeIcon, LockIcon } from "lucide-react";
 import { useId, useState, useTransition, type ReactNode } from "react";
 
@@ -254,6 +255,7 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
         <Input
           id={`${id}-title`}
           required
+          maxLength={MAX_TITLE_LENGTH}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
         />
@@ -265,6 +267,7 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
         <Input
           id={`${id}-author`}
           required
+          maxLength={MAX_TITLE_LENGTH}
           value={author}
           onChange={(event) => setAuthor(event.target.value)}
         />

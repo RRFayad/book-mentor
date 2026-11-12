@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { SOURCE_KINDS, SOURCE_STATES } from "../constants";
+import {
+  MAX_PAGE_TEXT_LENGTH,
+  MAX_TITLE_LENGTH,
+  SOURCE_KINDS,
+  SOURCE_STATES,
+} from "../constants";
 import { isoDateTimeSchema } from "./common.schema";
 
 // ---------- Source ----------
@@ -35,15 +40,15 @@ export const sourceParamsSchema = z.object({
 export const createSourceRequestBodySchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("book"),
-    title: z.string().min(1),
-    author: z.string().min(1),
+    title: z.string().min(1).max(MAX_TITLE_LENGTH),
+    author: z.string().min(1).max(MAX_TITLE_LENGTH),
     pageCount: z.int().min(1),
   }),
   z.object({
     kind: z.literal("blog"),
     address: z.url(),
-    title: z.string().min(1),
-    author: z.string().min(1),
+    title: z.string().min(1).max(MAX_TITLE_LENGTH),
+    author: z.string().min(1).max(MAX_TITLE_LENGTH),
   }),
 ]);
 
@@ -61,7 +66,7 @@ export const createSourceResponseSchema = z.discriminatedUnion("status", [
 
 export const pageTextSchema = z.object({
   page: z.int().min(1),
-  text: z.string(),
+  text: z.string().max(MAX_PAGE_TEXT_LENGTH),
 });
 
 export const ingestPagesRequestBodySchema = z.object({

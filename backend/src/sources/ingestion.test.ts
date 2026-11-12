@@ -1,5 +1,8 @@
 import { chunks, notes, sources } from "@app/shared/db/schema";
-import { EMBEDDING_DIMENSIONS } from "@app/shared/constants";
+import {
+  EMBEDDING_DIMENSIONS,
+  MAX_PAGE_TEXT_LENGTH,
+} from "@app/shared/constants";
 import { asc, eq } from "drizzle-orm";
 import {
   afterAll,
@@ -180,6 +183,18 @@ describe("sending a book's text in parts", () => {
       .post(`/sources/${sourceId}/pages`, { pages: [] });
 
     expect(response.status).toBe(422);
+  });
+
+  it("refuses a page with more text than a book page holds", async () => {
+    const sourceId = await addBook();
+    const longText = "a".repeat(MAX_PAGE_TEXT_LENGTH + 1);
+
+    const response = await api.as("reader").post(`/sources/${sourceId}/pages`, {
+      pages: [{ page: 1, text: longText }],
+    });
+
+    expect(response.status).toBe(422);
+    expect(await chunksOf(sourceId)).toEqual([]);
   });
 
   it("refuses parts for another reader's book", async () => {

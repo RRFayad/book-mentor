@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_QUESTION_LENGTH } from "@app/shared/constants";
 import {
   AuiIf,
   ComposerPrimitive,
@@ -152,6 +153,7 @@ const Composer = ({
       placeholder={placeholder}
       aria-label="Message the Mentor"
       rows={1}
+      maxLength={MAX_QUESTION_LENGTH}
     />
     <div className={styles.composerActions}>
       {composerNote ?? <span />}

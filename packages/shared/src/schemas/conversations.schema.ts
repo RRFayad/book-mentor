@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { MENTOR_ANSWER_STATUSES, SOURCE_LIMIT } from "../constants";
+import {
+  MAX_QUESTION_LENGTH,
+  MAX_TITLE_LENGTH,
+  MENTOR_ANSWER_STATUSES,
+  SOURCE_LIMIT,
+} from "../constants";
 import { isoDateTimeSchema } from "./common.schema";
 import { sourceKindSchema } from "./sources.schema";
 
@@ -111,7 +116,7 @@ export const getConversationsResponseSchema = z.array(
 
 export const createConversationRequestBodySchema = z.object({
   sourceIds: z.array(z.uuid()).min(1).max(SOURCE_LIMIT),
-  firstQuestion: z.string().min(1),
+  firstQuestion: z.string().min(1).max(MAX_QUESTION_LENGTH),
 });
 
 export const createConversationResponseSchema = z.discriminatedUnion("status", [
@@ -123,7 +128,7 @@ export const createConversationResponseSchema = z.discriminatedUnion("status", [
 // ---------- PATCH /conversations/:id ----------
 
 export const renameConversationRequestBodySchema = z.object({
-  title: z.string().min(1),
+  title: z.string().min(1).max(MAX_TITLE_LENGTH),
 });
 
 export const renameConversationResponseSchema = conversationListItemSchema;
@@ -134,7 +139,7 @@ export const renameConversationResponseSchema = conversationListItemSchema;
 export const sendMessageRequestBodySchema = z.object({
   userMessageId: z.uuid(),
   answerId: z.uuid(),
-  text: z.string().min(1),
+  text: z.string().min(1).max(MAX_QUESTION_LENGTH),
 });
 
 export const sendMessageResponseSchema = z.discriminatedUnion("status", [

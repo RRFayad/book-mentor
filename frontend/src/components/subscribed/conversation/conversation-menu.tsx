@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_TITLE_LENGTH } from "@app/shared/constants";
 import { Menu } from "@base-ui/react/menu";
 import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useId, useState, useTransition } from "react";
@@ -142,6 +143,7 @@ export const ConversationMenu = ({
             <Input
               id={inputId}
               value={draft}
+              maxLength={MAX_TITLE_LENGTH}
               autoFocus
               onChange={(event) => setDraft(event.target.value)}
             />
