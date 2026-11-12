@@ -99,6 +99,13 @@
       "when": 1794349036062,
       "tag": "0013_answers-as-text",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794495239761,
+      "tag": "0014_drop-chunks-vector-index",
+      "breakpoints": true
     }
   ]
 }

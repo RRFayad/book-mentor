@@ -114,12 +114,9 @@ export const chunks = pgTable(
       dimensions: EMBEDDING_DIMENSIONS,
     }).notNull(),
   },
+  // No vector index (HNSW): a search covers one book
   (table) => [
     index("chunks_source_id_page_idx").on(table.sourceId, table.page),
-    index("chunks_embedding_idx").using(
-      "hnsw",
-      table.embedding.op("vector_cosine_ops"),
-    ),
   ],
 );
 
