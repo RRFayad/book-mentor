@@ -110,7 +110,8 @@ removed.
 
 ## Access and limits
 
-- Open sign-up, plus a global kill switch that disables new Sources and messages.
+- Open sign-up. A monthly budget on the AI provider caps costs; there is no
+  kill switch in the app.
 - Per user: 3 active Sources, PDFs up to 500 pages, blogs up to 20 posts,
   50 messages per rolling 24 hours (the UI shows when more can be sent).
   Numbers may be tuned during implementation.
