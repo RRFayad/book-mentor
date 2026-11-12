@@ -4,7 +4,12 @@ import { z } from "zod";
 
 import { answerChain, answerSchema, searchQueriesChain } from "./mentor.chains";
 import { formatNotes, formatPassages } from "./mentor.utils";
-import { MAX_SEARCH_QUERIES, retrieveFromSourceId } from "./retrieval.service";
+import {
+  MAX_SEARCH_QUERIES,
+  PASSAGE_COUNT,
+  RETRY_PASSAGE_COUNT,
+  retrieveFromSourceId,
+} from "./retrieval.service";
 
 // Extra tries when the answer isn't covered but the question isn't off-topic.
 const MAX_RETRIES = 2; // + the original attempt
@@ -30,6 +35,7 @@ const MentorState = new StateSchema({
   tooManyQuestions: z.boolean(), // Whether the question has too many parts to answer in one go
   followsUp: z.boolean(), // Whether the question needs recentMesssages for context
   searchQueries: z.array(z.string()), // Search queries written by the model to find passages and notes
+  triedQueries: z.array(z.string()).default([]), // Rewritten queries from earlier tries, so a retry searches differently
 
   passages: z.array(z.custom<Passage>()), // Passages retrieved from the sources
   notes: z.array(z.custom<Note>()), // Notes (created by the model during ingestion)
@@ -49,26 +55,43 @@ const writeSearchQueriesNode = async (
       books: state.books,
       onePages: state.onePages,
       recentMessages: state.recentMessages,
+      triedQueries: state.triedQueries.join("\n") || "None.",
       question: state.question,
     });
 
   const rewrittenQueries = queries.slice(0, MAX_SEARCH_QUERIES);
 
-  const searchQueries = [state.question, ...rewrittenQueries];
+  // A retry drops the question: it already failed, and it would fill half the
+  // passages with the same ones again.
+  const isRetry = state.searchAttempts > 0 && rewrittenQueries.length > 0;
+  const searchQueries = isRetry
+    ? rewrittenQueries
+    : [state.question, ...rewrittenQueries];
 
+  const triedQueries = [...state.triedQueries, ...rewrittenQueries];
   const searchAttempts = state.searchAttempts + 1;
 
-  return { tooManyQuestions, followsUp, searchQueries, searchAttempts };
+  return {
+    tooManyQuestions,
+    followsUp,
+    searchQueries,
+    triedQueries,
+    searchAttempts,
+  };
 };
 
 const retrieveFromSourcesNode = async (
   state: MentorState,
 ): Promise<MentorUpdate> => {
+  const isRetry = state.searchAttempts > 1;
+  const passageCount = isRetry ? RETRY_PASSAGE_COUNT : PASSAGE_COUNT;
+
   const retrievedPerSource = await Promise.all(
     state.sources.map(async (source) => {
       const retrieved = await retrieveFromSourceId(
         state.searchQueries,
         source.id,
+        passageCount,
       );
       const book = { title: source.title, author: source.author };
 

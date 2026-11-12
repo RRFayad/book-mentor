@@ -11,14 +11,21 @@ import { embeddingModel } from "../ai-models";
 export const MAX_SEARCH_QUERIES = 2;
 
 // Enough passages to answer from, few enough to keep the prompt small.
-const PASSAGE_COUNT = MAX_SEARCH_QUERIES * 3;
+export const PASSAGE_COUNT = MAX_SEARCH_QUERIES * 3;
+
+// A retry looks deeper: a passage the first try missed often ranks just below.
+export const RETRY_PASSAGE_COUNT = 10;
 
 // Notes are long, and one usually covers the whole section a question is about.
 const NOTE_COUNT = MAX_SEARCH_QUERIES * 2;
 
 //----------------------------------------------------//
 
-const closestChunks = (queryEmbedding: number[], sourceId: string) => {
+const closestChunks = (
+  queryEmbedding: number[],
+  sourceId: string,
+  passageCount: number,
+) => {
   // How close a chunk is to the query, in vector space (lower = closer).
   const distance = cosineDistance(chunks.embedding, queryEmbedding);
 
@@ -32,7 +39,7 @@ const closestChunks = (queryEmbedding: number[], sourceId: string) => {
     .from(chunks)
     .where(eq(chunks.sourceId, sourceId))
     .orderBy(distance)
-    .limit(PASSAGE_COUNT);
+    .limit(passageCount);
 };
 
 const closestNotes = (queryEmbedding: number[], sourceId: string) => {
@@ -76,13 +83,14 @@ const mergeAndCapClosestResults = <Row extends { id: string }>(
 export const retrieveFromSourceId = async (
   searchQueries: string[],
   sourceId: string,
+  passageCount: number,
 ) => {
   const searchQueryEmbeddings = await Promise.all(
     searchQueries.map((searchQuery) => embeddingModel.embedQuery(searchQuery)),
   );
 
   const chunkSearches = searchQueryEmbeddings.map((embedding) =>
-    closestChunks(embedding, sourceId),
+    closestChunks(embedding, sourceId, passageCount),
   );
   const noteSearches = searchQueryEmbeddings.map((embedding) =>
     closestNotes(embedding, sourceId),
@@ -91,7 +99,7 @@ export const retrieveFromSourceId = async (
   const chunksPerQuery = await Promise.all(chunkSearches);
   const notesPerQuery = await Promise.all(noteSearches);
 
-  const passages = mergeAndCapClosestResults(chunksPerQuery, PASSAGE_COUNT);
+  const passages = mergeAndCapClosestResults(chunksPerQuery, passageCount);
   const matchingNotes = mergeAndCapClosestResults(notesPerQuery, NOTE_COUNT);
 
   return { passages, notes: matchingNotes };

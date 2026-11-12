@@ -81,6 +81,7 @@ Rules:
 - Never answer the question.
 - If the question is about a situation the book doesn't name, use the One Pages to translate it into the book's own themes and words.
 - If the question follows up on the recent messages, like "and what about it?", write queries that stand alone, naming what it refers to.
+- If queries were already tried, they didn't find the answer: write different ones, with other words or from another angle, like a related idea or what the passage would be about.
 - Set followsUp to true only if the question refers to or builds on the recent messages. A new topic is false.
 - If the message asks more than ${MAX_SEARCH_QUERIES} separate questions, like a numbered list, set tooManyQuestions to true. One question with several parts is still one question.
 
@@ -89,12 +90,16 @@ One Pages: the big picture of each book.
 
 Recent messages in this conversation:
 {recentMessages}
+
+Queries already tried, which didn't find the answer:
+{triedQueries}
 `;
 
 const searchQueriesPrompt = ChatPromptTemplate.fromMessages<{
   books: string;
   onePages: string;
   recentMessages: string;
+  triedQueries: string;
   question: string;
 }>([
   ["system", SEARCH_QUERIES_SYSTEM_PROMPT],
