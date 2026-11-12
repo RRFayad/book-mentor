@@ -176,6 +176,22 @@ describe("sending a message", () => {
     ]);
   });
 
+  it("doesn't search a Source that has expired", async () => {
+    const conversationId = await startConversation();
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    await db.update(sources).set({ expiresAt: yesterday });
+    const message = newMessage();
+
+    const response = await send(conversationId, message);
+
+    expect(response.status).toBe(201);
+    expect(answerQuestion).toHaveBeenLastCalledWith(
+      message.text,
+      [],
+      expect.anything(),
+    );
+  });
+
   it("refuses ids that were already used, and saves nothing new", async () => {
     const conversationId = await startConversation();
     const message = newMessage();

@@ -48,7 +48,7 @@ export const getSourcesByUserId = async (userId: number) => {
   return db
     .select()
     .from(sources)
-    .where(eq(sources.userId, userId))
+    .where(and(eq(sources.userId, userId), gt(sources.expiresAt, new Date())))
     .orderBy(desc(sources.createdAt));
 };
 

@@ -200,7 +200,12 @@ const getConversationSources = async (conversationId: string) => {
     .select(getTableColumns(sources))
     .from(conversationSources)
     .innerJoin(sources, eq(conversationSources.sourceId, sources.id))
-    .where(eq(conversationSources.conversationId, conversationId));
+    .where(
+      and(
+        eq(conversationSources.conversationId, conversationId),
+        gt(sources.expiresAt, new Date()),
+      ),
+    );
 };
 
 // The last 3 questions and answers, so the Mentor understands follow-ups.
