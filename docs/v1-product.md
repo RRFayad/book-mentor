@@ -132,6 +132,16 @@ retrieve-then-answer flow, so it can ship fast. In priority order:
 2. **Comparisons.** Conversations go back to 1 to 3 Sources, with the
    Comparison answers described in The Mentor.
 
+**Cut from the first release on 2026-11-12**, to ship sooner. Each moves to
+v1.1:
+
+- **Streaming answers** (#20): answers appear all at once, and can't be
+  stopped.
+- **Blogs** (#21): a Source is a book only.
+- **Comparisons** (#22), as above.
+- **Answer verification** (#23): the Mentor already says when the book doesn't
+  cover a question; checking each claim against the Sources comes later.
+
 ## Deferred to v2
 
 Socratic mode, personal profile for applications, EPUB, OCR, web search in
