@@ -78,6 +78,10 @@ export const completeSourceIngestionByUserId = async (
     throw new HttpError(404, "Source not found");
   }
 
+  if (source.state !== "ingesting") {
+    throw new HttpError(409, "Source is not ingesting");
+  }
+
   const onePage = await writeOnePage(sourceId);
 
   const [readySource] = await db

@@ -265,6 +265,18 @@ describe("when every part has arrived", () => {
     expect(library.data[0].state).toBe("ready");
   });
 
+  it("refuses to complete a book that's already Ready", async () => {
+    const sourceId = await addBook(2);
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
+    await api.as("reader").post(`/sources/${sourceId}/complete`, {});
+
+    const again = await api
+      .as("reader")
+      .post(`/sources/${sourceId}/complete`, {});
+
+    expect(again.status).toBe(409);
+  });
+
   it("writes the book's One Page from its Notes, kept out of the Library", async () => {
     const sourceId = await addBook(2);
     await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
