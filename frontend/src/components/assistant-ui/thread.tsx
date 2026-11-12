@@ -2,20 +2,13 @@
 
 import { MAX_QUESTION_LENGTH } from "@app/shared/constants";
 import {
-  AuiIf,
   ComposerPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
 import type { DataMessagePartComponent } from "@assistant-ui/react";
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  CheckIcon,
-  CopyIcon,
-  SquareIcon,
-} from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, CheckIcon, CopyIcon } from "lucide-react";
 import { useState, type FC, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -51,7 +44,6 @@ const styles = {
   ),
   composerActions: tw("flex items-center justify-between gap-3 ps-2.5"),
   sendButton: tw("rounded-full"),
-  stopIcon: tw("fill-current"),
 };
 
 type ThreadProps = {
@@ -157,28 +149,16 @@ const Composer = ({
     />
     <div className={styles.composerActions}>
       {composerNote ?? <span />}
-      <AuiIf condition={(state) => !state.thread.isRunning}>
-        <ComposerPrimitive.Send asChild>
-          <Button
-            size="icon-sm"
-            className={styles.sendButton}
-            aria-label="Send message"
-          >
-            <ArrowUpIcon />
-          </Button>
-        </ComposerPrimitive.Send>
-      </AuiIf>
-      <AuiIf condition={(state) => state.thread.isRunning}>
-        <ComposerPrimitive.Cancel asChild>
-          <Button
-            size="icon-sm"
-            className={styles.sendButton}
-            aria-label="Stop generating"
-          >
-            <SquareIcon className={styles.stopIcon} />
-          </Button>
-        </ComposerPrimitive.Cancel>
-      </AuiIf>
+      {/* Disabled while an answer is coming. No Stop until answers stream (#20). */}
+      <ComposerPrimitive.Send asChild>
+        <Button
+          size="icon-sm"
+          className={styles.sendButton}
+          aria-label="Send message"
+        >
+          <ArrowUpIcon />
+        </Button>
+      </ComposerPrimitive.Send>
     </div>
   </ComposerPrimitive.Root>
 );

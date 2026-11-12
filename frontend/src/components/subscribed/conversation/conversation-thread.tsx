@@ -87,12 +87,11 @@ const messageText = (message: AppendMessage): string =>
     .join("\n")
     .trim();
 
-// The answer being streamed: what is shown so far, and how to stop it.
+// The answer being shown word by word, and its timer.
 type Stream = {
   shown: MentorAnswer;
   shownWords: number;
   timer: number | null;
-  stopRequested: boolean;
 };
 
 type ConversationThreadProps = {
@@ -146,28 +145,6 @@ export const ConversationThread = ({
     [],
   );
 
-  const stopStream = useCallback(async () => {
-    const stream = streamRef.current;
-
-    if (!stream) {
-      return;
-    }
-
-    if (stream.timer === null) {
-      // The reply has not arrived yet; stop as soon as it does.
-      stream.stopRequested = true;
-      return;
-    }
-
-    finishStream();
-
-    const stopped: MentorAnswer = { ...stream.shown, status: "stopped" };
-
-    showAnswer(stopped);
-    // TODO (#20): tell the server where the answer was stopped, once the
-    // contract defines how Stop reaches it. Until then it's cut on screen only.
-  }, [finishStream, showAnswer]);
-
   const playAnswer = useCallback(
     (answer: MentorAnswer) => {
       const stream = streamRef.current;
@@ -192,12 +169,8 @@ export const ConversationThread = ({
         stream.shownWords = shownWords;
         showAnswer(stream.shown);
       }, TICK_MS);
-
-      if (stream.stopRequested) {
-        void stopStream();
-      }
     },
-    [finishStream, showAnswer, stopStream],
+    [finishStream, showAnswer],
   );
 
   const sendText = useCallback(
@@ -220,7 +193,6 @@ export const ConversationThread = ({
         shown: waiting,
         shownWords: 0,
         timer: null,
-        stopRequested: false,
       };
       setMessages((current) => [
         ...current,
@@ -334,7 +306,6 @@ export const ConversationThread = ({
     messages,
     convertMessage,
     onNew,
-    onCancel: stopStream,
     isRunning,
     isDisabled: atLimit && !isRunning,
   });
