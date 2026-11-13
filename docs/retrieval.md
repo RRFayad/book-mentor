@@ -1,31 +1,47 @@
 # How the Mentor finds answers
 
-Each book is stored at three levels: **chunks** (passages of its text, the only thing cited), **Notes** (an outline of each section, with pages) and a **One Page** (the whole book's big picture, sent with every question).
+## What a book becomes
 
-Before searching, the model rewrites the question into up to two search queries, one per part of the question, in the book's likely words. The question is searched too, and the results are merged in turns: each search's best result, then each one's second best, until 6 passages and 4 Notes.
+- **Chunks:** passages of the text. The only thing cited.
+- **Notes:** an outline of each section, with pages.
+- **One Page:** the whole book's big picture. Sent with every question.
 
-## Result
+## The flow
 
-Full answers to the answer key's 30 questions, written as in the app and graded automatically against reference answers, two runs each. Four of the questions are about things the book doesn't cover:
+```
+writeSearchQueries → retrieveFromSources → writeAnswer → covered, or off-topic? → end
+        ↑                                                       │ no: retry (up to 2)
+        └───────────────────────────────────────────────────────┘
+```
 
-| Option                              | Wrong (of 26) | Not-covered questions handled (of 4) |
-| ----------------------------------- | ------------- | ------------------------------------ |
-| A. The question only                | 5, 5          | 4, 4                                 |
-| B. Rewritten queries only           | 2, 4          | 4, 4                                 |
-| **C. Question + rewritten queries** | **2, 2**      | **4, 4**                             |
+1. **Write queries:** up to 2 short sentences, in the book's words. The One Page helps with situations the book never names.
+2. **Retrieve:** the question + the queries, each searched in the book. Results merged in turns → 6 passages, 4 Notes.
+3. **Answer:** from passages, Notes, and One Page. Also says `covered` and `offTopic`.
+4. **Retry** (not covered, not off-topic):
+   - different queries than before;
+   - without the original question;
+   - 10 passages instead of 6.
 
-The other answers were correct or missed only a secondary detail of the reference. C's remaining mistakes: a table that exists only as an image in the PDF, an indirect question retrieval misses, and two neighboring passages the model merged. No option answered a not-covered question as if the book covered it.
+## Results (Meditations)
 
-## How this was chosen
+- **Pages:** 26 of 29 answers point to a page with the answer.
+- **Not covered by the book:** 4 of 4 answered "couldn't find it".
+- **Solved:** the emperor question → 1/5 (keywords) → 3/5 (sentences) → 10/10 (retries).
+- **Known limit:** the Christians (p. 99) are never found → smaller chunks or hybrid search.
+- **Not reported:** the LLM grader's counts, too unreliable ([#38](https://github.com/RRFayad/book-mentor/issues/38)).
 
-Four options were compared on 26 questions with known answer pages (`backend/evals/`). Six of them are indirect, like "which scientist…" instead of the scientist's name. Found means a passage or Note from an answer page reached the model. Two runs each:
+## How the search was chosen (first test book)
 
-| Option                                               | Found (26) | Indirect (6) |
-| ---------------------------------------------------- | ---------- | ------------ |
-| A. The question only                                 | 24, 24     | 4, 4         |
-| B. Rewritten queries only                            | 22, 22     | 5, 5         |
-| **C. Question + rewritten queries, merged in turns** | **25, 25** | **5, 5**     |
-| D. Question + rewritten queries, rank fusion (RRF)   | 24, 25     | 4, 5         |
+Did a page with the answer reach the model? 26 questions, 2 runs each:
 
-- **A** misses indirect questions; **B** misses direct ones, where rewrites drift from the book's wording. **C** keeps the wins of both.
-- **D** scores passages by how many searches found them (the question weighted ×1.5). Agreement favored general passages over specific answers found by a single search, so it did no better than C and its answers weren't graded.
+| Option                              | Found (26) | Indirect (6) |
+| ----------------------------------- | ---------- | ------------ |
+| A. Question only                    | 24, 24     | 4, 4         |
+| B. Rewritten queries only           | 22, 22     | 5, 5         |
+| **C. Question + queries, in turns** | **25, 25** | **5, 5**     |
+| D. Question + queries, rank fusion  | 24, 25     | 4, 5         |
+
+- A misses indirect questions.
+- B misses direct ones.
+- **C keeps both → chosen.**
+- D favored general passages → no better than C.

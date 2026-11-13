@@ -1,89 +1,72 @@
 # API contract
 
-The backend API the screens use. Words follow [CONTEXT.md](../CONTEXT.md).
-Response shapes are the TypeScript types in
-[`frontend/src/lib/backend/types.ts`](../frontend/src/lib/backend/types.ts). How the backend
-stores this data is a different shape: see [data-model.md](data-model.md).
-
-- **Fixed:** the screens already rely on it. Changing it means changing the
-  screens too.
-- **Proposed:** a starting point. The developer confirms or changes it at the
-  ticket's "decide" step, then updates this file.
+- The API the screens use. Terms: [CONTEXT.md](../CONTEXT.md).
+- Shapes: the Zod schemas in [`packages/shared/src/schemas/`](../packages/shared/src/schemas/).
+- Storage: [data-model.md](data-model.md).
+- Live docs: `/docs` on the running API (OpenAPI).
 
 ## Conventions
 
-| Rule                                                                                                                                                                                                                                                                         | Status   |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| JSON uses `camelCase` field names, exactly as in `types.ts`. Request and response schemas are Zod schemas in `packages/shared/src/schemas.ts`.                                                                                                                               | Fixed    |
-| Times are ISO 8601 strings in UTC, like `2026-10-06T14:00:00Z`.                                                                                                                                                                                                              | Fixed    |
-| IDs of Sources, Conversations, and messages are strings. Use UUIDs.                                                                                                                                                                                                          | Fixed    |
-| Every request sends `Authorization: Bearer <Clerk session token>`. The user is read from the verified token, never from the request body.                                                                                                                                    | Fixed    |
-| A request can only see and change the signed-in user's own data.                                                                                                                                                                                                             | Fixed    |
-| Expected outcomes (rejected, limit reached) return a normal body with a `status` field, like `AddSourceResult`. HTTP errors are only for: 401 not signed in, 403 no subscription, 404 not found, 422 invalid input (including a book over 500 pages, `detail: "too-large"`). | Proposed |
+- JSON in `camelCase`. Times: ISO 8601, UTC. IDs: UUIDs.
+- Every request: `Authorization: Bearer <Clerk session token>`. The user comes from the token, never the body.
+- Only your own data. Another reader's item → `404`.
+- Errors are `{ detail }`:
+  - `401` not signed in;
+  - `404` not found;
+  - `409` conflict: `limit-reached`, message id reused, book no longer Ingesting;
+  - `422` invalid input: `too-large` (> 500 pages), text over the caps.
 
 ## Sources
 
-| Endpoint                           | Request                                                                              | Response                        | Status   |
-| ---------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------- | -------- |
-| `GET /sources`                     |                                                                                      | `Source[]`                      | Proposed |
-| `POST /sources`                    | book: `{ kind, title, author, pageCount }`; blog: `{ kind, address, title, author }` | `AddSourceResult`               | Proposed |
-| `POST /sources/{id}/pages`         | `PageBatch` (below)                                                                  | `{ ingestionProgress: number }` | Proposed |
-| `POST /sources/{id}/complete`      |                                                                                      | `Source` (now Ready)            | Proposed |
-| `DELETE /sources/{id}`             |                                                                                      | `204`                           | Proposed |
-| `GET /sources/conversation-counts` |                                                                                      | `Record<sourceId, number>`      | Proposed |
+| Endpoint                      | Request                                      | Response                      |
+| ----------------------------- | -------------------------------------------- | ----------------------------- |
+| `GET /sources`                |                                              | `Source[]` (not expired)      |
+| `POST /sources`               | `{ kind: "book", title, author, pageCount }` | `{ status: "added", source }` |
+| `POST /sources/{id}/pages`    | `{ pages: { page, text }[] }`                | `{ ingestionProgress }`       |
+| `POST /sources/{id}/complete` |                                              | `Source` (Ready)              |
+| `DELETE /sources/{id}`        |                                              | `204`                         |
 
-**Adding a book (ADR 0001).** The browser reads the PDF. The server never
-receives the file.
+Adding a book (ADR 0001):
 
-1. `POST /sources` with the page count. The Source is created as Ingesting.
-   More than 500 pages: `422` with `{ detail: "too-large" }`.
-2. `POST /sources/{id}/pages`, once per batch of about 25 pages, in order.
-3. `POST /sources/{id}/complete`. The Source becomes Ready.
+1. The browser reads the PDF; a scan is rejected there. The file is never sent.
+2. `POST /sources` → Ingesting.
+   - > 500 pages → `422`. 4th active book → `409`. Title, author ≤ 200 chars.
+3. `POST /pages`: batches of 25 pages, 3 at a time. Page text ≤ 10,000 chars. A batch sent again replaces itself.
+4. `POST /complete` → writes the One Page → Ready. Only once (`409` after).
 
-A batch where no page has text means the PDF is a scan:
-`{ status: "rejected", reason: "scanned" }`, and the Source is removed.
+Not built yet:
 
-```ts
-// Proposed. Add to types.ts when ticket "A book becomes ready" starts.
-type PageBatch = {
-  pages: { page: number; text: string }[]; // page numbers start at 1
-};
-```
-
-**Adding a blog.** The server fetches the posts itself; how (Tavily, batches,
-limits) is decided in ticket "Add a blog".
+- `GET /sources/conversation-counts`, for the Delete dialog (#27).
+- Blogs (#21): `kind: "blog"` → `422`.
 
 ## Conversations and messages
 
-| Endpoint                            | Request                                                       | Response                   | Status   |
-| ----------------------------------- | ------------------------------------------------------------- | -------------------------- | -------- |
-| `GET /conversations`                |                                                               | `ConversationListItem[]`   | Proposed |
-| `GET /conversations/{id}`           |                                                               | `Conversation`             | Proposed |
-| `POST /conversations`               | `{ sourceIds: string[], firstQuestion: string }`              | `CreateConversationResult` | Proposed |
-| `PATCH /conversations/{id}`         | `{ title: string }`                                           | `ConversationListItem`     | Proposed |
-| `DELETE /conversations/{id}`        |                                                               | `204`                      | Proposed |
-| `POST /conversations/{id}/messages` | `NewMessage` (without `conversationId`, which is in the path) | `SendMessageResult`        | Proposed |
+| Endpoint                            | Request                             | Response                                |
+| ----------------------------------- | ----------------------------------- | --------------------------------------- |
+| `GET /conversations`                |                                     | `ConversationListItem[]`                |
+| `GET /conversations/{id}`           |                                     | `Conversation` (Sources, messages)      |
+| `POST /conversations`               | `{ sourceIds, firstQuestion }`      | `{ status: "created", conversationId }` |
+| `PATCH /conversations/{id}`         | `{ title }`                         | `ConversationListItem`                  |
+| `DELETE /conversations/{id}`        |                                     | `204`                                   |
+| `POST /conversations/{id}/messages` | `{ userMessageId, answerId, text }` | `{ status: "answered", answer }`        |
+| `GET /conversations/message-usage`  |                                     | `{ max, usage }`                        |
 
-- `CreateConversationResult` lives in the Conversations server actions today.
-  Move it into `types.ts` when ticket "Ask and get a cited answer" starts.
-- The client chooses the message ids (`userMessageId`, `answerId`), so it can
-  show the messages before the reply arrives.
-- An answer is a `MentorAnswer`: ordered `parts` (sections, positions, not
-  covered, text) whose `RichText` holds Citation markers, and `citations`
-  numbered from 1 inside each answer. Every Citation keeps its quoted text
-  (ADR 0003).
+- **New Conversation:** Ready, unexpired Sources. Title = first question, ≤ 200 chars.
+- **Message ids** come from the browser → messages show before the reply.
+- **Sending:**
+  - question ≤ 1,000 chars;
+  - 50 answers in 24 h → `409 limit-reached`;
+  - a failed answer is saved as `error`, doesn't count.
+- **An answer:** `parts` (text with Citation markers, or "not covered") + `citations` (numbered from 1, with quoted text).
+- **`message-usage`:** answers in 24 h, not failed. The frontend adds the Source count.
+- **No streaming** yet (#20): the whole answer at once.
 
-**Streaming** (ticket "Answers appear as they're written"). Open: the stream
-format, which assistant-ui runtime the thread keeps, and how Stop reaches the
-server. Until then, `POST /conversations/{id}/messages` returns the whole
-answer at once.
+## Scheduled jobs
 
-## Usage
+| Endpoint                           | Request                               | Response              |
+| ---------------------------------- | ------------------------------------- | --------------------- |
+| `GET /cron/delete-expired-sources` | `Authorization: Bearer <CRON_SECRET>` | `{ deletedPassages }` |
 
-| Endpoint     | Request | Response | Status   |
-| ------------ | ------- | -------- | -------- |
-| `GET /usage` |         | `Usage`  | Proposed |
-
-Limits: 3 active Sources; 50 messages in the last 24 hours, not counting
-messages whose answer failed. The tested rule the screens use is in
-`frontend/src/lib/usage/message-allowance.ts`; the backend must give the same result.
+- Called daily by a Vercel Schedule (`backend/vercel.json`).
+- Deletes expired books' text; keeps the Source row.
+- No secret → `401`.

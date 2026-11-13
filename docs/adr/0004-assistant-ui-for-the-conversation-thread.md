@@ -1,14 +1,19 @@
 # assistant-ui for the Conversation thread, on a custom-backend runtime
 
-The Conversation view is built on assistant-ui's primitives, so time goes into the backend rather than into chat plumbing (scrolling while streaming, composer behaviour, markdown rendering). Its LangGraph runtime is not used even though the backend uses LangGraph: that runtime needs a LangGraph Cloud or self-hosted LangGraph server, while Book Mentor's graph runs inside its own FastAPI. The thread therefore uses one of assistant-ui's custom-backend runtimes, chosen in the engineering grill. The sidebar, Library, Source picker and Citation panel stay app-owned.
+- **Decision:** the Conversation thread is built on assistant-ui's primitives → time goes into the backend, not chat plumbing (scrolling, composer, Markdown).
+- **Not its LangGraph runtime:** that needs a LangGraph Cloud or self-hosted server; our graph runs inside our own API (Fastify).
+- **Runtime used:** ExternalStoreRuntime. The app keeps the messages in React state and gives assistant-ui callbacks.
+- App-owned: the sidebar, Library, Source picker, Citation panel.
 
 ## Considered Options
 
-- Hand-built chat UI: full control, but days spent on plumbing that teaches nothing this project is for.
-- assistant-ui's LangGraph runtime: would require running a LangGraph server as a second backend.
+- **A hand-built chat UI:** full control, days of plumbing that teach nothing this project is for.
+- **assistant-ui's LangGraph runtime:** a second backend to run.
 
 ## Consequences
 
-- The thread components are written in the repo on assistant-ui's primitives, adapted from its registry thread, rather than installed with the shadcn CLI. The registry thread also brings attachments, images, reasoning, tool UI, follow-up suggestions, and shadcn components that would replace this repo's Base UI ones; v1 needs none of them.
-- A Mentor answer travels to assistant-ui as one custom `answer` data part, so assistant-ui's own Copy action (text parts only) does not apply; the thread uses its own Copy button over the answer's plain text.
-- assistant-ui offers message editing, regeneration and branching. v1 leaves them off by not providing their handlers, because they rewrite history that the Conversation Summary, saved Citations and message limits depend on.
+- Thread components are written in the repo on the primitives, adapted from the registry thread, not installed with the shadcn CLI.
+  - The registry brings attachments, reasoning, tool UI, and shadcn components that would replace our Base UI ones; v1 needs none.
+- An answer is one custom `answer` data part → assistant-ui's Copy (text parts only) doesn't apply; the thread has its own Copy button.
+- No edit, regenerate, or branch handlers: they'd rewrite history that the Summary, saved Citations, and the message limit depend on.
+- No cancel handler either, since v1 doesn't stream → no Stop button until #20.

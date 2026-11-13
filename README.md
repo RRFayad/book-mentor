@@ -1,762 +1,121 @@
-# SaaS Starter Kit
+# Book Mentor
+
+[![CI](https://github.com/RRFayad/book-mentor/actions/workflows/ci.yml/badge.svg)](https://github.com/RRFayad/book-mentor/actions/workflows/ci.yml)
+
+- One line: ask your books questions, get answers that cite the exact page.
+- Live demo link (after deploy).
+- Try it: Meditations is in every account (George Long translation, public domain).
+
+## How it was built: the whole process, not just the code
+
+- From product idea to deployment: one person working as the whole tech team, each role with its own artifact, and building the frontend, the backend, and the AI features.
+- **Product:** the product grill and v1 scope ([v1-product.md](docs/v1-product.md)); the glossary ([CONTEXT.md](CONTEXT.md)); the v1 / v1.1 / v2 cut.
+- **Design:** the canvases: [v2](https://claude.ai/artifact/QtPG3Bwz9Y6m5Htd7tiFb4#page-dcb81aee8d83) for the chat and sidebar, [v1](https://claude.ai/artifact/HbV6e1NR4qCuV99cV5rViA) for the Library and landing page.
+  - 🖼️ Screenshot: a canvas next to the built screen.
+- **Project management:** [GitHub issues](https://github.com/RRFayad/book-mentor/issues?q=is%3Aissue) as vertical slices with blocking edges (parent [#16](https://github.com/RRFayad/book-mentor/issues/16) → #17…#27); the scope cut on the tickets.
+  - 🖼️ Screenshot: the ticket list or a ticket with its "Blocked by".
+- **Architecture:** the ADRs ([docs/adr/](docs/adr/)); the [API contract](docs/api-contract.md); the [data model](docs/data-model.md); [retrieval](docs/retrieval.md).
+- **Code:** frontend (Next.js chat app), backend (Fastify API, Postgres), and AI (RAG, LangGraph Mentor, evals), in one monorepo with conventions in [AGENTS.md](AGENTS.md).
+- **QA:** API tests against a real Postgres; [CI](.github/workflows/ci.yml) on every PR; an [eval set](backend/evals/) for answer quality.
+- Built with Claude Code as a pair: say how, and what was kept as my own decisions.
 
-A reusable full-stack TypeScript foundation for subscription SaaS products, including AI applications.
+## Links to every artifact
+
+- **Product:** [v1 product](docs/v1-product.md) · [glossary (CONTEXT.md)](CONTEXT.md)
+- **Design:** [v2 canvas (chat, sidebar)](https://claude.ai/artifact/QtPG3Bwz9Y6m5Htd7tiFb4#page-dcb81aee8d83) · [v1 canvas (Library, landing page)](https://claude.ai/artifact/HbV6e1NR4qCuV99cV5rViA)
+- **Tickets:** [all issues](https://github.com/RRFayad/book-mentor/issues?q=is%3Aissue)
+  - Frontend first, on mock data: [#1 parent](https://github.com/RRFayad/book-mentor/issues/1) → [#2 App home route](https://github.com/RRFayad/book-mentor/issues/2) · [#3 Chat shell](https://github.com/RRFayad/book-mentor/issues/3) · [#4 Library page](https://github.com/RRFayad/book-mentor/issues/4) · [#5 Conversation thread](https://github.com/RRFayad/book-mentor/issues/5) · [#6 Add Source](https://github.com/RRFayad/book-mentor/issues/6) · [#7 Delete Source](https://github.com/RRFayad/book-mentor/issues/7) · [#8 Answer sections and Citations](https://github.com/RRFayad/book-mentor/issues/8) · [#9 Mock streaming](https://github.com/RRFayad/book-mentor/issues/9) · [#10 Citation panel](https://github.com/RRFayad/book-mentor/issues/10) · [#11 New Conversation](https://github.com/RRFayad/book-mentor/issues/11) · [#12 Expiry in a Conversation](https://github.com/RRFayad/book-mentor/issues/12) · [#13 Rename and delete](https://github.com/RRFayad/book-mentor/issues/13) · [#14 Mock data](https://github.com/RRFayad/book-mentor/issues/14)
+  - Then the backend that made it real: [#16 parent](https://github.com/RRFayad/book-mentor/issues/16) → [#17 Your Library is saved](https://github.com/RRFayad/book-mentor/issues/17) · [#18 A book becomes ready](https://github.com/RRFayad/book-mentor/issues/18) · [#19 Ask and get a cited answer](https://github.com/RRFayad/book-mentor/issues/19) · [#24 Conversations are remembered](https://github.com/RRFayad/book-mentor/issues/24) · [#25 Limits are real](https://github.com/RRFayad/book-mentor/issues/25) · [#26 Sources expire](https://github.com/RRFayad/book-mentor/issues/26) · [#27 Manage for real](https://github.com/RRFayad/book-mentor/issues/27)
+  - Moved to later: [#20 Streaming](https://github.com/RRFayad/book-mentor/issues/20) · [#21 Blogs](https://github.com/RRFayad/book-mentor/issues/21) · [#22 Compare Sources](https://github.com/RRFayad/book-mentor/issues/22) · [#23 Never invent](https://github.com/RRFayad/book-mentor/issues/23) · [#33 Small improvements](https://github.com/RRFayad/book-mentor/issues/33)
+- **Architecture decisions (ADRs):**
+  - [0001: Browser extracts PDF text and drives batched ingestion](docs/adr/0001-browser-extracts-pdf-text-and-drives-batched-ingestion.md)
+  - [0002: Drizzle-owned chunks table, searched exactly per book](docs/adr/0002-drizzle-owned-chunks-table.md)
+  - [0003: Cited passages are evidence; summaries are not](docs/adr/0003-cited-passages-are-evidence-summary-is-not.md)
+  - [0004: assistant-ui for the Conversation thread](docs/adr/0004-assistant-ui-for-the-conversation-thread.md)
+  - [0005: The backend owns the product tables](docs/adr/0005-backend-owns-product-tables.md)
+  - [0006: One Drizzle schema for every table](docs/adr/0006-one-drizzle-schema-for-every-table.md)
+- **Contracts and design docs:** [API contract](docs/api-contract.md) · [data model](docs/data-model.md) · [retrieval](docs/retrieval.md)
+- **QA:** [CI workflow](.github/workflows/ci.yml) · [eval set and script](backend/evals/)
+
+# The project
+
+## What it does
+
+- System diagram (Mermaid): browser (reads the PDF) → Next.js (Clerk) → Fastify API → Postgres + pgvector; OpenAI and LangSmith on the side; Vercel around it.
+
+- Add a PDF book → it's read in the browser, indexed, and Ready in about a minute.
+  - 🖼️ GIF: Add Source → progress bar → Ready.
+- Ask questions → answers from the book only, with Citations to the page.
+- Says plainly when the book doesn't cover something, instead of making it up.
+- Applies the book to your situation ("What would Marcus say about road rage?").
+- Remembers the last 3 exchanges, for follow-ups.
+
+## The Mentor (the AI part)
+
+- Diagram: `writeSearchQueries → retrieveFromSources → writeAnswer → (retry?)` (Mermaid, renders on GitHub).
+- Ingestion: browser extracts text → chunks → embeddings → Notes per section → One Page per book.
+- The RAG tree: chunks (the book's words) → Notes (sections) → One Page (the whole book).
+- Only passages are cited; Notes and the One Page are the Mentor's understanding ([ADR 0003](docs/adr/0003-cited-passages-are-evidence-summary-is-not.md)).
+- Citations are enforced in code, not only asked of the model.
+- Corrective retries: not covered and not off-topic → search again with different queries.
+- Tracing with LangSmith: one Thread per Conversation.
+  - 🖼️ Screenshot: a trace showing a retry (two search tries, then the answer).
+
+## What I measured, and what changed
+
+- **The eval:** 33 questions with expected answers and pages, including 4 the book doesn't cover; a report per run.
+- **Only objective numbers:** 26 of 29 answers point to a page that holds the answer; 4 of 4 not-covered questions answered with "couldn't find it".
+- **The LLM grader proved unreliable** for fine distinctions, so I read every answer it didn't mark correct instead of publishing its counts. Improving the grader is planned ([#38](https://github.com/RRFayad/book-mentor/issues/38)).
+- **Story: the One Page steers the search** ("road rage" → "anger at others' wrongs").
+- **Story: the retry arc** on one stubborn question: keyword queries 1/5 → sentence queries 3/5 → varied retries 10/10.
+- **Story: the vector index bug:** HNSW filtered by book after ranking → exact search per book.
+- **Known limit:** Christians (p. 99) is never found → chunk size and hybrid search (next).
+- Framing: lead with the method; keep automated and manual numbers apart; link a real report.
+
+## Limits, privacy, and costs
+
+- 3 active books; 50 messages per rolling 24 hours; input caps.
+- A book's text is deleted 7 days after it's added (daily scheduled job); its title stays in old Conversations.
+- The PDF never leaves the browser; only its text is sent.
+- Costs capped by the AI provider's monthly budget.
+- Prompt injection: what holds (system rules, structured output, book-only answers) and what's still a risk (instructions inside a PDF).
+
+## Tech stack
+
+- Frontend: Next.js, assistant-ui, Tailwind, shadcn/ui, Clerk.
+- API: Fastify, Zod contract shared with the frontend.
+- AI: LangChain + LangGraph, OpenAI chat and embeddings, LangSmith.
+- Data: PostgreSQL + pgvector, Drizzle.
+- Infra: Vercel (two projects + a daily Schedule), Supabase Postgres, GitHub Actions.
+
+## Deployment
+
+- Two Vercel projects: the Next.js app and the API (esbuild bundle).
+- Supabase Postgres with pgvector; Drizzle migrations.
+- A daily Vercel Schedule deletes expired books' text, secured by `CRON_SECRET`.
+- CI must pass before merging to `main`.
+
+## Run it locally
+
+- Prerequisites: Node 26, Docker, Clerk and OpenAI keys.
+- Env files: `frontend/.env.local` and `backend/.env` (incl. `CRON_SECRET`).
+- `npm install` → `npm run db:migrate` → `npm run dev`.
+- Tests: `npm run check` (Docker running); the eval: `npm run eval -w @app/backend`.
+- Decide: keep the detailed setup here, or move it to `docs/setup.md`.
 
-Built to handle the SaaS infrastructure once, so new products can start with authentication, billing, database persistence, authorization, and an API backend already working.
+## Project structure
 
-> **v2** replaced the FastAPI (Python) backend with Fastify (TypeScript). The Python version is available in [v1.1.4](https://github.com/RRFayad/saas-starter-kit/releases/tag/v1.1.4).
+- `frontend/`, `backend/`, `packages/shared/`, `docs/`, `backend/evals/`.
 
-[Live Demo](https://rf-saas-starter-kit.vercel.app/)
+## What's next
 
-[Watch the Video Walkthrough](https://www.loom.com/share/b9e6a7a19a3e42b686d7ca6208469023)
+- v1.1: streaming with a real Stop, hybrid search, comparing books, answer verification, blogs.
+- v2: Socratic mode, longer memory, EPUB/OCR.
 
-## What's Included
+## Built on
 
-- Next.js + TypeScript frontend
-- Fastify + TypeScript API backend
-- npm workspaces monorepo with a shared package (`@app/shared`)
-- PostgreSQL database, with a local Docker setup (pgvector included)
-- Drizzle ORM + migrations, shared by the frontend and the API
-- Zod API schemas shared by the frontend and the API
-- API docs with Swagger (OpenAPI) at `/docs`
-- Clerk authentication
-- Clerk → PostgreSQL user synchronization
-- Stripe Checkout and Customer Portal
-- Stripe → PostgreSQL subscription synchronization
-- Subscription authorization in Next.js and the API
-- Protected Next.js → API communication
-- Responsive landing page and authenticated app shell
-- Billing and account management
-- Toast notifications
-- Tailwind CSS + shadcn/ui + Velora UI
-- Light/dark themes
+- My [SaaS starter kit](https://github.com/RRFayad/saas-starter-kit): auth, billing, the API scaffold; what's new in Book Mentor.
 
-## Architecture
+## About me
 
-```text
-Browser
-   │
-   ▼
-Next.js
-   ├── UI / App Shell
-   ├── Clerk Authentication
-   ├── Clerk Webhooks
-   ├── Stripe Checkout / Portal
-   ├── Stripe Webhooks
-   └── SaaS Authorization
-   │
-   ├──────────────► PostgreSQL
-   │
-   ▼
-Fastify API
-   ├── Clerk Token Validation
-   ├── Subscription Authorization
-   ├── Swagger Docs (/docs)
-   └── Product / AI Logic
-   │
-   ▼
-PostgreSQL
-
-@app/shared (used by both)
-   ├── Drizzle schema + migrations
-   ├── Zod API schemas
-   └── Constants, types, utils
-```
-
-### Responsibilities
-
-**Next.js owns SaaS infrastructure:**
-
-- Authentication
-- User synchronization
-- Billing
-- Subscription state
-- Account management
-
-**The API (Fastify) owns product/domain logic:**
-
-- Product APIs
-- Future domain logic (AI features, etc)
-
-**`@app/shared` holds what both sides must agree on:**
-
-- The Drizzle schema and migrations
-- The API contract (Zod schemas, with types inferred from them)
-- Shared constants, types, and utils
-
-Both apps use the same PostgreSQL database through the same Drizzle schema.
-
-Stripe remains the billing source of truth. PostgreSQL stores the current subscription state used for authorization.
-
-## Project Structure
-
-```text
-frontend/src/          Next.js app (@app/frontend)
-  actions/             Server Actions
-  app/                 Next.js routes
-  components/          UI components
-  lib/
-    backend/           Next.js → API client
-    db/                Drizzle client
-    stripe/            Stripe integration
-    subscription/      Subscription authorization
-    user/              User queries
-
-backend/src/           Fastify API (@app/backend)
-  main.ts              App entry: starts the server
-  create-app.ts        Setup, plugins, and route scopes (tests start it too)
-  testing/             Test setup: test database, Clerk and OpenAI mocks
-  db.ts                Drizzle client
-  auth/                Clerk authentication + subscription hooks
-  healthcheck/         Health check route
-
-packages/shared/src/   Shared package (@app/shared)
-  db/                  Drizzle schema, row types, and migrations
-  schemas/             Zod API schemas and their types (the API contract)
-  constants.ts         Shared constants
-  types.ts             Shared types not tied to a schema
-  utils.ts             Shared helpers
-```
-
----
-
-# Start a New SaaS
-
-## 1. Clone the Starter
-
-```bash
-git clone https://github.com/RRFayad/saas-starter-kit.git my-saas
-cd my-saas
-```
-
-## 2. Create Your Own Git Repository
-
-The clone initially contains the SaaS Starter Kit Git history.
-
-Remove it:
-
-```bash
-rm -rf .git
-```
-
-Initialize a fresh repository:
-
-```bash
-git init
-git add .
-git commit -m "chore: initialize project from SaaS Starter Kit"
-```
-
-Create an empty repository for your new product on GitHub, then connect it:
-
-```bash
-git remote add origin https://github.com/<your-username>/<your-repository>.git
-git branch -M main
-git push -u origin main
-```
-
-Your product now has its own Git history and is independent from the Starter Kit.
-
-## 3. Create Local Environment Files
-
-Create the ignored local environment files before configuring providers:
-
-```bash
-touch frontend/.env.local backend/.env
-```
-
-**Important:** Confirm both files are ignored in your repo.
-
-Start with these templates. Fill each value in the relevant setup step below.
-
-`frontend/.env.local`:
-
-```env
-# Application - Replace these with the deployed service URLs in production.
-FRONTEND_URL=http://localhost:3000
-BACKEND_URL=http://127.0.0.1:8000
-
-# Features
-LANDING_PAGE_ENABLED=true
-BILLING_ENABLED=true
-
-# Database
-DATABASE_URL=postgresql://...
-
-# Clerk routes
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
-NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
-
-# Clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-CLERK_WEBHOOK_SIGNING_SECRET=whsec_...
-
-# Stripe: required only when BILLING_ENABLED=true
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test...
-STRIPE_SECRET_KEY=sk_test_...
-
-# Stripe Prices: configure at least one
-STRIPE_BASIC_PRICE_ID=price_...
-STRIPE_PREMIUM_PRICE_ID=price_...
-STRIPE_ALL_IN_PRICE_ID=price_...
-
-# Stripe Webhook
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Optional: automatically apply a Stripe Coupon to Checkout demos
-STRIPE_DEMO_COUPON_ID=
-
-# Optional: enables GitHub links on the landing page and in the SaaS shell
-NEXT_PUBLIC_GITHUB_URL=
-
-```
-
-`backend/.env`:
-
-```env
-# Same database and frontend URL as frontend/.env.local.
-DATABASE_URL=postgresql://...
-FRONTEND_URL=http://localhost:3000
-
-# Same Clerk application as frontend/.env.local.
-CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-
-# Keep this aligned with frontend/.env.local.
-BILLING_ENABLED=true
-
-# Optional: defaults to localhost:8000.
-PORT=
-HOST=
-```
-
-Both apps must use the same `DATABASE_URL`.
-
-### Feature Flags
-
-Both flags must be exactly `true` or `false`.
-
-| `LANDING_PAGE_ENABLED` | `BILLING_ENABLED` | Use case                         |
-| ---------------------- | ----------------- | -------------------------------- |
-| `true`                 | `true`            | Normal commercial SaaS           |
-| `true`                 | `false`           | Free product or portfolio app    |
-| `false`                | `false`           | Internal or private app          |
-| `false`                | `true`            | Invite-only or private paid SaaS |
-
-`LANDING_PAGE_ENABLED` controls whether `/` shows the marketing page. When it
-is disabled, `/` redirects to the authenticated workspace.
-
-`BILLING_ENABLED` controls pricing, Checkout, Customer Portal, Stripe webhooks,
-and subscription authorization. Set it to the same value in `frontend/.env.local` and
-`backend/.env`. When it is `false`, Stripe environment variables are not
-required.
-
-## 4. Install Dependencies
-
-From the project root (installs the Next.js app, the API, and the shared
-package):
-
-```bash
-npm install
-```
-
-The repository is an npm workspaces monorepo. Always install packages from the
-root, targeting a workspace, for example
-`npm install <package> -w @app/backend`.
-
-Prerequisites:
-
-- Node.js 20 or newer
-- npm
-- Docker Desktop (for the local database)
-- Stripe CLI (for local Stripe webhooks): `brew install stripe/stripe-cli/stripe`
-
-## 5. Create PostgreSQL Database
-
-### Local development: Docker
-
-The repository includes a `docker-compose.yml` that runs PostgreSQL 18 with the
-pgvector extension. `npm run dev` starts it automatically (through the `predev`
-script), so you only need Docker Desktop running.
-
-```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app
-```
-
-Useful commands:
-
-```bash
-docker compose up -d     # start the database (npm run dev does this for you)
-docker compose down      # stop it; data is kept
-docker compose down -v   # stop it and delete all data
-```
-
-Container and volume names come from the project folder, so several projects
-built from this kit don't clash. If port 5432 is taken, set `DB_PORT=5433` in a
-`.env` file and use that port in `DATABASE_URL`.
-
-### Production: hosted PostgreSQL
-
-Create a PostgreSQL database using Supabase or another hosted provider.
-
-**If using Supabase**, go to **Connect → Connection string → Direct
-connection / URI** and copy the PostgreSQL connection string. Do not use the
-Supabase REST API URL.
-
-Next.js and the API must use the same database.
-
-Supabase is used only as PostgreSQL hosting in the reference project. The Starter Kit does not depend on Supabase Auth, Storage, or its SDK.
-
-Add the connection URL as `DATABASE_URL` to both `frontend/.env.local` and
-`backend/.env`.
-
-## 6. Configure Clerk
-
-Give local development and the deployed app separate Clerk environments, so
-users and webhooks never cross between them:
-
-- **With your own domain:** use one Clerk application. Its development instance
-  (`pk_test_...`) is for local development, and its production instance
-  (`pk_live_...`) is for the deployed app. Production instances require a
-  domain you own; they can't use `*.vercel.app`.
-- **Without a domain yet** (for example, a demo on `*.vercel.app`): create two
-  Clerk applications, such as `My SaaS (local)` and `My SaaS (vercel)`, and use
-  each one's development keys in its own environment.
-
-Create a Clerk application and copy its publishable and secret keys (Overview > Manual Setup) to `frontend/.env.local` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`.
-
-`npm install` does not create Clerk environment variables. Clerk's `clerk init`
-CLI can write those two keys, but do not run it on this clone because Clerk is
-already integrated and the command can modify existing setup files.
-
-Add the same two keys to `backend/.env` as `CLERK_PUBLISHABLE_KEY` and
-`CLERK_SECRET_KEY`. The API uses them to verify the session tokens Next.js
-sends.
-
-### Create a Clerk webhook:
-
-Add one endpoint per environment, each in that environment's Clerk application
-or instance (Configure > Webhooks > Add Endpoint), subscribed to:
-
-```text
-user.created
-user.updated
-user.deleted
-```
-
-**Local development:** Clerk can't reach `localhost`, so expose Next.js with an
-HTTPS tunnel such as ngrok:
-
-```bash
-ngrok http 3000
-```
-
-```text
-https://<your-ngrok-url>/api/webhooks/clerk
-```
-
-Copy the endpoint's signing secret into `frontend/.env.local` as
-`CLERK_WEBHOOK_SIGNING_SECRET`.
-
-**Production:**
-
-```text
-https://<your-public-app-url>/api/webhooks/clerk
-```
-
-Copy that endpoint's signing secret into the deployment's environment variables
-(for example, Vercel). Each endpoint has its own secret.
-
-## 7. Configure Stripe (Optional - Required when `BILLING_ENABLED=true`)
-
-You do not need to create customers or subscriptions manually; the application
-creates them through Stripe Checkout.
-
-### Create a Sandbox
-
-Give each project its own Stripe **Sandbox** (account menu > Sandboxes >
-Create). A sandbox is an isolated test environment with its own API keys,
-products, customers, and webhooks.
-
-A Stripe account sends every event to every webhook destination it has. When
-several projects, or local and production, share one account, each event
-reaches apps it doesn't belong to, and signature checks fail for the
-destinations whose secrets don't match. A sandbox per project keeps them apart.
-
-### Create Products and Prices
-
-In the sandbox, go to Settings > Developers > API keys. Copy the publishable and secret API
-keys into `frontend/.env.local` as `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and
-`STRIPE_SECRET_KEY`, respectively.
-
-In Stripe Dashboard, open the Product catalog. For each plan you want to offer:
-
-1. Create a Product, for example `My SaaS - Basic Plan`, `My SaaS - Premium Plan`, or `My SaaS - All In Plan`.
-2. Add one flat-rate **recurring** Price with your currency and billing
-   interval, such as monthly.
-3. Copy its `price_...` ID into the matching variable in `frontend/.env.local`.
-
-4. Update the matching display copy in `frontend/src/lib/stripe/config.ts`. Landing-page
-   prices are intentionally not fetched from Stripe.
-
-The starter supports these plan variables:
-
-```text
-STRIPE_BASIC_PRICE_ID
-STRIPE_PREMIUM_PRICE_ID
-STRIPE_ALL_IN_PRICE_ID
-```
-
-At least one plan must have a configured Stripe Price ID.
-
-### Configure Customer Portal
-
-Search for Customer Portal settings and activate **Customers can switch plans**.
-Add the products you created, then review the other portal settings as well.
-
-The starter already creates Customer Portal sessions from its Billing page and
-synchronizes plan changes through `customer.subscription.updated`.
-
-### Create a Webhook
-
-The application only learns about subscriptions through Stripe webhooks, so
-pages stay gated until the webhook works.
-
-#### Local development: Stripe CLI
-
-Log in to the project's sandbox and get the local signing secret:
-
-```bash
-stripe login
-npm run stripe:listen
-```
-
-`stripe listen` prints a webhook signing secret (`whsec_...`). Add it to
-`frontend/.env.local` as `STRIPE_WEBHOOK_SECRET`, then stop the command. The secret
-stays the same across runs on the same machine.
-
-From then on, `npm run dev` runs the listener next to Next.js, so you don't
-start it yourself. Do not create a dashboard destination pointing at a tunnel
-URL: it duplicates deliveries and needs its own secret.
-
-The `stripe:listen` script forwards the same five subscription events that the
-production destination subscribes to (listed below). When the webhook route
-starts handling a new event type, add it to both the script's `--events` list
-and the production destination.
-
-To explore which events Stripe sends for a flow, run the listener with every
-event instead (the route logs `Unhandled Stripe event` for the ones it ignores):
-
-```bash
-stripe listen --all-snapshot --forward-to localhost:3000/api/webhooks/stripe
-```
-
-#### Production : Webhooks Dashboard destination
-
-Go to Developers > Webhooks > Add Destination > API Version `2026-08-26.dahlia`
-
-**Subscribe to:**
-
-```text
-customer.subscription.created
-customer.subscription.deleted
-customer.subscription.paused
-customer.subscription.resumed
-customer.subscription.updated
-```
-
-**Add endpoint:**
-
-```text
-https://<your-public-app-url>/api/webhooks/stripe
-```
-
-Copy the destination's signing secret into the deployment's environment
-variables (for example, Vercel) as `STRIPE_WEBHOOK_SECRET`. Each destination has
-its own secret; don't reuse it in `frontend/.env.local`.
-
-### Discount Coupon
-
-If you want to create a discount coupon (e.g. a demo 100% coupon) to be automatically applied to Stripe:
-
-- Go to Dashboard > Product Catalog > Coupons
-- Create a coupon;
-- Set `STRIPE_DEMO_COUPON_ID` in `frontend/.env.local`
-
-## 8. Share your Repo (Optional)
-
-- If you want to share your repository, for example as a portfolio project, add
-  its URL to `NEXT_PUBLIC_GITHUB_URL` in `frontend/.env.local`. This enables GitHub
-  links on the landing page and in the SaaS shell.
-
-## 9. Review Environment Variables
-
-Before running the application, confirm:
-
-- `frontend/.env.local` has the database URL, Clerk keys and webhook secret, application
-  URLs, Stripe secret/webhook secrets, and at least one Stripe Price ID.
-- `backend/.env` has the same `DATABASE_URL`, `FRONTEND_URL`, Clerk keys, and
-  `BILLING_ENABLED` as `frontend/.env.local`.
-- Optional values are intentional: GitHub links are hidden without
-  `NEXT_PUBLIC_GITHUB_URL`, and no demo coupon is applied without
-  `STRIPE_DEMO_COUPON_ID`.
-
-## 10. Apply Database Migrations
-
-If you use the local Docker database, start it first:
-
-```bash
-docker compose up -d
-```
-
-From the project root:
-
-```bash
-npm run db:migrate
-```
-
-Run this against every new or reset database (for example after
-`docker compose down -v`); otherwise the app fails because the tables don't
-exist.
-
-The schema lives in `packages/shared/src/db/schema.ts`. When changing it:
-
-```bash
-npm run db:generate
-npm run db:migrate
-```
-
-Commit generated migrations with the schema change.
-
-## 11. Run Locally
-
-From the project root, one command starts everything:
-
-```bash
-npm run dev
-```
-
-It starts the local database container, then runs Next.js (`[web]`), the API
-(`[api]`), and the Stripe webhook listener (`[stripe]`) side by side, with each
-process's output labeled. `Ctrl+C` stops all of them.
-
-Services:
-
-```text
-Next.js:   http://localhost:3000
-API:       http://localhost:8000
-Health:    http://localhost:8000/healthcheck
-API docs:  http://localhost:8000/docs
-```
-
-To call protected routes from the API docs or Postman, get a session token from
-the browser console while signed in to the app
-(`await window.Clerk.session.getToken()`) and send it as
-`Authorization: Bearer <token>`. Session tokens expire after about a minute.
-
-## 12. Verify the Starter
-
-Before building product features, verify the complete SaaS foundation:
-
-- Sign up through Clerk
-- Confirm the user is synchronized to PostgreSQL
-- Select a subscription plan (if billing is enabled)
-- Complete Stripe Checkout
-  - **Important:** If you did not set a 100% coupon, fill out the credit card
-    form with:
-    - Card number: 4242 4242 4242 4242
-    - MM/YY: Any future date
-    - CVC: Any three digits
-
-### Verify:
-
-- Confirm the subscription is synchronized to PostgreSQL
-- Open the app and confirm you land on New Conversation
-- Confirm the API is reachable: open `<BACKEND_URL>/healthcheck`
-- Open the API docs at `<BACKEND_URL>/docs`
-- Open Stripe Customer Portal from Billing
-- Confirm account management works
-
-Once these work, the SaaS foundation is ready.
-
----
-
-# Building Your Product
-
-The Starter Kit intentionally separates SaaS infrastructure from product logic.
-
-```text
-Next.js
-  → SaaS infrastructure + UI
-
-Fastify API
-  → Product/domain/AI logic
-```
-
-For an AI SaaS, product features such as these belong primarily in the API:
-
-```text
-Document ingestion
-Retrieval / RAG
-Embeddings
-Conversations
-LLM calls
-Agents
-Streaming
-Product-specific APIs
-```
-
-The existing authentication, users, subscriptions, billing, and authorization infrastructure can remain unchanged.
-
-## Adding an API Feature
-
-Give each feature its own folder in `backend/src/`, named after the feature,
-with three files:
-
-```text
-backend/src/<feature>/
-  <feature>.route.ts        Route definition: path, Zod schemas, Swagger metadata
-  <feature>.controller.ts   Request handling: reads the request, returns the response
-  <feature>.service.ts      Business logic and database access (Drizzle)
-```
-
-- **Route:** declares the path and attaches the request and response schemas
-  from `@app/shared/schemas`. The schemas validate every request and response
-  and generate the Swagger docs.
-- **Controller:** turns an HTTP request into a service call and the result
-  into a response. It stays thin.
-- **Service:** holds the actual logic and queries, with no knowledge of HTTP,
-  so it can be reused and tested on its own.
-
-Small features can skip a layer: `healthcheck` only has a route.
-
-Then register the routes in the right scope in `backend/src/create-app.ts`:
-
-| Scope      | Hooks                                                              | For                             |
-| ---------- | ------------------------------------------------------------------ | ------------------------------- |
-| Public     | none                                                               | Health checks, public endpoints |
-| Protected  | `authenticate` (sets `request.user`)                               | Any signed-in user              |
-| Subscribed | + `requireSubscriptionPlan("basic")` (sets `request.subscription`) | Paid features                   |
-
-For a plan-gated feature, nest another scope with
-`requireSubscriptionPlan("premium")` (or `"all_in"`).
-
-Define the request and response schemas in
-`packages/shared/src/schemas.ts`. The frontend uses the inferred types
-(`z.infer`) for the data it receives, so a contract change shows up as a type
-error on both sides.
-
-## Database Ownership
-
-The Drizzle schema and migrations live in `packages/shared/src/db/` and are
-shared by the Next.js app and the API. Both apps read and write SaaS tables
-such as `users` and `subscriptions` through the same schema.
-
-Add product-specific tables to the same schema and generate a migration with
-`npm run db:generate`.
-
-## Designing Product Screens
-
-The authenticated app shell (sidebar, top header, grey content area) is already implemented in code. Its design lives in the [App Shell canvas](https://claude.ai/artifact/HWhacGtes2kTC143kN4aUk) in Claude Design: desktop expanded, desktop collapsed, and mobile with the menu closed and open.
-
-Each page renders inside the content area as a page header followed by its own white card(s):
-
-```text
-Sidebar | Header (breadcrumb, theme toggle, GitHub)
-        | Grey content area
-        |   Page header (title + description)
-        |   White card → page content
-```
-
-To design and build a new product screen:
-
-1. **Create your canvas** — open the App Shell canvas, export it with **Share › Export › HTML (.zip)**, extract it, and ask Claude Code to create your own Claude Design canvas from the extracted files. The new canvas lives in your account and is fully editable.
-2. **Design** — on that canvas, add frames for your product screens with `/design`, stating that each screen lives inside the shell's content area so only the page content is new.
-3. **Iterate** — refine the frames in the canvas until the screens are right.
-4. **Implement** — paste your canvas link into Claude Code and ask it to implement the screens. `AGENTS.md` tells the agent how a new page plugs into the shell.
-5. **Keep code as the source of truth** — once implemented, the code wins; the canvas is a reference.
-
-The shell design stays neutral on purpose: re-skin a new SaaS through the theme tokens in `frontend/src/app/globals.css` (`--primary`, `--radius`, fonts) rather than by editing the shell components.
-
----
-
-# Development Checks
-
-Run all checks (lint, plus a type check for the Next.js app, the API, and the
-shared package):
-
-```bash
-npm run check
-npm run build
-```
-
----
-
-# Production Notes
-
-When using the Starter Kit for a real production application:
-
-- Deploy the Next.js app and the API as separate services, each with its own
-  environment variables.
-- On Vercel, the Next.js project uses Root Directory `frontend`, and the API
-  project uses the **Fastify** framework preset with Root
-  Directory `backend` and "Include files outside the root directory" enabled.
-  Vercel runs the backend's `npm run build`, an esbuild bundle that inlines
-  `@app/shared`, and serves it as the function entrypoint (`server.js`).
-- Update Frontend and Backend URL env vars.
-- Update Clerk and Stripe webhook endpoints.
-- Keep database credentials server-side.
-- Never expose `DATABASE_URL` through `NEXT_PUBLIC_*`.
-- Use production Clerk credentials and configure the production domain/webhook.
-- Use Stripe live credentials and a production webhook.
-- Configure the PostgreSQL provider's appropriate production security controls.
-- Store all secrets in the deployment environment.
-- Test authentication, billing, webhooks, and authorization end to end.
-
----
-
-# Philosophy
-
-The Starter Kit owns the repetitive SaaS infrastructure.
-
-Your product should own what makes the application unique.
-
-```text
-Clone the Starter Kit
-        ↓
-Configure infrastructure
-        ↓
-Verify the SaaS foundation
-        ↓
-Build the actual product
-        ↓
-Ship
-```
-
-**Build the SaaS infrastructure once. Build products on top of it.**
-
-# Roadmap
-
-## API Owns All Server Logic
-
-Move the remaining server-side SaaS logic (Clerk and Stripe webhooks, Checkout,
-Customer Portal, and page authorization) from Next.js into the API, so Next.js
-only renders and the API owns every database and Stripe call.
-
-## Admin Dashboard
-
-Add an admin dashboard with real SaaS metrics from Stripe, visible to users
-with the `admin` role.
-
-## Organizations / Teams
-
-Extend the starter for B2B SaaS applications with:
-
-- Organizations / workspaces
-- Organization memberships
-- Roles and permissions
-- Organization-scoped subscriptions
-- Organization-scoped product data
+- Name, LinkedIn, and open to Full Stack AI Engineer roles.
