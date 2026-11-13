@@ -104,6 +104,7 @@ export const createSource = async (
           title: input.title,
           author: input.author,
           pageCount: input.pageCount,
+          shared: input.shared,
         }
       : {
           kind: input.kind,

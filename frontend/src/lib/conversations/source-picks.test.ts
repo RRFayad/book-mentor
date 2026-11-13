@@ -20,6 +20,7 @@ const source = (
   address: null,
   state,
   ingestionProgress: state === "ready" ? 100 : 10,
+  shared: false,
   createdAt: new Date("2026-10-01T00:00:00Z"),
   expiresAt: new Date("2026-10-08T00:00:00Z"),
 });

@@ -17,6 +17,7 @@ export type NewSource =
       pageCount: number;
       title: string;
       author: string;
+      shared?: boolean; // admins only
     }
   | { kind: "blog"; address: string; title: string; author: string };
 

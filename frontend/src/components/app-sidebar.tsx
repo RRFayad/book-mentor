@@ -14,7 +14,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -23,7 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ConversationMenu } from "@/components/subscribed/conversation/conversation-menu";
 import { useIsBrowser } from "@/hooks/use-is-browser";
-import type { ConversationListItem, Usage } from "@/lib/backend/types";
+import type { ConversationListItem } from "@/lib/backend/types";
 import { groupConversationsByDate } from "@/lib/conversations/group-by-date";
 import { routes } from "@/lib/routes";
 import { tw } from "@/lib/utils";
@@ -50,14 +49,12 @@ type AppSidebarProps = {
   appName: string;
   billingEnabled: boolean;
   conversations: ConversationListItem[];
-  usage: Usage;
 };
 
 export const AppSidebar = ({
   appName,
   billingEnabled,
   conversations,
-  usage,
 }: AppSidebarProps) => {
   const pathname = usePathname();
   const { user } = useUser();
@@ -107,9 +104,6 @@ export const AppSidebar = ({
                   <LibraryIcon />
                   <span>Library</span>
                 </SidebarMenuButton>
-                <SidebarMenuBadge>
-                  {usage.activeSources} of {usage.sourceLimit}
-                </SidebarMenuBadge>
               </SidebarMenuItem>
               {billingEnabled && (
                 <SidebarMenuItem>

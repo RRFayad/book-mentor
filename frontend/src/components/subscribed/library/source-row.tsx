@@ -85,7 +85,7 @@ export const SourceRow = ({ source, now, action }: SourceRowProps) => {
           <span className={styles.ingestingBadge}>Ingesting</span>
         )}
         <span className={styles.expiry}>
-          {source.state === "ready" && (
+          {source.state === "ready" && !source.shared && (
             <>
               <ClockIcon aria-hidden />
               {expiryText(source.expiresAt, now)}

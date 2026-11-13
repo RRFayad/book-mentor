@@ -39,6 +39,7 @@ import { cn, tw } from "@/lib/utils";
 
 const styles = {
   content: tw("sm:max-w-lg"),
+  shareOption: tw("flex items-center gap-2 text-sm"),
   tabs: tw("grid grid-cols-2 gap-1 rounded-lg bg-muted p-1"),
   tab: tw(
     "flex h-8 items-center justify-center gap-2 rounded-md text-sm font-medium text-muted-foreground transition-colors [&_svg]:size-4",
@@ -71,10 +72,16 @@ type Rejection = keyof typeof rejectionMessages;
 
 type AddSourceFormProps = {
   initialKind: SourceKind;
+  // Admins only: share the book with every reader (the demo book).
+  canShare: boolean;
   onDone: () => void;
 };
 
-const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
+const AddSourceForm = ({
+  initialKind,
+  canShare,
+  onDone,
+}: AddSourceFormProps) => {
   const id = useId();
   const [kind, setKind] = useState<SourceKind>(initialKind);
   const [fileName, setFileName] = useState("");
@@ -87,6 +94,7 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
   const [book, setBook] = useState<PdfBook | null>(null);
   const [readingPage, setReadingPage] = useState<string | null>(null);
   const [sending, setSending] = useState<string | null>(null);
+  const [shared, setShared] = useState(false);
   const isSending = sending !== null;
 
   // Closing the tab stops sending the book (ADR 0001), so the browser asks first.
@@ -105,7 +113,14 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
 
   const source: NewSource =
     kind === "book"
-      ? { kind, fileName, pageCount: book?.pageCount ?? 0, title, author }
+      ? {
+          kind,
+          fileName,
+          pageCount: book?.pageCount ?? 0,
+          title,
+          author,
+          shared,
+        }
       : { kind, address, title, author };
 
   const readBook = async (file: File | undefined) => {
@@ -294,6 +309,17 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
         />
       </div>
 
+      {kind === "book" && canShare && (
+        <label className={styles.shareOption}>
+          <input
+            type="checkbox"
+            checked={shared}
+            onChange={(event) => setShared(event.target.checked)}
+          />
+          Shared with every reader (the demo book)
+        </label>
+      )}
+
       {kind === "book" && (
         <p className={styles.note}>
           <LockIcon className={styles.noteIcon} aria-hidden />
@@ -325,6 +351,7 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
 type AddSourceButtonProps = {
   children: ReactNode;
   initialKind?: SourceKind;
+  canShare?: boolean;
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm";
   disabled?: boolean;
@@ -334,6 +361,7 @@ type AddSourceButtonProps = {
 export const AddSourceButton = ({
   children,
   initialKind = "book",
+  canShare = false,
   variant = "default",
   size = "default",
   disabled = false,
@@ -357,6 +385,7 @@ export const AddSourceButton = ({
         </DialogHeader>
         <AddSourceForm
           initialKind={initialKind}
+          canShare={canShare}
           onDone={() => setOpen(false)}
         />
       </DialogContent>
