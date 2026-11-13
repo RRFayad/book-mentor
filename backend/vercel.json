@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "schedules": {
+    "delete-expired-sources": {
+      "schedule": "0 4 * * *",
+      "path": "/cron/delete-expired-sources",
+      "requestMethod": "GET"
+    }
+  }
+}

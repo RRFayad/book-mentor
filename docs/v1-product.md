@@ -110,7 +110,8 @@ removed.
 
 ## Access and limits
 
-- Open sign-up, plus a global kill switch that disables new Sources and messages.
+- Open sign-up. A monthly budget on the AI provider caps costs; there is no
+  kill switch in the app.
 - Per user: 3 active Sources, PDFs up to 500 pages, blogs up to 20 posts,
   50 messages per rolling 24 hours (the UI shows when more can be sent).
   Numbers may be tuned during implementation.
@@ -131,6 +132,16 @@ retrieve-then-answer flow, so it can ship fast. In priority order:
    The One Page gives it the book's context to judge passages with.
 2. **Comparisons.** Conversations go back to 1 to 3 Sources, with the
    Comparison answers described in The Mentor.
+
+**Cut from the first release on 2026-11-12**, to ship sooner. Each moves to
+v1.1:
+
+- **Streaming answers** (#20): answers appear all at once, and can't be
+  stopped.
+- **Blogs** (#21): a Source is a book only.
+- **Comparisons** (#22), as above.
+- **Answer verification** (#23): the Mentor already says when the book doesn't
+  cover a question; checking each claim against the Sources comes later.
 
 ## Deferred to v2
 

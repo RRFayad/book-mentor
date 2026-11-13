@@ -5,6 +5,7 @@ import {
   deleteConversationHandler,
   getConversationHandler,
   getConversationsHandler,
+  getMessageUsageHandler,
   renameConversationHandler,
   sendMessageHandler,
 } from "./conversations.controller";
@@ -14,6 +15,7 @@ import {
   createConversationRequestBodySchema,
   createConversationResponseSchema,
   getConversationsResponseSchema,
+  messageUsageResponseSchema,
   renameConversationRequestBodySchema,
   renameConversationResponseSchema,
   sendMessageRequestBodySchema,
@@ -29,6 +31,15 @@ const conversationsRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     getConversationsHandler,
+  );
+  server.get(
+    "/message-usage",
+    {
+      schema: {
+        response: { 200: messageUsageResponseSchema },
+      },
+    },
+    getMessageUsageHandler,
   );
   server.get(
     "/:id",

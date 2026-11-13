@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_QUESTION_LENGTH } from "@app/shared/constants";
 import { Popover } from "@base-ui/react/popover";
 import {
   ArrowUpIcon,
@@ -212,6 +213,7 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
           aria-label="Your first question"
           placeholder="Ask your first question…"
           rows={2}
+          maxLength={MAX_QUESTION_LENGTH}
           className={styles.input}
           value={question}
           onChange={(event) => setQuestion(event.target.value)}

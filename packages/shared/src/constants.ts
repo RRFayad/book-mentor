@@ -29,6 +29,12 @@ export const SOURCE_STATES = ["ingesting", "ready"] as const;
 // The longest book a reader can add. The browser checks it; the API enforces it.
 export const MAX_BOOK_PAGES = 500;
 
+// Longest text the API accepts for one page
+export const MAX_PAGE_TEXT_LENGTH = 10_000;
+
+// Longest Source title or author, and Conversation title.
+export const MAX_TITLE_LENGTH = 200;
+
 // How many active (not yet expired) Sources a user can have at once.
 export const SOURCE_LIMIT = 3;
 
@@ -44,6 +50,9 @@ export const SOURCE_LIFETIME_DAYS = 7;
 // Our own names, not an LLM library's ("human"/"ai", "assistant"), so stored
 // messages don't depend on the vendor. The Mentor service maps them.
 export const MESSAGE_ROLES = ["user", "mentor"] as const;
+
+// Longest question a reader can send: a solid paragraph of context.
+export const MAX_QUESTION_LENGTH = 1_000;
 export const MENTOR_ANSWER_STATUSES = [
   "streaming",
   "complete",

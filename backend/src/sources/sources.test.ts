@@ -125,6 +125,23 @@ describe("the Library", () => {
     ).toEqual(["Mine"]);
   });
 
+  it("leaves out expired Sources", async () => {
+    const user = await createUser("reader");
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    await db.insert(sources).values({
+      userId: user.id,
+      kind: "book",
+      title: "Expired",
+      author: "Someone",
+      pageCount: 10,
+      expiresAt: yesterday,
+    });
+
+    const library = await api.as("reader").get("/sources");
+
+    expect(library.data).toEqual([]);
+  });
+
   it("shows the same Sources after a reload, newest first", async () => {
     await createUser("reader");
     await api.as("reader").post("/sources", book("First"));

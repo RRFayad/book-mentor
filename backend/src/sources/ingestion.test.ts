@@ -1,5 +1,8 @@
 import { chunks, notes, sources } from "@app/shared/db/schema";
-import { EMBEDDING_DIMENSIONS } from "@app/shared/constants";
+import {
+  EMBEDDING_DIMENSIONS,
+  MAX_PAGE_TEXT_LENGTH,
+} from "@app/shared/constants";
 import { asc, eq } from "drizzle-orm";
 import {
   afterAll,
@@ -182,6 +185,18 @@ describe("sending a book's text in parts", () => {
     expect(response.status).toBe(422);
   });
 
+  it("refuses a page with more text than a book page holds", async () => {
+    const sourceId = await addBook();
+    const longText = "a".repeat(MAX_PAGE_TEXT_LENGTH + 1);
+
+    const response = await api.as("reader").post(`/sources/${sourceId}/pages`, {
+      pages: [{ page: 1, text: longText }],
+    });
+
+    expect(response.status).toBe(422);
+    expect(await chunksOf(sourceId)).toEqual([]);
+  });
+
   it("refuses parts for another reader's book", async () => {
     const sourceId = await addBook();
     await createUser("someone-else");
@@ -248,6 +263,18 @@ describe("when every part has arrived", () => {
     expect(response.status).toBe(200);
     expect(response.data).toMatchObject({ id: sourceId, state: "ready" });
     expect(library.data[0].state).toBe("ready");
+  });
+
+  it("refuses to complete a book that's already Ready", async () => {
+    const sourceId = await addBook(2);
+    await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));
+    await api.as("reader").post(`/sources/${sourceId}/complete`, {});
+
+    const again = await api
+      .as("reader")
+      .post(`/sources/${sourceId}/complete`, {});
+
+    expect(again.status).toBe(409);
   });
 
   it("writes the book's One Page from its Notes, kept out of the Library", async () => {

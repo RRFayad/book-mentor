@@ -1,4 +1,5 @@
-import { messages, sources } from "@app/shared/db/schema";
+import { MAX_QUESTION_LENGTH, MESSAGE_LIMIT } from "@app/shared/constants";
+import { messages, NewMessageRow, sources } from "@app/shared/db/schema";
 import { SendMessageRequestBody } from "@app/shared/schemas";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -56,6 +57,24 @@ const newMessage = (
   answerId: crypto.randomUUID(),
   text,
 });
+
+// Answers already given in a Conversation, written straight to the database.
+const saveAnswers = (
+  conversationId: string,
+  total: number,
+  overrides: Partial<NewMessageRow> = {},
+) =>
+  db.insert(messages).values(
+    Array.from({ length: total }, () => ({
+      id: crypto.randomUUID(),
+      conversationId,
+      role: "mentor" as const,
+      status: "complete" as const,
+      parts: [],
+      citations: [],
+      ...overrides,
+    })),
+  );
 
 const send = (
   conversationId: string,
@@ -157,6 +176,22 @@ describe("sending a message", () => {
     ]);
   });
 
+  it("doesn't search a Source that has expired", async () => {
+    const conversationId = await startConversation();
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    await db.update(sources).set({ expiresAt: yesterday });
+    const message = newMessage();
+
+    const response = await send(conversationId, message);
+
+    expect(response.status).toBe(201);
+    expect(answerQuestion).toHaveBeenLastCalledWith(
+      message.text,
+      [],
+      expect.anything(),
+    );
+  });
+
   it("refuses ids that were already used, and saves nothing new", async () => {
     const conversationId = await startConversation();
     const message = newMessage();
@@ -197,6 +232,62 @@ describe("sending a message", () => {
     const conversationId = await startConversation();
 
     const response = await send(conversationId, newMessage(""));
+
+    expect(response.status).toBe(422);
+  });
+
+  it("refuses a message over the daily limit, and saves nothing", async () => {
+    const conversationId = await startConversation();
+    await saveAnswers(conversationId, MESSAGE_LIMIT);
+
+    const response = await send(conversationId);
+    const saved = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId));
+
+    expect(response.status).toBe(409);
+    expect(response.data).toEqual({ detail: "limit-reached" });
+    expect(saved).toHaveLength(MESSAGE_LIMIT);
+  });
+
+  it("doesn't count failed answers toward the daily limit", async () => {
+    const conversationId = await startConversation();
+    await saveAnswers(conversationId, MESSAGE_LIMIT, { status: "error" });
+
+    const response = await send(conversationId);
+
+    expect(response.status).toBe(201);
+  });
+
+  it("doesn't count answers older than 24 hours toward the daily limit", async () => {
+    const conversationId = await startConversation();
+    const dayAndHourAgo = new Date(Date.now() - 25 * 60 * 60 * 1000);
+    await saveAnswers(conversationId, MESSAGE_LIMIT, {
+      createdAt: dayAndHourAgo,
+    });
+
+    const response = await send(conversationId);
+
+    expect(response.status).toBe(201);
+  });
+
+  it("gives the messages answered in the last 24 hours, and the limit", async () => {
+    const conversationId = await startConversation();
+    await saveAnswers(conversationId, 2);
+    await saveAnswers(conversationId, 1, { status: "error" });
+
+    const response = await api.as("reader").get("/conversations/message-usage");
+
+    expect(response.status).toBe(200);
+    expect(response.data).toEqual({ max: MESSAGE_LIMIT, usage: 2 });
+  });
+
+  it("refuses a question that's too long", async () => {
+    const conversationId = await startConversation();
+    const longQuestion = "a".repeat(MAX_QUESTION_LENGTH + 1);
+
+    const response = await send(conversationId, newMessage(longQuestion));
 
     expect(response.status).toBe(422);
   });

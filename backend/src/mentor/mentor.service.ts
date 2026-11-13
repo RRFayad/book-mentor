@@ -1,13 +1,9 @@
-import { ChunkRow, MessageRow, SourceRow } from "@app/shared/db/schema";
+import { MessageRow, SourceRow } from "@app/shared/db/schema";
 import { AnswerPart, Citation, RichText } from "@app/shared/schemas";
 
-import { answerChain, searchQueriesChain } from "./mentor.chains";
-import { MAX_SEARCH_QUERIES, retrieveFromSourceId } from "./retrieval.service";
+import { mentorGraph, Passage } from "./mentor.graph";
 
 type MentorReply = { parts: AnswerPart[]; citations: Citation[] };
-
-type Passage = Pick<ChunkRow, "sourceId" | "page" | "content"> &
-  Pick<SourceRow, "title" | "author">;
 
 //TODO: remove once a message is split into separate questions.
 const ONE_QUESTION_AT_A_TIME =
@@ -114,10 +110,21 @@ export const answerQuestion = async (
   const formattedRecentMessages =
     formatRecentMessages(recentMessages) || "None.";
 
-  const { tooManyQuestions, queries } = await searchQueriesChain.invoke({
-    books,
-    recentMessages: formattedRecentMessages,
+  // The One Page goes with every question (so model use it before creates its own search queries)
+  const formattedOnePages =
+    sources
+      .filter((source) => source.onePage)
+      .map(
+        (source) => `"${source.title}" by ${source.author}\n${source.onePage}`,
+      )
+      .join("\n\n") || "None.";
+
+  const { tooManyQuestions, passages, reply } = await mentorGraph.invoke({
     question,
+    sources,
+    books,
+    onePages: formattedOnePages,
+    recentMessages: formattedRecentMessages,
   });
 
   // TODO: replace with splitting the message into separate questions.
@@ -132,65 +139,6 @@ export const answerQuestion = async (
       citations: [],
     };
   }
-
-  const rewrittenQueries = queries.slice(0, MAX_SEARCH_QUERIES);
-
-  // The question is searched too, in its own words: rewrites find what it
-  // doesn't name, and it catches what a drifting rewrite misses. Compared in
-  // docs/retrieval.md.
-  const searchQueries = [question, ...rewrittenQueries];
-
-  const retrievedPerSource = await Promise.all(
-    sources.map(async (source) => {
-      const retrieved = await retrieveFromSourceId(searchQueries, source.id);
-      const book = { title: source.title, author: source.author };
-
-      const passagesInBookOrder = retrieved.passages.toSorted(
-        (a, b) => (a.page ?? 0) - (b.page ?? 0),
-      );
-      const notesInBookOrder = retrieved.notes.toSorted(
-        (a, b) => a.firstPage - b.firstPage,
-      );
-
-      return {
-        passages: passagesInBookOrder.map((row) => ({ ...row, ...book })),
-        notes: notesInBookOrder.map((note) => ({ ...note, ...book })),
-      };
-    }),
-  );
-  const passages = retrievedPerSource.flatMap(
-    (retrieved) => retrieved.passages,
-  );
-  const notes = retrievedPerSource.flatMap((retrieved) => retrieved.notes);
-
-  const formattedPassages = passages
-    .map(
-      (passage, index) =>
-        `[${index + 1}] "${passage.title}" by ${passage.author}, p. ${passage.page}\n${passage.content}`,
-    )
-    .join("\n\n");
-
-  // No numbers, so the model can't cite a Note like a passage.
-  const formattedNotes = notes
-    .map(
-      (note) =>
-        `Notes on "${note.heading}" in "${note.title}" by ${note.author}, pp. ${note.firstPage}–${note.lastPage}\n${note.content}`,
-    )
-    .join("\n\n");
-
-  // The One Page goes with every question. Never cited either.
-  const formattedOnePages = sources
-    .filter((source) => source.onePage)
-    .map((source) => `"${source.title}" by ${source.author}\n${source.onePage}`)
-    .join("\n\n");
-
-  const reply = await answerChain.invoke({
-    onePages: formattedOnePages || "None.",
-    notes: formattedNotes || "None.",
-    passages: formattedPassages,
-    recentMessages: formattedRecentMessages,
-    question,
-  });
 
   if (!reply.covered && !reply.answer.trim()) {
     return { parts: [{ type: "not-covered" }], citations: [] };

@@ -1,6 +1,6 @@
 import { MAX_BOOK_PAGES, SOURCE_LIMIT } from "@app/shared/constants";
-import { sources, SourceRow } from "@app/shared/db/schema";
-import { and, count, desc, eq, gt, sql } from "drizzle-orm";
+import { chunks, notes, sources, SourceRow } from "@app/shared/db/schema";
+import { and, count, desc, eq, gt, inArray, lt, sql } from "drizzle-orm";
 import { CreateSourceRequestBody, PageText } from "@app/shared/schemas";
 import { db } from "../db";
 import { HttpError } from "../errors";
@@ -48,7 +48,7 @@ export const getSourcesByUserId = async (userId: number) => {
   return db
     .select()
     .from(sources)
-    .where(eq(sources.userId, userId))
+    .where(and(eq(sources.userId, userId), gt(sources.expiresAt, new Date())))
     .orderBy(desc(sources.createdAt));
 };
 
@@ -76,6 +76,10 @@ export const completeSourceIngestionByUserId = async (
 
   if (!source) {
     throw new HttpError(404, "Source not found");
+  }
+
+  if (source.state !== "ingesting") {
+    throw new HttpError(409, "Source is not ingesting");
   }
 
   const onePage = await writeOnePage(sourceId);
@@ -125,4 +129,28 @@ export const ingestPagesByUserId = async (
     .returning({ ingestionProgress: sources.ingestionProgress });
 
   return { ingestionProgress: updated.ingestionProgress };
+};
+
+export const deleteExpiredSourcesText = async () => {
+  const now = new Date();
+  const expiredSourceIds = db
+    .select({ id: sources.id })
+    .from(sources)
+    .where(lt(sources.expiresAt, now));
+
+  return db.transaction(async (tx) => {
+    const deletedPassages = await tx
+      .delete(chunks)
+      .where(inArray(chunks.sourceId, expiredSourceIds))
+      .returning({ id: chunks.id });
+
+    await tx.delete(notes).where(inArray(notes.sourceId, expiredSourceIds));
+
+    await tx
+      .update(sources)
+      .set({ onePage: null })
+      .where(lt(sources.expiresAt, now));
+
+    return deletedPassages.length;
+  });
 };
