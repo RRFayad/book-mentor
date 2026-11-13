@@ -8,7 +8,7 @@
 - A **book** (text PDF; scans rejected) or a **blog** (one site's posts, via Tavily). **v1:** books only.
 - Title and author required. PDFs prefill both from metadata.
 - **Ingesting** (progress bar) → **Ready**. No failed state: a failed add is removed, with a toast.
-- Left Ingesting (tab closed) → removed automatically. **v1:** stays until deleted or expired.
+- Left Ingesting (tab closed) → removed automatically. **v1:** still Ingesting after 15 min → the Library deletes it and says so.
 - Deleting an Ingesting Source stops it. No cancel button.
 - **Expiry:** 7 days after it's added.
   - Leaves the Library, stops being searched.
@@ -17,7 +17,7 @@
   - The UI shows "expires in X days".
 - Lives in the Library. Added once, used by any number of Conversations.
 - Delete → confirm, with how many Conversations use it → they behave as after Expiry.
-  - **v1:** no count yet, and the Conversation stops listing it (#27).
+  - The text is deleted right away.
 
 ## Conversations
 

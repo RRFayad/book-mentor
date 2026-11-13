@@ -2,7 +2,13 @@
 
 import { MAX_TITLE_LENGTH } from "@app/shared/constants";
 import { BookOpenIcon, GlobeIcon, LockIcon } from "lucide-react";
-import { useId, useState, useTransition, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 
 import {
   addSourceAction,
@@ -81,6 +87,21 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
   const [book, setBook] = useState<PdfBook | null>(null);
   const [readingPage, setReadingPage] = useState<string | null>(null);
   const [sending, setSending] = useState<string | null>(null);
+  const isSending = sending !== null;
+
+  // Closing the tab stops sending the book (ADR 0001), so the browser asks first.
+  useEffect(() => {
+    if (!isSending) {
+      return;
+    }
+
+    const askBeforeLeaving = (event: BeforeUnloadEvent) =>
+      event.preventDefault();
+
+    window.addEventListener("beforeunload", askBeforeLeaving);
+
+    return () => window.removeEventListener("beforeunload", askBeforeLeaving);
+  }, [isSending]);
 
   const source: NewSource =
     kind === "book"
@@ -277,6 +298,7 @@ const AddSourceForm = ({ initialKind, onDone }: AddSourceFormProps) => {
         <p className={styles.note}>
           <LockIcon className={styles.noteIcon} aria-hidden />
           The text is read in your browser. The PDF itself is never uploaded.
+          Keep this tab open until the book is Ready.
         </p>
       )}
 

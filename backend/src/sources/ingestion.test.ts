@@ -305,6 +305,18 @@ describe("when every part has arrived", () => {
 });
 
 describe("deleting a book", () => {
+  it("refuses parts still arriving for it", async () => {
+    const sourceId = await addBook(4);
+    await api.as("reader").delete(`/sources/${sourceId}`);
+
+    const response = await api
+      .as("reader")
+      .post(`/sources/${sourceId}/pages`, pages(1, 2));
+
+    expect(response.status).toBe(404);
+    expect(await chunksOf(sourceId)).toEqual([]);
+  });
+
   it("deletes its passages and Notes too", async () => {
     const sourceId = await addBook(2);
     await api.as("reader").post(`/sources/${sourceId}/pages`, pages(1, 2));

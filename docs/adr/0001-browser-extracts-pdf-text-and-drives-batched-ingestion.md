@@ -17,5 +17,6 @@
 ## Consequences
 
 - Closing the tab mid-ingestion → the Source never completes; re-add it (no resume).
-  - Plan: removed automatically. v1: stays Ingesting until deleted or expired.
+  - Still Ingesting after 15 min → the Library deletes it (`DELETE /sources/{id}`) and tells the reader.
+  - While sending, the dialog says to keep the tab open, and the browser asks before leaving.
 - Citations show the passage text and page, but can't open the original PDF.

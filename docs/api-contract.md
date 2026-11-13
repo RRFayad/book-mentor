@@ -18,13 +18,14 @@
 
 ## Sources
 
-| Endpoint                      | Request                                      | Response                      |
-| ----------------------------- | -------------------------------------------- | ----------------------------- |
-| `GET /sources`                |                                              | `Source[]` (not expired)      |
-| `POST /sources`               | `{ kind: "book", title, author, pageCount }` | `{ status: "added", source }` |
-| `POST /sources/{id}/pages`    | `{ pages: { page, text }[] }`                | `{ ingestionProgress }`       |
-| `POST /sources/{id}/complete` |                                              | `Source` (Ready)              |
-| `DELETE /sources/{id}`        |                                              | `204`                         |
+| Endpoint                           | Request                                      | Response                      |
+| ---------------------------------- | -------------------------------------------- | ----------------------------- |
+| `GET /sources`                     |                                              | `Source[]` (not expired)      |
+| `POST /sources`                    | `{ kind: "book", title, author, pageCount }` | `{ status: "added", source }` |
+| `POST /sources/{id}/pages`         | `{ pages: { page, text }[] }`                | `{ ingestionProgress }`       |
+| `POST /sources/{id}/complete`      |                                              | `Source` (Ready)              |
+| `DELETE /sources/{id}`             |                                              | `204`                         |
+| `GET /sources/conversation-counts` |                                              | `{ [sourceId]: number }`      |
 
 Adding a book (ADR 0001):
 
@@ -34,10 +35,8 @@ Adding a book (ADR 0001):
 3. `POST /pages`: batches of 25 pages, 3 at a time. Page text ≤ 10,000 chars. A batch sent again replaces itself.
 4. `POST /complete` → writes the One Page → Ready. Only once (`409` after).
 
-Not built yet:
-
-- `GET /sources/conversation-counts`, for the Delete dialog (#27).
-- Blogs (#21): `kind: "blog"` → `422`.
+- **Delete** = expire now: the text goes right away, the title stays for its Conversations.
+- **Not built yet:** blogs (#21): `kind: "blog"` → `422`.
 
 ## Conversations and messages
 

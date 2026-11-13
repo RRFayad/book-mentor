@@ -1,5 +1,6 @@
 import {
   CompleteSourceIngestionResponse,
+  ConversationCountsResponse,
   CreateSourceRequestBody,
   CreateSourceResponse,
   GetSourcesResponse,
@@ -11,6 +12,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import {
   completeSourceIngestionByUserId,
   createSource,
+  countConversationsBySourceByUserId,
   deleteSourceByUserId,
   getSourcesByUserId,
   ingestPagesByUserId,
@@ -44,6 +46,17 @@ export const createSourceHandler = async (
   const [newSource] = await createSource(body, user.id);
 
   return reply.code(201).send({ status: "added", source: newSource });
+};
+
+type GetConversationCountsIO = { Reply: ConversationCountsResponse };
+
+export const getConversationCountsHandler = async (
+  request: FastifyRequest<GetConversationCountsIO>,
+  reply: FastifyReply<GetConversationCountsIO>,
+) => {
+  const counts = await countConversationsBySourceByUserId(request.user.id);
+
+  return reply.send(counts);
 };
 
 type DeleteSourceIO = { Params: SourceParams; Reply: null };

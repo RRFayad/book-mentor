@@ -43,9 +43,10 @@ users ──┬─< sources ──┬─< chunks
 
 ## When a Source is deleted
 
-- `sources` row deleted → `chunks`, `notes`, `conversation_sources` deleted with it (cascade).
-- The Conversation no longer lists it.
-- Messages unchanged: Citations still readable.
+- Deleting = expiring now: `expires_at` → now.
+- Its `chunks`, `notes`, `one_page` are deleted right away.
+- The row stays → its Conversations show it as "Expired".
+- Batches still arriving → `404`; the daily job removes any that slipped in.
 
 ## When a user is deleted
 

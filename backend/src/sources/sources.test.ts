@@ -166,6 +166,29 @@ describe("the Library", () => {
   });
 });
 
+// A Ready book, saved straight to the database, so a Conversation can use it.
+const saveReadyBook = async (userId: number, title = "Meditations") => {
+  const [saved] = await db
+    .insert(sources)
+    .values({
+      userId,
+      kind: "book",
+      title,
+      author: "Marcus Aurelius",
+      pageCount: 10,
+      state: "ready",
+    })
+    .returning();
+
+  return saved;
+};
+
+const startConversation = (sourceId: string, clerkId = "reader") =>
+  api.as(clerkId).post("/conversations", {
+    sourceIds: [sourceId],
+    firstQuestion: "What is the main idea?",
+  });
+
 describe("deleting a Source", () => {
   it("removes it from the reader's Library", async () => {
     await createUser("reader");
@@ -178,6 +201,21 @@ describe("deleting a Source", () => {
 
     expect(response.status).toBe(204);
     expect(library.data).toEqual([]);
+  });
+
+  it("keeps it in its Conversations, shown as expired", async () => {
+    const user = await createUser("reader");
+    const saved = await saveReadyBook(user.id);
+    const started = await startConversation(saved.id);
+
+    await api.as("reader").delete(`/sources/${saved.id}`);
+    const conversation = await api
+      .as("reader")
+      .get(`/conversations/${started.data.conversationId}`);
+
+    expect(conversation.data.sources).toEqual([
+      expect.objectContaining({ id: saved.id, expired: true }),
+    ]);
   });
 
   it("can't delete another reader's Source", async () => {
@@ -207,5 +245,31 @@ describe("access", () => {
 
     expect(response.status).toBe(404);
     expect(response.data).toEqual({ detail: "User not found" });
+  });
+});
+
+describe("counting Conversations per Source", () => {
+  it("counts the reader's Conversations for each of their Sources", async () => {
+    const user = await createUser("reader");
+    const used = await saveReadyBook(user.id, "Used");
+    await saveReadyBook(user.id, "Unused");
+    await startConversation(used.id);
+    await startConversation(used.id);
+
+    const response = await api.as("reader").get("/sources/conversation-counts");
+
+    expect(response.status).toBe(200);
+    expect(response.data).toEqual({ [used.id]: 2 });
+  });
+
+  it("doesn't count another reader's Conversations", async () => {
+    const other = await createUser("someone-else");
+    const theirs = await saveReadyBook(other.id);
+    await startConversation(theirs.id, "someone-else");
+    await createUser("reader");
+
+    const response = await api.as("reader").get("/sources/conversation-counts");
+
+    expect(response.data).toEqual({});
   });
 });
