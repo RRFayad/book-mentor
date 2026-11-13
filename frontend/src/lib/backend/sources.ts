@@ -24,8 +24,6 @@ export const listSources = async (): Promise<Source[]> => {
   return getSourcesResponseSchema.parse(data);
 };
 
-// How many Conversations use each Source, by Source id
-// (GET /sources/conversation-counts, arriving in #19). Until then: none.
 export const countConversationsBySource = async (): Promise<
   Record<string, number>
 > =>

@@ -4,11 +4,13 @@ import {
   createSourceHandler,
   completeSourceIngestionHandler,
   deleteSourceHandler,
+  getConversationCountsHandler,
   getSourcesHandler,
   ingestPagesHandler,
 } from "./sources.controller";
 import {
   completeSourceIngestionResponseSchema,
+  conversationCountsResponseSchema,
   createSourceResponseSchema,
   createSourceRequestBodySchema,
   getSourcesResponseSchema,
@@ -26,6 +28,15 @@ const sourcesRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     getSourcesHandler,
+  );
+  server.get(
+    "/conversation-counts",
+    {
+      schema: {
+        response: { 200: conversationCountsResponseSchema },
+      },
+    },
+    getConversationCountsHandler,
   );
   server.post(
     "/",

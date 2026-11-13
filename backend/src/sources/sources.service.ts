@@ -1,10 +1,27 @@
 import { MAX_BOOK_PAGES, SOURCE_LIMIT } from "@app/shared/constants";
-import { chunks, notes, sources, SourceRow } from "@app/shared/db/schema";
+import {
+  chunks,
+  conversationSources,
+  notes,
+  sources,
+  SourceRow,
+} from "@app/shared/db/schema";
 import { and, count, desc, eq, gt, inArray, lt, sql } from "drizzle-orm";
 import { CreateSourceRequestBody, PageText } from "@app/shared/schemas";
 import { db } from "../db";
 import { HttpError } from "../errors";
 import { ingestContent, writeOnePage } from "./ingestion.service";
+
+// Expired Sources stay in the table until the cleanup job removes them, so
+// only the ones not yet expired count.
+const countActiveSourcesByUserId = async (userId: number) => {
+  const [result] = await db
+    .select({ total: count() })
+    .from(sources)
+    .where(and(eq(sources.userId, userId), gt(sources.expiresAt, new Date())));
+
+  return result.total;
+};
 
 export const createSource = async (
   data: CreateSourceRequestBody,
@@ -33,17 +50,6 @@ export const createSource = async (
   return result;
 };
 
-// Expired Sources stay in the table until the cleanup job removes them, so
-// only the ones not yet expired count.
-const countActiveSourcesByUserId = async (userId: number) => {
-  const [result] = await db
-    .select({ total: count() })
-    .from(sources)
-    .where(and(eq(sources.userId, userId), gt(sources.expiresAt, new Date())));
-
-  return result.total;
-};
-
 export const getSourcesByUserId = async (userId: number) => {
   return db
     .select()
@@ -52,31 +58,59 @@ export const getSourcesByUserId = async (userId: number) => {
     .orderBy(desc(sources.createdAt));
 };
 
+// Deleting = expiring now, so its Conversations show it as expired.
 export const deleteSourceByUserId = async (
   sourceId: string,
   userId: number,
 ) => {
-  const deleted = await db
-    .delete(sources)
+  const expired = await db
+    .update(sources)
+    .set({ expiresAt: new Date(), onePage: null })
     .where(and(eq(sources.id, sourceId), eq(sources.userId, userId)))
     .returning({ id: sources.id });
 
-  if (deleted.length === 0) {
+  if (expired.length === 0) {
     throw new HttpError(404, "Source not found");
   }
+
+  await db.delete(chunks).where(eq(chunks.sourceId, sourceId));
+  await db.delete(notes).where(eq(notes.sourceId, sourceId));
+};
+
+// How many Conversations use each of the reader's Sources, by Source id.
+export const countConversationsBySourceByUserId = async (userId: number) => {
+  const counts = await db
+    .select({ sourceId: conversationSources.sourceId, total: count() })
+    .from(conversationSources)
+    .innerJoin(sources, eq(conversationSources.sourceId, sources.id))
+    .where(eq(sources.userId, userId))
+    .groupBy(conversationSources.sourceId);
+
+  return Object.fromEntries(counts.map((row) => [row.sourceId, row.total]));
+};
+
+// A reader's Source that hasn't expired (or been deleted).
+const findActiveSourceByUserId = async (sourceId: string, userId: number) => {
+  const source: SourceRow | undefined = await db.query.sources.findFirst({
+    where: and(
+      eq(sources.id, sourceId),
+      eq(sources.userId, userId),
+      gt(sources.expiresAt, new Date()),
+    ),
+  });
+
+  if (!source) {
+    throw new HttpError(404, "Source not found");
+  }
+
+  return source;
 };
 
 export const completeSourceIngestionByUserId = async (
   sourceId: string,
   userId: number,
 ) => {
-  const source = await db.query.sources.findFirst({
-    where: and(eq(sources.id, sourceId), eq(sources.userId, userId)),
-  });
-
-  if (!source) {
-    throw new HttpError(404, "Source not found");
-  }
+  const source = await findActiveSourceByUserId(sourceId, userId);
 
   if (source.state !== "ingesting") {
     throw new HttpError(409, "Source is not ingesting");
@@ -98,13 +132,7 @@ export const ingestPagesByUserId = async (
   userId: number,
   pages: PageText[],
 ) => {
-  const source: SourceRow | undefined = await db.query.sources.findFirst({
-    where: and(eq(sources.id, sourceId), eq(sources.userId, userId)),
-  });
-
-  if (!source) {
-    throw new HttpError(404, "Source not found");
-  }
+  const source = await findActiveSourceByUserId(sourceId, userId);
 
   if (source.state !== "ingesting") {
     throw new HttpError(409, "Source is not ingesting");

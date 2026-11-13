@@ -24,11 +24,12 @@
 - The API (Fastify) owns product/domain APIs and future product logic, such as
   AI, RAG, agents, and streaming.
 - `@app/shared` holds what both apps must agree on: the Drizzle schema and
-  migrations, the API contract (Zod schemas in `schemas.ts`), and shared
+  migrations, the API contract (Zod schemas in `schemas/`, one file per
+  feature), and shared
   constants, types, and utils. Each app reads its own environment variables;
   configuration objects such as `featureFlags` stay in their app.
   Types inferred from a schema live next to it: row types (`User`,
-  `Subscription`) in `db/schema.ts`, API types in `schemas.ts`; `types.ts`
+  `Subscription`) in `db/schema.ts`, API types in each `schemas/` file; `types.ts`
   holds shared types that don't belong to a schema file.
 - PostgreSQL is the shared application database. Supabase, when used, is only
   the database host. Do not introduce Supabase Auth or the Supabase SDK.

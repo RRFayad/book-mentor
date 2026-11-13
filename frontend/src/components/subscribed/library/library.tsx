@@ -8,10 +8,12 @@ import {
 
 import { AddSourceButton } from "@/components/subscribed/library/add-source-dialog";
 import { DeleteSourceButton } from "@/components/subscribed/library/delete-source-button";
+import { InterruptedSourcesCleanup } from "@/components/subscribed/library/interrupted-sources-cleanup";
 import { SourceRow } from "@/components/subscribed/library/source-row";
 import { UsageCard } from "@/components/subscribed/library/usage-card";
 import { PageHeader } from "@/components/subscribed/page-header";
 import type { Source, Usage } from "@/lib/backend/types";
+import { isIngestionInterrupted } from "@/lib/sources/interrupted-ingestion";
 import { tw } from "@/lib/utils";
 
 const styles = {
@@ -49,9 +51,16 @@ export const Library = ({
   conversationCounts,
 }: LibraryProps) => {
   const atLimit = usage.activeSources >= usage.sourceLimit;
+  const interruptedSources = sources.filter((source) =>
+    isIngestionInterrupted(source, now),
+  );
+  const shownSources = sources.filter(
+    (source) => !isIngestionInterrupted(source, now),
+  );
 
   return (
     <main className={styles.page}>
+      <InterruptedSourcesCleanup sources={interruptedSources} />
       <PageHeader
         title="Library"
         description="The books and blogs your Mentor draws on, and how much of your allowance you've used."
@@ -63,7 +72,7 @@ export const Library = ({
         }
       />
       <UsageCard usage={usage} />
-      {sources.length === 0 ? (
+      {shownSources.length === 0 ? (
         <section className={styles.empty}>
           <span className={styles.emptyIcon} aria-hidden>
             <LibraryIcon />
@@ -95,7 +104,7 @@ export const Library = ({
             </p>
           )}
           <ul className={styles.list}>
-            {sources.map((source) => (
+            {shownSources.map((source) => (
               <SourceRow
                 key={source.id}
                 source={source}

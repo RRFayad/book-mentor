@@ -1,13 +1,22 @@
 # Browser extracts PDF text and drives batched ingestion
 
-FastAPI stays on Vercel's free tier, whose Functions cap request bodies at 4.5 MB and run time at 300 s — too small for a book PDF uploaded and embedded in one request. So the browser extracts text page by page (pdf.js) and drives ingestion as a series of small requests: create the Source, send page batches that FastAPI chunks, embeds and stores synchronously, then mark it complete. The original PDF is never uploaded or stored.
+> Written for the FastAPI backend; holds unchanged for the Fastify API (ADR 0006).
+
+- **Why:** the API is on Vercel's free tier: 4.5 MB request bodies, 300 s per call. Too small to upload and embed a book in one request.
+- **Decision:** the browser reads the PDF (pdf.js) and drives ingestion in small requests:
+  1. create the Source;
+  2. send batches of 25 pages (3 at a time) → the API chunks, embeds, stores them, and writes their Notes;
+  3. mark it complete → the API writes the One Page.
+- The PDF itself is never uploaded or stored.
 
 ## Considered Options
 
-- Long-running container host (Render, Railway, Fly): removes both limits, but the free tiers sleep or cost money, and the project should stay on Vercel for free.
-- Direct-to-storage upload plus a queue: correct, but adds two services for a two-week v1.
+- **A container host** (Render, Railway, Fly): no limits, but free tiers sleep or cost money.
+- **Direct upload to storage + a queue:** correct, but two more services for a two-week v1.
 
 ## Consequences
 
-- If the user closes the tab mid-ingestion, the Source never completes; it is removed automatically and must be re-added (no resume in v1).
-- Citations can show Chunk text and page numbers, but cannot open the original PDF.
+- Closing the tab mid-ingestion → the Source never completes; re-add it (no resume).
+  - Still Ingesting after 15 min → the Library deletes it (`DELETE /sources/{id}`) and tells the reader.
+  - While sending, the dialog says to keep the tab open, and the browser asks before leaving.
+- Citations show the passage text and page, but can't open the original PDF.
