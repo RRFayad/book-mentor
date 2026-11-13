@@ -43,7 +43,7 @@ export const createSourceHandler = async (
   const body = request.body;
   const user = request.user;
 
-  const [newSource] = await createSource(body, user.id);
+  const [newSource] = await createSource(body, user);
 
   return reply.code(201).send({ status: "added", source: newSource });
 };

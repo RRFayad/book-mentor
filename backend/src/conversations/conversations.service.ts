@@ -47,7 +47,7 @@ export const createConversation = async (
         inArray(sources.id, sourceIds),
         gt(sources.expiresAt, new Date()),
         eq(sources.state, "ready"),
-        eq(sources.userId, userId),
+        or(eq(sources.userId, userId), eq(sources.shared, true)),
       ),
     );
 

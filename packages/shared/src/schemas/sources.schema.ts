@@ -25,6 +25,7 @@ export const sourceResponseSchema = z.object({
   address: z.string().nullable(), // blogs only
   state: sourceStateSchema,
   ingestionProgress: z.number(),
+  shared: z.boolean(), // in every reader's Library (the demo book)
   createdAt: isoDateTimeSchema,
   expiresAt: isoDateTimeSchema,
 });
@@ -47,6 +48,7 @@ export const createSourceRequestBodySchema = z.discriminatedUnion("kind", [
     title: z.string().min(1).max(MAX_TITLE_LENGTH),
     author: z.string().min(1).max(MAX_TITLE_LENGTH),
     pageCount: z.int().min(1),
+    shared: z.boolean().optional(), // admins only
   }),
   z.object({
     kind: z.literal("blog"),

@@ -82,6 +82,7 @@ export const sources = pgTable(
     postCount: integer("post_count"), // blogs only
     address: text("address"), // blogs only
     onePage: text("one_page"), // books only, written when the book becomes Ready
+    shared: boolean("shared").notNull().default(false), // in every reader's Library (the demo book)
     state: sourceState("state").notNull().default("ingesting"),
     ingestionProgress: integer("ingestion_progress").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })

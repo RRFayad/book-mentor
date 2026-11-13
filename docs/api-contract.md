@@ -12,6 +12,7 @@
 - Only your own data. Another reader's item → `404`.
 - Errors are `{ detail }`:
   - `401` not signed in;
+  - `403` not allowed (only admins can share a book);
   - `404` not found;
   - `409` conflict: `limit-reached`, message id reused, book no longer Ingesting;
   - `422` invalid input: `too-large` (> 500 pages), text over the caps.
@@ -35,6 +36,7 @@ Adding a book (ADR 0001):
 3. `POST /pages`: batches of 25 pages, 3 at a time. Page text ≤ 10,000 chars. A batch sent again replaces itself.
 4. `POST /complete` → writes the One Page → Ready. Only once (`409` after).
 
+- **Shared book** (the demo): `shared: true`, admins only. In every reader's Library; never expires; doesn't count toward the limit; only its owner can delete it.
 - **Delete** = expire now: the text goes right away, the title stays for its Conversations.
 - **Not built yet:** blogs (#21): `kind: "blog"` → `422`.
 

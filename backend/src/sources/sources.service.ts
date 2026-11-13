@@ -5,56 +5,80 @@ import {
   notes,
   sources,
   SourceRow,
+  User,
 } from "@app/shared/db/schema";
-import { and, count, desc, eq, gt, inArray, lt, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, lt, or, sql } from "drizzle-orm";
 import { CreateSourceRequestBody, PageText } from "@app/shared/schemas";
 import { db } from "../db";
 import { HttpError } from "../errors";
 import { ingestContent, writeOnePage } from "./ingestion.service";
 
+// A shared book (the demo) never expires.
+const SHARED_EXPIRES_AT = new Date("9999-12-31T00:00:00Z");
+
 // Expired Sources stay in the table until the cleanup job removes them, so
-// only the ones not yet expired count.
+// only the ones not yet expired count. Shared books don't count either.
 const countActiveSourcesByUserId = async (userId: number) => {
   const [result] = await db
     .select({ total: count() })
     .from(sources)
-    .where(and(eq(sources.userId, userId), gt(sources.expiresAt, new Date())));
+    .where(
+      and(
+        eq(sources.userId, userId),
+        eq(sources.shared, false),
+        gt(sources.expiresAt, new Date()),
+      ),
+    );
 
   return result.total;
 };
 
 export const createSource = async (
   data: CreateSourceRequestBody,
-  userId: number,
+  user: User,
 ) => {
   if (data.kind === "book" && data.pageCount > MAX_BOOK_PAGES) {
     throw new HttpError(422, "too-large");
   }
 
-  // TODO
+  // TODO:
   if (data.kind === "blog") {
     throw new HttpError(422, "Blogs aren't supported yet");
   }
 
-  const activeSources = await countActiveSourcesByUserId(userId);
+  const isShared = data.kind === "book" && data.shared === true;
 
-  if (activeSources >= SOURCE_LIMIT) {
+  if (isShared && user.role !== "admin") {
+    throw new HttpError(403, "Only admins can share a Source");
+  }
+
+  const activeSources = await countActiveSourcesByUserId(user.id);
+
+  if (!isShared && activeSources >= SOURCE_LIMIT) {
     throw new HttpError(409, "limit-reached");
   }
 
+  const expiresAt = isShared ? SHARED_EXPIRES_AT : undefined;
+
   const result = await db
     .insert(sources)
-    .values({ ...data, userId })
+    .values({ ...data, userId: user.id, expiresAt })
     .returning();
 
   return result;
 };
 
+// The reader's own Sources and the shared ones (the demo book).
 export const getSourcesByUserId = async (userId: number) => {
   return db
     .select()
     .from(sources)
-    .where(and(eq(sources.userId, userId), gt(sources.expiresAt, new Date())))
+    .where(
+      and(
+        or(eq(sources.userId, userId), eq(sources.shared, true)),
+        gt(sources.expiresAt, new Date()),
+      ),
+    )
     .orderBy(desc(sources.createdAt));
 };
 

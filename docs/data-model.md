@@ -17,14 +17,14 @@ users ──┬─< sources ──┬─< chunks
 
 ## Tables
 
-| Table                    | Key columns                                                                                                                               |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **sources**              | `user_id`, `kind`, `title`, `author`, `page_count`, `one_page`, `state` (ingesting / ready), `ingestion_progress`, `expires_at` (+7 days) |
-| **chunks**               | `source_id`, `page` (where it starts), `content`, `embedding` (1536, `text-embedding-3-small`)                                            |
-| **notes**                | `source_id`, `heading`, `first_page`, `last_page`, `content`, `embedding`                                                                 |
-| **conversations**        | `user_id`, `title` (first question, ≤ 200 chars), `last_activity_at`                                                                      |
-| **conversation_sources** | `conversation_id`, `source_id`                                                                                                            |
-| **messages**             | `id` (from the browser), `conversation_id`, `role`, `text` (questions), `status`, `parts` + `citations` (answers, JSON)                   |
+| Table                    | Key columns                                                                                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **sources**              | `user_id`, `kind`, `title`, `author`, `page_count`, `one_page`, `shared` (in every Library: the demo book), `state` (ingesting / ready), `ingestion_progress`, `expires_at` (+7 days) |
+| **chunks**               | `source_id`, `page` (where it starts), `content`, `embedding` (1536, `text-embedding-3-small`)                                                                                        |
+| **notes**                | `source_id`, `heading`, `first_page`, `last_page`, `content`, `embedding`                                                                                                             |
+| **conversations**        | `user_id`, `title` (first question, ≤ 200 chars), `last_activity_at`                                                                                                                  |
+| **conversation_sources** | `conversation_id`, `source_id`                                                                                                                                                        |
+| **messages**             | `id` (from the browser), `conversation_id`, `role`, `text` (questions), `status`, `parts` + `citations` (answers, JSON)                                                               |
 
 - **chunks = the vector store:** Drizzle, one book per search, no index (ADR 0002).
 - **Expired = computed:** `expires_at` in the past. `state` stays `ready`.
