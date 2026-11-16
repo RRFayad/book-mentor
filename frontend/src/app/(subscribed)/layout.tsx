@@ -4,7 +4,6 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/subscribed/app-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { listConversations } from "@/lib/backend/conversations";
-import { getUsage } from "@/lib/backend/usage";
 import { featureFlags } from "@/lib/feature-flags";
 import { siteConfig } from "@/lib/site-config";
 import { requireCurrentUserSubscriptionPlan } from "@/lib/subscription/subscription";
@@ -22,10 +21,7 @@ const styles = {
 const SubscribedLayout = async ({ children }: SubscribedLayoutProps) => {
   await requireCurrentUserSubscriptionPlan("basic");
 
-  const [conversations, usage] = await Promise.all([
-    listConversations(),
-    getUsage(),
-  ]);
+  const conversations = await listConversations();
 
   return (
     <SidebarProvider>
@@ -33,7 +29,6 @@ const SubscribedLayout = async ({ children }: SubscribedLayoutProps) => {
         appName={siteConfig.name}
         billingEnabled={featureFlags.billingEnabled}
         conversations={conversations}
-        usage={usage}
       />
       <SidebarInset className={styles.inset}>
         <AppHeader github={siteConfig.github} conversations={conversations} />

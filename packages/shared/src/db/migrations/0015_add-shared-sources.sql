@@ -1,0 +1,1 @@
+ALTER TABLE "sources" ADD COLUMN "shared" boolean DEFAULT false NOT NULL;

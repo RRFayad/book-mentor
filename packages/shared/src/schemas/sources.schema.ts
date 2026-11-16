@@ -25,11 +25,16 @@ export const sourceResponseSchema = z.object({
   address: z.string().nullable(), // blogs only
   state: sourceStateSchema,
   ingestionProgress: z.number(),
+  shared: z.boolean(), // in every reader's Library (the demo book)
   createdAt: isoDateTimeSchema,
   expiresAt: isoDateTimeSchema,
 });
 
 export const getSourcesResponseSchema = z.array(sourceResponseSchema);
+
+// ---------- GET /sources/conversation-counts ----------
+
+export const conversationCountsResponseSchema = z.record(z.uuid(), z.number());
 
 export const sourceParamsSchema = z.object({
   id: z.uuid(),
@@ -43,6 +48,7 @@ export const createSourceRequestBodySchema = z.discriminatedUnion("kind", [
     title: z.string().min(1).max(MAX_TITLE_LENGTH),
     author: z.string().min(1).max(MAX_TITLE_LENGTH),
     pageCount: z.int().min(1),
+    shared: z.boolean().optional(), // admins only
   }),
   z.object({
     kind: z.literal("blog"),
@@ -93,6 +99,9 @@ export type SourceKind = z.infer<typeof sourceKindSchema>;
 export type SourceState = z.infer<typeof sourceStateSchema>;
 export type Source = z.infer<typeof sourceResponseSchema>;
 export type GetSourcesResponse = z.infer<typeof getSourcesResponseSchema>;
+export type ConversationCountsResponse = z.infer<
+  typeof conversationCountsResponseSchema
+>;
 export type SourceParams = z.infer<typeof sourceParamsSchema>;
 export type CreateSourceRequestBody = z.infer<
   typeof createSourceRequestBodySchema

@@ -8,7 +8,8 @@
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "eval": "tsx --env-file=.env evals/eval.ts"
+    "eval": "tsx --env-file=.env evals/eval.ts",
+    "graph": "tsx --env-file=.env src/mentor/print-mentor-graph.ts"
   },
   "dependencies": {
     "@app/shared": "*",

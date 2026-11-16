@@ -55,7 +55,9 @@ const styles = {
   ),
   popupHeader: tw("flex items-center justify-between px-2.5 py-2"),
   popupTitle: tw("text-[13px] font-semibold"),
-  popupCount: tw("text-xs text-muted-foreground"),
+  groupTitle: tw(
+    "mt-1 border-t px-2.5 pt-2.5 text-xs font-semibold text-muted-foreground first-of-type:mt-0 first-of-type:border-t-0 first-of-type:pt-1",
+  ),
   option: tw(
     "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-start hover:bg-muted has-disabled:opacity-55 has-disabled:hover:bg-transparent",
   ),
@@ -143,6 +145,35 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
     return source ? [source] : [];
   });
   const canSend = canStartConversation(picked, question) && !isPending;
+
+  const ownSources = sources.filter((source) => !source.shared);
+  const sharedSources = sources.filter((source) => source.shared);
+
+  const toOption = (source: Source) => {
+    const isPicked = picked.includes(source.id);
+    const isDisabled =
+      source.state !== "ready" ||
+      (!isPicked && picked.length >= SOURCE_PICK_LIMIT);
+
+    return (
+      <label
+        key={source.id}
+        className={cn(styles.option, isPicked && styles.optionChecked)}
+      >
+        <input
+          type="checkbox"
+          className={styles.checkbox}
+          checked={isPicked}
+          disabled={isDisabled}
+          onChange={() => setPicked(toggleSourcePick(picked, source))}
+        />
+        <span className={styles.optionText}>
+          <span className={styles.optionTitle}>{source.title}</span>
+          <span className={styles.optionMeta}>{sourceMeta(source)}</span>
+        </span>
+      </label>
+    );
+  };
 
   const start = () => {
     if (!canSend) {
@@ -237,7 +268,7 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
               }
             >
               <PlusIcon />
-              Sources · {picked.length} of {SOURCE_PICK_LIMIT}
+              Select a Source
             </Popover.Trigger>
             <Popover.Portal>
               <Popover.Positioner side="bottom" align="start" sideOffset={8}>
@@ -247,44 +278,19 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
                 >
                   <div className={styles.popupHeader}>
                     <span className={styles.popupTitle}>Choose a Source</span>
-                    <span className={styles.popupCount}>
-                      {picked.length} of {SOURCE_PICK_LIMIT} selected
-                    </span>
                   </div>
-                  {sources.map((source) => {
-                    const isPicked = picked.includes(source.id);
-                    const isDisabled =
-                      source.state !== "ready" ||
-                      (!isPicked && picked.length >= SOURCE_PICK_LIMIT);
-
-                    return (
-                      <label
-                        key={source.id}
-                        className={cn(
-                          styles.option,
-                          isPicked && styles.optionChecked,
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          className={styles.checkbox}
-                          checked={isPicked}
-                          disabled={isDisabled}
-                          onChange={() =>
-                            setPicked(toggleSourcePick(picked, source))
-                          }
-                        />
-                        <span className={styles.optionText}>
-                          <span className={styles.optionTitle}>
-                            {source.title}
-                          </span>
-                          <span className={styles.optionMeta}>
-                            {sourceMeta(source)}
-                          </span>
-                        </span>
-                      </label>
-                    );
-                  })}
+                  {ownSources.length > 0 && (
+                    <>
+                      <p className={styles.groupTitle}>Your Own Library</p>
+                      {ownSources.map(toOption)}
+                    </>
+                  )}
+                  {sharedSources.length > 0 && (
+                    <>
+                      <p className={styles.groupTitle}>Shared Library</p>
+                      {sharedSources.map(toOption)}
+                    </>
+                  )}
                   <div className={styles.popupFooter}>
                     <AddSourceButton variant="ghost" size="sm">
                       <PlusIcon />

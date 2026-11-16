@@ -45,6 +45,10 @@ export const MESSAGE_LIMIT = 50;
 // How long a Source is kept after it's added. Sets the default of sources.expires_at.
 export const SOURCE_LIFETIME_DAYS = 7;
 
+// Sending a whole book takes a few minutes. Still Ingesting after this long
+// means the tab sending it was closed (ADR 0001).
+export const INTERRUPTED_AFTER_MINUTES = 15;
+
 // ---------- Messages ----------
 
 // Our own names, not an LLM library's ("human"/"ai", "assistant"), so stored

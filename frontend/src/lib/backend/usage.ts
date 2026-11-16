@@ -23,7 +23,7 @@ export const getUsage = async (): Promise<Usage> => {
   const sources = await listSources();
 
   return {
-    activeSources: sources.length,
+    activeSources: sources.filter((source) => !source.shared).length,
     sourceLimit: SOURCE_LIMIT,
     messagesInWindow: messageUsage.usage,
     messageLimit: messageUsage.max,

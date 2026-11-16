@@ -16,6 +16,19 @@ export const getUserByClerkId = async (
   return user ?? null;
 };
 
+// Admins can share a book with every reader (the demo book).
+export const isCurrentUserAdmin = async (): Promise<boolean> => {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return false;
+  }
+
+  const user = await getUserByClerkId(userId);
+
+  return user?.role === "admin";
+};
+
 export const getOrCreateUserByClerkId = async (
   clerkId: string,
 ): Promise<User | null> => {

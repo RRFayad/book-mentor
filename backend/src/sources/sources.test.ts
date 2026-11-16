@@ -1,4 +1,5 @@
-import { sources } from "@app/shared/db/schema";
+import { sources, users } from "@app/shared/db/schema";
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "../db";
@@ -166,6 +167,29 @@ describe("the Library", () => {
   });
 });
 
+// A Ready book, saved straight to the database, so a Conversation can use it.
+const saveReadyBook = async (userId: number, title = "Meditations") => {
+  const [saved] = await db
+    .insert(sources)
+    .values({
+      userId,
+      kind: "book",
+      title,
+      author: "Marcus Aurelius",
+      pageCount: 10,
+      state: "ready",
+    })
+    .returning();
+
+  return saved;
+};
+
+const startConversation = (sourceId: string, clerkId = "reader") =>
+  api.as(clerkId).post("/conversations", {
+    sourceIds: [sourceId],
+    firstQuestion: "What is the main idea?",
+  });
+
 describe("deleting a Source", () => {
   it("removes it from the reader's Library", async () => {
     await createUser("reader");
@@ -178,6 +202,21 @@ describe("deleting a Source", () => {
 
     expect(response.status).toBe(204);
     expect(library.data).toEqual([]);
+  });
+
+  it("keeps it in its Conversations, shown as expired", async () => {
+    const user = await createUser("reader");
+    const saved = await saveReadyBook(user.id);
+    const started = await startConversation(saved.id);
+
+    await api.as("reader").delete(`/sources/${saved.id}`);
+    const conversation = await api
+      .as("reader")
+      .get(`/conversations/${started.data.conversationId}`);
+
+    expect(conversation.data.sources).toEqual([
+      expect.objectContaining({ id: saved.id, expired: true }),
+    ]);
   });
 
   it("can't delete another reader's Source", async () => {
@@ -207,5 +246,92 @@ describe("access", () => {
 
     expect(response.status).toBe(404);
     expect(response.data).toEqual({ detail: "User not found" });
+  });
+});
+
+describe("counting Conversations per Source", () => {
+  it("counts the reader's Conversations for each of their Sources", async () => {
+    const user = await createUser("reader");
+    const used = await saveReadyBook(user.id, "Used");
+    await saveReadyBook(user.id, "Unused");
+    await startConversation(used.id);
+    await startConversation(used.id);
+
+    const response = await api.as("reader").get("/sources/conversation-counts");
+
+    expect(response.status).toBe(200);
+    expect(response.data).toEqual({ [used.id]: 2 });
+  });
+
+  it("doesn't count another reader's Conversations", async () => {
+    const other = await createUser("someone-else");
+    const theirs = await saveReadyBook(other.id);
+    await startConversation(theirs.id, "someone-else");
+    await createUser("reader");
+
+    const response = await api.as("reader").get("/sources/conversation-counts");
+
+    expect(response.data).toEqual({});
+  });
+});
+
+describe("sharing a book (the demo)", () => {
+  const sharedBook = () => ({ ...book("Meditations"), shared: true });
+
+  const createAdmin = async (clerkId = "admin") => {
+    const user = await createUser(clerkId);
+    await db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
+
+    return user;
+  };
+
+  it("refuses it from a reader who isn't an admin, and saves nothing", async () => {
+    await createUser("reader");
+
+    const response = await api.as("reader").post("/sources", sharedBook());
+    const saved = await db.select().from(sources);
+
+    expect(response.status).toBe(403);
+    expect(saved).toEqual([]);
+  });
+
+  it("puts an admin's shared book in every reader's Library", async () => {
+    await createAdmin();
+    await createUser("reader");
+
+    const added = await api.as("admin").post("/sources", sharedBook());
+    const library = await api.as("reader").get("/sources");
+
+    expect(added.status).toBe(201);
+    expect(library.data).toEqual([
+      expect.objectContaining({ id: added.data.source.id, shared: true }),
+    ]);
+  });
+
+  it("doesn't count it toward the admin's limit", async () => {
+    const admin = await createAdmin();
+    await saveReadyBook(admin.id, "One");
+    await saveReadyBook(admin.id, "Two");
+    await saveReadyBook(admin.id, "Three");
+
+    const response = await api.as("admin").post("/sources", sharedBook());
+
+    expect(response.status).toBe(201);
+  });
+
+  it("lets any reader start a Conversation with it, but not delete it", async () => {
+    const admin = await createAdmin();
+    await createUser("reader");
+    const shared = await saveReadyBook(admin.id);
+    await db
+      .update(sources)
+      .set({ shared: true })
+      .where(eq(sources.id, shared.id));
+
+    const started = await startConversation(shared.id);
+    const deleted = await api.as("reader").delete(`/sources/${shared.id}`);
+
+    expect(started.status).toBe(201);
+    expect(deleted.status).toBe(404);
   });
 });

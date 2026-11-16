@@ -1,3 +1,4 @@
+import { SOURCE_LIFETIME_DAYS } from "@app/shared/constants";
 import {
   BookOpenIcon,
   GlobeIcon,
@@ -8,21 +9,27 @@ import {
 
 import { AddSourceButton } from "@/components/subscribed/library/add-source-dialog";
 import { DeleteSourceButton } from "@/components/subscribed/library/delete-source-button";
+import { InterruptedSourcesCleanup } from "@/components/subscribed/library/interrupted-sources-cleanup";
 import { SourceRow } from "@/components/subscribed/library/source-row";
 import { UsageCard } from "@/components/subscribed/library/usage-card";
 import { PageHeader } from "@/components/subscribed/page-header";
 import type { Source, Usage } from "@/lib/backend/types";
+import { isIngestionInterrupted } from "@/lib/sources/interrupted-ingestion";
 import { tw } from "@/lib/utils";
 
 const styles = {
   page: tw("mx-auto w-full max-w-7xl space-y-6"),
   card: tw("rounded-xl border bg-card p-6 shadow-sm"),
   cardTitle: tw("text-lg font-semibold"),
+  groupTitle: tw(
+    "mt-1 border-t pt-4 text-base font-semibold first-of-type:mt-3 first-of-type:border-t-0 first-of-type:pt-0",
+  ),
+  groupNote: tw("mt-1 text-sm text-muted-foreground"),
   notice: tw(
     "mt-4 flex gap-3 rounded-lg border border-warning-border bg-warning-surface p-4 text-sm text-warning-text",
   ),
   noticeIcon: tw("mt-0.5 size-4 shrink-0"),
-  list: tw("mt-2"),
+  list: tw("mt-1"),
   empty: tw(
     "flex flex-col items-center gap-3 rounded-xl border border-dashed bg-card px-8 py-16 text-center",
   ),
@@ -40,6 +47,8 @@ type LibraryProps = {
   now: Date;
   // How many Conversations use each Source, by Source id.
   conversationCounts: Record<string, number>;
+  // Admins can share a book with every reader, and delete it.
+  isAdmin: boolean;
 };
 
 export const Library = ({
@@ -47,23 +56,50 @@ export const Library = ({
   usage,
   now,
   conversationCounts,
+  isAdmin,
 }: LibraryProps) => {
   const atLimit = usage.activeSources >= usage.sourceLimit;
+  const interruptedSources = sources.filter((source) =>
+    isIngestionInterrupted(source, now),
+  );
+  const shownSources = sources.filter(
+    (source) => !isIngestionInterrupted(source, now),
+  );
+  const ownSources = shownSources.filter((source) => !source.shared);
+  const sharedSources = shownSources.filter((source) => source.shared);
+
+  const toRow = (source: Source) => (
+    <SourceRow
+      key={source.id}
+      source={source}
+      now={now}
+      action={
+        source.shared && !isAdmin ? null : (
+          <DeleteSourceButton
+            sourceId={source.id}
+            title={source.title}
+            conversationCount={conversationCounts[source.id] ?? 0}
+          />
+        )
+      }
+    />
+  );
 
   return (
     <main className={styles.page}>
+      <InterruptedSourcesCleanup sources={interruptedSources} />
       <PageHeader
         title="Library"
         description="The books and blogs your Mentor draws on, and how much of your allowance you've used."
         action={
-          <AddSourceButton disabled={atLimit}>
+          <AddSourceButton disabled={atLimit} canShare={isAdmin}>
             <PlusIcon />
             Add Source
           </AddSourceButton>
         }
       />
       <UsageCard usage={usage} />
-      {sources.length === 0 ? (
+      {shownSources.length === 0 ? (
         <section className={styles.empty}>
           <span className={styles.emptyIcon} aria-hidden>
             <LibraryIcon />
@@ -94,22 +130,26 @@ export const Library = ({
               Sources. Delete one to add another.
             </p>
           )}
-          <ul className={styles.list}>
-            {sources.map((source) => (
-              <SourceRow
-                key={source.id}
-                source={source}
-                now={now}
-                action={
-                  <DeleteSourceButton
-                    sourceId={source.id}
-                    title={source.title}
-                    conversationCount={conversationCounts[source.id] ?? 0}
-                  />
-                }
-              />
-            ))}
-          </ul>
+          <h3 className={styles.groupTitle}>Your Own Library</h3>
+          <p className={styles.groupNote}>
+            {usage.activeSources} of {usage.sourceLimit} books used. Each one is
+            deleted {SOURCE_LIFETIME_DAYS} days after you add it.
+          </p>
+          {ownSources.length === 0 ? (
+            <p className={styles.groupNote}>No books of your own yet.</p>
+          ) : (
+            <ul className={styles.list}>{ownSources.map(toRow)}</ul>
+          )}
+          {sharedSources.length > 0 && (
+            <>
+              <h3 className={styles.groupTitle}>Shared Library</h3>
+              <p className={styles.groupNote}>
+                Available to every reader, to try the Mentor. They don&apos;t
+                count toward your limit.
+              </p>
+              <ul className={styles.list}>{sharedSources.map(toRow)}</ul>
+            </>
+          )}
         </section>
       )}
     </main>
