@@ -1,111 +1,96 @@
 import {
+  BookOpenIcon,
   CheckIcon,
+  ClipboardListIcon,
+  CodeIcon,
   LayersIcon,
+  ListChecksIcon,
+  PaletteIcon,
   RocketIcon,
+  ShieldCheckIcon,
   SparklesIcon,
-  StarIcon,
-  ZapIcon,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { HeroMockup } from "@/components/marketing/hero-mockup";
 import { IntegrationsBeam } from "@/components/marketing/integrations-beam";
-import { PricingCards } from "@/components/marketing/pricing-cards";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { AnimatedGradientText } from "@/components/velora/animated-gradient-text";
 import { AuroraBackground } from "@/components/velora/aurora-background";
-import { AvatarCircles } from "@/components/velora/avatar-circles";
 import { BlurFade } from "@/components/velora/blur-fade";
 import { GridPattern } from "@/components/velora/grid-pattern";
-import { NumberTicker } from "@/components/velora/number-ticker";
 import { Particles } from "@/components/velora/particles";
 import { ScrollProgress } from "@/components/velora/scroll-progress";
 import { ShimmerButton } from "@/components/velora/shimmer-button";
 import { SpotlightCard } from "@/components/velora/spotlight-card";
 import { TextReveal } from "@/components/velora/text-reveal";
-import { TiltCard } from "@/components/velora/tilt-card";
 import { Typewriter } from "@/components/velora/typewriter";
 import { siteConfig } from "@/lib/site-config";
 import { featureFlags } from "@/lib/feature-flags";
 import { routes } from "@/lib/routes";
-import { getAvailableStripePlans } from "@/lib/stripe/config";
 import { tw } from "@/lib/utils";
 
-const stats = [
-  { value: 8, suffix: "h", prefix: "", label: "saved with payments" },
-  { value: 4, suffix: "h", prefix: "", label: "saved with login" },
-  { value: 4, suffix: "h", prefix: "", label: "saved with database" },
-  { value: 2, suffix: "h", prefix: "", label: "saved with styling" },
+const DESIGN_CANVAS_URL = "https://claude.ai/artifact/QtPG3Bwz9Y6m5Htd7tiFb4";
+const LINKEDIN_URL = "https://www.linkedin.com/in/rfayad/";
+
+const repoLink = (path: string) => `${siteConfig.github}/blob/main/${path}`;
+
+const MENTOR_FEATURES = [
+  "Cited by design: only the book's passages are cited, enforced in code.",
+  "Honest: says plainly when the book doesn't cover something.",
+  "Corrective retries: not covered? It searches again with new queries.",
+  "Knows the whole book: section Notes and a One Page summary steer the search.",
+  "Follow-up questions: remembers the last 3 questions and answers.",
+  "Exact search per book: PostgreSQL + pgvector, no approximate-index misses.",
 ];
 
-const testimonials = [
+const ROLES = [
   {
-    quote: "Add some customer review here",
-    name: "Customer Name",
-    role: "Customer role, Company",
+    icon: ClipboardListIcon,
+    title: "Product",
+    body: "Requirements from a product grill, a domain glossary, and a v1 / v1.1 / v2 cut.",
+    href: repoLink("docs/v1-product.md"),
   },
   {
-    quote: "Add some customer review here",
-    name: "Customer Name",
-    role: "Customer role, Company",
+    icon: PaletteIcon,
+    title: "Design",
+    body: "A design canvas for the chat and sidebar, translated into theme tokens for light and dark.",
+    href: DESIGN_CANVAS_URL,
   },
   {
-    quote: "Add some customer review here",
-    name: "Customer Name",
-    role: "Customer role, Company",
+    icon: ListChecksIcon,
+    title: "Project management",
+    body: "GitHub issues as vertical slices with blocking edges; the scope cut recorded on the tickets.",
+    href: `${siteConfig.github}/issues?q=is%3Aissue`,
   },
   {
-    quote: "Add some customer review here",
-    name: "Customer Name",
-    role: "Customer role, Company",
+    icon: LayersIcon,
+    title: "Architecture",
+    body: "Decision records, an API contract, a data model, and the retrieval design.",
+    href: `${siteConfig.github}/tree/main/docs/adr`,
   },
   {
-    quote: "Add some customer review here",
-    name: "Customer Name",
-    role: "Customer role, Company",
+    icon: CodeIcon,
+    title: "Code",
+    body: "A Next.js chat app, a Fastify API, and a LangGraph Mentor in one typed monorepo.",
+    href: siteConfig.github,
   },
   {
-    quote: "Add some customer review here",
-    name: "Customer Name",
-    role: "Customer role, Company",
-  },
-];
-
-const faqs = [
-  {
-    q: "What is included in the starter?",
-    a: "Authentication, user synchronization, subscriptions, authorization, billing management, PostgreSQL persistence, a Fastify API backend with Swagger docs, and a responsive SaaS UI — already integrated and ready to extend.",
-  },
-  {
-    q: "Why Next.js and a separate API?",
-    a: "Next.js handles the web application and SaaS infrastructure, while a dedicated Fastify API holds your product and domain logic. Both are TypeScript and share one package for the database schema, types, and API contract, so a change on one side shows up as a type error on the other.",
-  },
-  {
-    q: "How does authentication work?",
-    a: "Clerk handles authentication and user management. Clerk webhooks synchronize users with PostgreSQL, and authenticated requests to the API are validated using Clerk session tokens.",
-  },
-  {
-    q: "How are subscriptions handled?",
-    a: "Stripe handles Checkout and billing, while webhooks synchronize the current subscription state with PostgreSQL. The application uses that local state for authorization instead of querying Stripe on every request.",
-  },
-  {
-    q: "Can I use it for AI applications?",
-    a: "Yes. The API is a natural place for AI and product logic such as LLM calls, retrieval, and agents, and PostgreSQL ships with pgvector for embeddings. AI-specific infrastructure such as conversations, streaming, and usage tracking is planned separately rather than being bundled into the core SaaS foundation.",
+    icon: ShieldCheckIcon,
+    title: "QA",
+    body: "API tests on a real Postgres, CI on every pull request, and an eval set for answer quality.",
+    href: repoLink("docs/retrieval.md"),
   },
 ];
 
 const styles = {
   page: tw("relative"),
   section: tw("relative py-16 lg:py-24"),
+  teamSection: tw("relative pt-4 pb-16 lg:pt-8 lg:pb-24"),
   content: tw("mx-auto max-w-6xl px-4 lg:px-8"),
   sectionHeading: tw(
     "mx-auto max-w-2xl text-center text-3xl font-semibold tracking-tight text-balance lg:text-5xl",
@@ -115,7 +100,7 @@ const styles = {
   ),
   accent: tw("text-primary"),
   featureCheck: tw(
-    "flex size-5 items-center justify-center rounded-full bg-primary/15 text-primary",
+    "flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary",
   ),
   featureCheckIcon: tw("size-3"),
   hero: {
@@ -137,20 +122,16 @@ const styles = {
     ),
     actions: tw("mt-10 flex flex-wrap items-center justify-center gap-4"),
     actionIcon: tw("size-4"),
-    socialProof: tw(
-      "mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row",
+    note: tw(
+      "mt-8 inline-flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
     ),
-    socialProofContent: tw("flex flex-col items-center gap-0.5 sm:items-start"),
-    socialProofStars: tw("flex gap-0.5 text-amber-400"),
-    socialProofStar: tw("size-4 fill-current"),
-    socialProofText: tw("text-sm text-muted-foreground"),
-    mockup: tw("mt-20"),
-    stats: tw("mx-auto mt-20 grid max-w-4xl grid-cols-2 gap-8 lg:grid-cols-4"),
-    stat: tw("flex flex-col items-center gap-1"),
-    statValue: tw("text-4xl font-semibold tracking-tight"),
-    statLabel: tw("text-sm text-muted-foreground"),
+    noteIcon: tw("size-4 text-primary"),
+    demo: tw(
+      "mx-auto mt-12 max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-primary/10",
+    ),
+    demoImage: tw("h-auto w-full"),
   },
-  integrations: {
+  mentor: {
     content: tw(
       "mx-auto grid max-w-6xl items-center gap-12 px-4 lg:grid-cols-2 lg:gap-20 lg:px-8",
     ),
@@ -162,35 +143,15 @@ const styles = {
     list: tw("mt-6 space-y-3 text-sm"),
     listItem: tw("flex items-center gap-3"),
   },
-  cards: {
-    grid: tw("grid gap-6 md:grid-cols-3"),
+  roles: {
+    grid: tw("mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3"),
+    link: tw("block h-full"),
     card: tw("h-full p-8"),
     icon: tw("size-6"),
     iconContainer: tw("mb-4 w-fit rounded-xl bg-primary/10 p-3 text-primary"),
     title: tw("text-lg font-semibold"),
     description: tw("mt-2 text-sm text-muted-foreground"),
-  },
-  testimonials: {
-    grid: tw("mt-16 columns-1 gap-6 *:mb-6 md:columns-2 lg:columns-3"),
-    item: tw("break-inside-avoid"),
-    card: tw("rounded-2xl border bg-card p-6"),
-    stars: tw("flex gap-0.5 text-amber-400"),
-    star: tw("size-3.5 fill-current"),
-    quote: tw("mt-4 text-sm text-card-foreground"),
-    figcaption: tw("mt-4 flex items-center gap-3"),
-    avatar: tw("[&>span]:size-8 [&>span]:text-[10px]"),
-    name: tw("text-sm font-medium"),
-    role: tw("text-xs text-muted-foreground"),
-  },
-  faq: {
-    section: tw("py-16 lg:py-24"),
-    container: tw("mx-auto max-w-3xl px-4 lg:px-8"),
-    heading: tw(
-      "text-center text-3xl font-semibold tracking-tight lg:text-4xl",
-    ),
-    accordion: tw("mt-12"),
-    trigger: tw("text-left text-base"),
-    answer: tw("text-muted-foreground"),
+    open: tw("mt-4 text-sm font-medium text-primary"),
   },
   callToAction: {
     section: tw("relative overflow-hidden py-16 lg:py-24"),
@@ -199,7 +160,7 @@ const styles = {
       "text-4xl font-semibold tracking-tight text-balance lg:text-6xl",
     ),
     description: tw("mx-auto mt-6 max-w-xl text-lg text-muted-foreground"),
-    action: tw("mt-10"),
+    actions: tw("mt-10 flex flex-wrap items-center justify-center gap-4"),
     button: tw("h-14 px-10 text-base"),
     buttonIcon: tw("size-5"),
   },
@@ -215,10 +176,6 @@ const LandingPage = async () => {
   if (userId) {
     redirect(routes.appHome);
   }
-
-  const availablePlans = featureFlags.billingEnabled
-    ? getAvailableStripePlans()
-    : [];
 
   return (
     <>
@@ -239,41 +196,40 @@ const LandingPage = async () => {
               <span className={styles.hero.badge}>
                 <SparklesIcon className={styles.hero.badgeIcon} />
                 <span className={styles.hero.badgeText}>
-                  Full-Stack SaaS Starter Kit
+                  Retrieval-Augmented Generation · LangGraph agent
                 </span>
               </span>
             </BlurFade>
 
             <h1 className={styles.hero.title}>
-              <TextReveal text="Everything you need to build your SaaS." />{" "}
-              <br />
-              <TextReveal text="Build" />{" "}
+              <TextReveal text="Answers that are" />{" "}
               <AnimatedGradientText>
-                <Typewriter words={["faster.", "smarter.", "better."]} />
+                <Typewriter words={["cited.", "grounded.", "verifiable."]} />
               </AnimatedGradientText>
             </h1>
 
             <BlurFade delay={0.35}>
               <p className={styles.hero.description}>
-                A production-ready TypeScript foundation with Next.js, Fastify,
-                PostgreSQL, Clerk, and Stripe — authentication, subscriptions,
-                database synchronization, and backend integration already set
-                up.
+                A Retrieval-Augmented Generation (RAG) agent built with
+                LangGraph: it searches your book, answers only from what it
+                finds, cites the exact passage, and searches again when it
+                misses.
               </p>
             </BlurFade>
 
             <BlurFade delay={0.5}>
               <div className={styles.hero.actions}>
-                <form action={routes.appHome}>
+                <form action={routes.signUp}>
+                  <input type="hidden" name="demo" value="1" />
                   <ShimmerButton type="submit">
                     <RocketIcon className={styles.hero.actionIcon} />
-                    View Live Demo
+                    Try the Live Demo
                   </ShimmerButton>
                 </form>
                 {siteConfig.github && (
                   <Button variant="ghost" size="lg" asChild>
                     <a href={siteConfig.github} rel="noopener" target="_blank">
-                      View on Github
+                      View on GitHub
                     </a>
                   </Button>
                 )}
@@ -281,85 +237,50 @@ const LandingPage = async () => {
             </BlurFade>
 
             <BlurFade delay={0.6}>
-              <div className={styles.hero.socialProof}>
-                <AvatarCircles
-                  people={[
-                    "Maya Chen",
-                    "Tom Okafor",
-                    "Sofia Lindqvist",
-                    "Dan Romero",
-                    "Aisha Patel",
-                  ]}
-                  extra={100}
+              <Link
+                href={`${routes.signUp}?demo=1`}
+                className={styles.hero.note}
+              >
+                <BookOpenIcon className={styles.hero.noteIcon} />
+                Try it with a demo account: no real email needed, the Shared
+                Library is ready to ask
+              </Link>
+            </BlurFade>
+
+            <BlurFade delay={0.75} offset={32}>
+              <div className={styles.hero.demo}>
+                <Image
+                  src="/how-to-use.gif"
+                  alt="Selecting Meditations, asking a question, and opening a Citation"
+                  width={1280}
+                  height={596}
+                  unoptimized
+                  priority
+                  className={styles.hero.demoImage}
                 />
-                <div className={styles.hero.socialProofContent}>
-                  <span className={styles.hero.socialProofStars}>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <StarIcon
-                        key={i}
-                        className={styles.hero.socialProofStar}
-                      />
-                    ))}
-                  </span>
-                  <span className={styles.hero.socialProofText}>
-                    Social proof disclaimer
-                  </span>
-                </div>
               </div>
             </BlurFade>
-
-            {/* Product mockup */}
-            <BlurFade delay={0.75} offset={32}>
-              <HeroMockup className={styles.hero.mockup} />
-            </BlurFade>
-
-            {/* Stats */}
-            <div className={styles.hero.stats}>
-              {stats.map((stat, i) => (
-                <BlurFade key={stat.label} delay={i * 0.1}>
-                  <div className={styles.hero.stat}>
-                    <span className={styles.hero.statValue}>
-                      <NumberTicker
-                        value={stat.value}
-                        prefix={stat.prefix}
-                        suffix={stat.suffix}
-                      />
-                    </span>
-                    <span className={styles.hero.statLabel}>{stat.label}</span>
-                  </div>
-                </BlurFade>
-              ))}
-            </div>
           </div>
         </section>
 
-        {/* Integrations beam */}
+        {/* The Mentor */}
         <section className={styles.section}>
-          <div className={styles.integrations.content}>
+          <div className={styles.mentor.content}>
             <BlurFade direction="right">
               <div>
-                <span className={styles.integrations.eyebrow}>
-                  Full-stack foundation
-                </span>
-                <h2 className={styles.integrations.title}>
-                  Your SaaS infrastructure,{" "}
-                  <span className={styles.accent}>already connected.</span>
+                <span className={styles.mentor.eyebrow}>The Mentor</span>
+                <h2 className={styles.mentor.title}>
+                  Answers from the book.{" "}
+                  <span className={styles.accent}>Never beyond it.</span>
                 </h2>
-                <p className={styles.integrations.description}>
-                  Skip the repetitive setup. Authentication, billing,
-                  persistence, and your application backend are already
-                  integrated — so you can focus on building the product.
+                <p className={styles.mentor.description}>
+                  A LangGraph agent writes searches in the book&apos;s own
+                  words, retrieves passages, and answers only from them, then
+                  searches again when it misses.
                 </p>
-                <ul className={styles.integrations.list}>
-                  {[
-                    "Authentication ready — Clerk auth synchronized with PostgreSQL.",
-                    "Billing built in — Stripe subscriptions, webhooks, and Customer Portal.",
-                    "TypeScript API — Fastify connected to Next.js and PostgreSQL, with Swagger docs.",
-                    "Database ready — PostgreSQL with Drizzle, shared by both apps.",
-                    "Modern UI — shadcn/ui,  Velora components and Tailwind CSS.",
-                    "AI-ready architecture — a dedicated API and pgvector, ready for your AI stack.",
-                  ].map((item) => (
-                    <li key={item} className={styles.integrations.listItem}>
+                <ul className={styles.mentor.list}>
+                  {MENTOR_FEATURES.map((item) => (
+                    <li key={item} className={styles.mentor.listItem}>
                       <span className={styles.featureCheck}>
                         <CheckIcon className={styles.featureCheckIcon} />
                       </span>
@@ -375,135 +296,39 @@ const LandingPage = async () => {
           </div>
         </section>
 
-        {/* Spotlight cards */}
-        <section className={styles.section}>
-          <div className={styles.content}>
-            <div className={styles.cards.grid}>
-              {[
-                {
-                  icon: <RocketIcon className={styles.cards.icon} />,
-                  title: "Built for real SaaS",
-                  body: "Authentication, subscriptions, authorization, webhooks, and user synchronization — implemented as real production flows, not mocked examples.",
-                },
-                {
-                  icon: <LayersIcon className={styles.cards.icon} />,
-                  title: "Full-stack by design",
-                  body: "Next.js owns the SaaS layer. The API owns your product logic. Both share PostgreSQL and one typed contract, with clear domain boundaries.",
-                },
-                {
-                  icon: <ZapIcon className={styles.cards.icon} />,
-                  title: "Made to be cloned",
-                  body: "Standard technologies, minimal abstractions, and a focused foundation designed to become your next product — not another framework to learn.",
-                },
-              ].map((card, i) => (
-                <BlurFade key={card.title} delay={i * 0.12}>
-                  <SpotlightCard className={styles.cards.card}>
-                    <div className={styles.cards.iconContainer}>
-                      {card.icon}
-                    </div>
-                    <h3 className={styles.cards.title}>{card.title}</h3>
-                    <p className={styles.cards.description}>{card.body}</p>
-                  </SpotlightCard>
-                </BlurFade>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className={styles.section}>
+        {/* One person, the whole tech team */}
+        <section className={styles.teamSection}>
           <div className={styles.content}>
             <BlurFade>
               <h2 className={styles.sectionHeading}>
-                What customers <span className={styles.accent}>are saying</span>
+                One person.{" "}
+                <span className={styles.accent}>The whole tech team.</span>
               </h2>
               <p className={styles.sectionDescription}>
-                A ready-to-customize testimonial section for customer stories,
-                reviews, and social proof.
+                Every role left an artifact behind. Open any of them.
               </p>
             </BlurFade>
-            <div className={styles.testimonials.grid}>
-              {testimonials.map((t, i) => (
-                <BlurFade
-                  key={`${i}_${t.name}`}
-                  delay={(i % 3) * 0.1}
-                  className={styles.testimonials.item}
-                >
-                  <TiltCard>
-                    <figure className={styles.testimonials.card}>
-                      <span className={styles.testimonials.stars}>
-                        {Array.from({ length: 5 }).map((_, s) => (
-                          <StarIcon
-                            key={s}
-                            className={styles.testimonials.star}
-                          />
-                        ))}
-                      </span>
-                      <blockquote className={styles.testimonials.quote}>
-                        “{t.quote}”
-                      </blockquote>
-                      <figcaption className={styles.testimonials.figcaption}>
-                        <AvatarCircles
-                          people={[t.name]}
-                          className={styles.testimonials.avatar}
-                        />
-                        <div>
-                          <p className={styles.testimonials.name}>{t.name}</p>
-                          <p className={styles.testimonials.role}>{t.role}</p>
-                        </div>
-                      </figcaption>
-                    </figure>
-                  </TiltCard>
+            <div className={styles.roles.grid}>
+              {ROLES.map((role, i) => (
+                <BlurFade key={role.title} delay={(i % 3) * 0.12}>
+                  <a
+                    href={role.href}
+                    rel="noopener"
+                    target="_blank"
+                    className={styles.roles.link}
+                  >
+                    <SpotlightCard className={styles.roles.card}>
+                      <div className={styles.roles.iconContainer}>
+                        <role.icon className={styles.roles.icon} />
+                      </div>
+                      <h3 className={styles.roles.title}>{role.title}</h3>
+                      <p className={styles.roles.description}>{role.body}</p>
+                      <p className={styles.roles.open}>Open →</p>
+                    </SpotlightCard>
+                  </a>
                 </BlurFade>
               ))}
             </div>
-          </div>
-        </section>
-
-        {featureFlags.billingEnabled && (
-          <section id="pricing" className={styles.section}>
-            <div className={styles.content}>
-              <BlurFade>
-                <h2 className={styles.sectionHeading}>
-                  Plans built for{" "}
-                  <span className={styles.accent}>your product.</span>
-                </h2>
-                <p className={styles.sectionDescription}>
-                  Customizable plans already wired to real Stripe data -
-                  Checkout, webhooks, subscription synchronization, and billing
-                  management.{" "}
-                </p>
-              </BlurFade>
-
-              <PricingCards plans={availablePlans} />
-            </div>
-          </section>
-        )}
-
-        {/* FAQ */}
-        <section id="faq" className={styles.faq.section}>
-          <div className={styles.faq.container}>
-            <BlurFade>
-              <h2 className={styles.faq.heading}>Frequently asked questions</h2>
-            </BlurFade>
-            <BlurFade delay={0.15}>
-              <Accordion
-                type="single"
-                collapsible
-                className={styles.faq.accordion}
-              >
-                {faqs.map((faq) => (
-                  <AccordionItem key={faq.q} value={faq.q}>
-                    <AccordionTrigger className={styles.faq.trigger}>
-                      {faq.q}
-                    </AccordionTrigger>
-                    <AccordionContent className={styles.faq.answer}>
-                      {faq.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </BlurFade>
           </div>
         </section>
 
@@ -514,23 +339,34 @@ const LandingPage = async () => {
           <div className={styles.callToAction.content}>
             <BlurFade>
               <h2 className={styles.callToAction.heading}>
-                Start with the foundation.{" "}
-                <span className={styles.accent}>Focus on what matters.</span>
+                Built by Renan Fayad.{" "}
+                <span className={styles.accent}>Let&apos;s talk.</span>
               </h2>
               <p className={styles.callToAction.description}>
-                Skip the repetitive SaaS setup and start with authentication,
-                billing, persistence, and backend integration already connected.
+                Frontend / Full Stack Engineer building AI applications across
+                TypeScript and Python. Open to Full Stack AI Engineer roles.
               </p>
-              <div className={styles.callToAction.action}>
-                <form action={routes.appHome}>
+              <div className={styles.callToAction.actions}>
+                <form action={routes.signUp}>
+                  <input type="hidden" name="demo" value="1" />
                   <ShimmerButton
                     className={styles.callToAction.button}
                     type="submit"
                   >
                     <RocketIcon className={styles.callToAction.buttonIcon} />
-                    View Live Demo
+                    Try the Live Demo
                   </ShimmerButton>
                 </form>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className={styles.callToAction.button}
+                  asChild
+                >
+                  <a href={LINKEDIN_URL} rel="noopener" target="_blank">
+                    LinkedIn
+                  </a>
+                </Button>
               </div>
             </BlurFade>
           </div>
