@@ -2,13 +2,13 @@
 
 import { useRef, type Ref } from "react";
 import {
-  BoxIcon,
-  CloudIcon,
-  CodeIcon,
-  DatabaseIcon,
-  MailIcon,
+  FileTextIcon,
+  LayersIcon,
+  MessageSquareIcon,
+  NotebookTextIcon,
+  QuoteIcon,
+  SearchIcon,
   SparklesIcon,
-  WalletIcon,
 } from "lucide-react";
 
 import { AnimatedBeam } from "@/components/velora/animated-beam";
@@ -46,8 +46,8 @@ const Node = ({
 };
 
 /**
- * Six service nodes beaming into a central hub — the classic
- * integrations diagram, built from <AnimatedBeam />.
+ * The Mentor's pipeline: what a book becomes (left) beams into the Mentor,
+ * which searches, answers, and cites (right). Built from <AnimatedBeam />.
  */
 export const IntegrationsBeam = ({ className }: { className?: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,13 +63,13 @@ export const IntegrationsBeam = ({ className }: { className?: string }) => {
     <div ref={containerRef} className={cn(styles.container, className)}>
       <div className={styles.nodeColumn}>
         <Node ref={left1}>
-          <DatabaseIcon className={styles.mutedIcon} />
+          <FileTextIcon className={styles.mutedIcon} />
         </Node>
         <Node ref={left2}>
-          <CodeIcon className={styles.mutedIcon} />
+          <NotebookTextIcon className={styles.mutedIcon} />
         </Node>
         <Node ref={left3}>
-          <CloudIcon className={styles.mutedIcon} />
+          <LayersIcon className={styles.mutedIcon} />
         </Node>
       </div>
 
@@ -79,13 +79,13 @@ export const IntegrationsBeam = ({ className }: { className?: string }) => {
 
       <div className={styles.nodeColumn}>
         <Node ref={right1}>
-          <MailIcon className={styles.mutedIcon} />
+          <SearchIcon className={styles.mutedIcon} />
         </Node>
         <Node ref={right2}>
-          <WalletIcon className={styles.mutedIcon} />
+          <MessageSquareIcon className={styles.mutedIcon} />
         </Node>
         <Node ref={right3}>
-          <BoxIcon className={styles.mutedIcon} />
+          <QuoteIcon className={styles.mutedIcon} />
         </Node>
       </div>
 

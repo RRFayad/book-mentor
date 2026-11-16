@@ -49,8 +49,7 @@ export const SiteFooter = () => {
             {siteConfig.name}
           </Link>
           <p className={styles.description}>
-            A full-stack foundation for building and shipping modern SaaS
-            products.
+            Ask your books questions, get answers that cite the exact page.
           </p>
         </div>
         {groups.map((group) => (

@@ -123,12 +123,12 @@ graph TD
 - API: Fastify, Zod contract shared with the frontend.
 - AI: LangChain + LangGraph, OpenAI chat and embeddings, LangSmith.
 - Data: PostgreSQL + pgvector, Drizzle.
-- Infra: Vercel (two projects + a daily Schedule), Supabase Postgres, GitHub Actions.
+- Infra: Vercel (two projects + a daily Schedule), Neon Postgres, GitHub Actions.
 
 ## Deployment
 
 - Two Vercel projects: the Next.js app and the API (esbuild bundle).
-- Supabase Postgres with pgvector; Drizzle migrations.
+- Neon Postgres with pgvector; Drizzle migrations.
 - A daily Vercel Schedule deletes expired books' text, secured by `CRON_SECRET`.
 - CI must pass before merging to `main`.
 
