@@ -60,6 +60,17 @@ I built Book Mentor as a one-person tech team, from the product idea to deployme
 
 ## The Mentor (the AI part)
 
+```mermaid
+graph TD
+  question([Question]) --> writeSearchQueries
+  writeSearchQueries -. several questions at once .-> answer([Answer])
+  writeSearchQueries --> retrieveFromSources
+  retrieveFromSources --> writeAnswer
+  writeAnswer -. covered, or off-topic .-> answer
+  writeAnswer -. not covered: retry, up to 2 .-> writeSearchQueries
+```
+
+- The LangGraph flow; `npm run graph -w @app/backend` prints it from the code.
 - Ingestion: browser extracts text → chunks → embeddings → Notes per section → One Page per book.
 - The RAG tree: chunks (the book's words) → Notes (sections) → One Page (the whole book).
 - Only passages are cited; Notes and the One Page are the Mentor's understanding ([ADR 0003](docs/adr/0003-cited-passages-are-evidence-summary-is-not.md)).
