@@ -8,7 +8,6 @@ import {
   PaletteIcon,
   RocketIcon,
   ShieldCheckIcon,
-  SparklesIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -89,8 +88,8 @@ const ROLES = [
 
 const styles = {
   page: tw("relative"),
-  section: tw("relative py-16 lg:py-24"),
   teamSection: tw("relative pt-4 pb-16 lg:pt-8 lg:pb-24"),
+  mentorSection: tw("relative pt-8 pb-16 lg:py-24"),
   content: tw("mx-auto max-w-6xl px-4 lg:px-8"),
   sectionHeading: tw(
     "mx-auto max-w-2xl text-center text-3xl font-semibold tracking-tight text-balance lg:text-5xl",
@@ -104,7 +103,7 @@ const styles = {
   ),
   featureCheckIcon: tw("size-3"),
   hero: {
-    section: tw("relative overflow-hidden pt-28 pb-24 lg:pt-36 lg:pb-28"),
+    section: tw("relative overflow-hidden pt-28 pb-12 lg:pt-36 lg:pb-28"),
     gridPattern: tw(
       "mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)] fill-transparent stroke-border/60",
     ),
@@ -123,9 +122,9 @@ const styles = {
     actions: tw("mt-10 flex flex-wrap items-center justify-center gap-4"),
     actionIcon: tw("size-4"),
     note: tw(
-      "mt-8 inline-flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground",
+      "mt-8 inline-block text-sm text-pretty text-muted-foreground transition-colors hover:text-foreground",
     ),
-    noteIcon: tw("size-4 text-primary"),
+    noteIcon: tw("mr-1.5 inline size-4 align-text-bottom text-primary"),
     demo: tw(
       "mx-auto mt-12 max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-primary/10",
     ),
@@ -142,16 +141,22 @@ const styles = {
     description: tw("mt-4 text-muted-foreground"),
     list: tw("mt-6 space-y-3 text-sm"),
     listItem: tw("flex items-center gap-3"),
+    beam: tw("hidden lg:block"),
   },
   roles: {
-    grid: tw("mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3"),
+    grid: tw(
+      "mt-10 grid gap-4 md:grid-cols-2 lg:mt-16 lg:grid-cols-3 lg:gap-6",
+    ),
     link: tw("block h-full"),
-    card: tw("h-full p-8"),
-    icon: tw("size-6"),
-    iconContainer: tw("mb-4 w-fit rounded-xl bg-primary/10 p-3 text-primary"),
+    card: tw("h-full p-4 lg:p-8"),
+    heading: tw("flex items-center gap-3 lg:block"),
+    icon: tw("size-5 lg:size-6"),
+    iconContainer: tw(
+      "w-fit rounded-xl bg-primary/10 p-2 text-primary lg:mb-4 lg:p-3",
+    ),
     title: tw("text-lg font-semibold"),
     description: tw("mt-2 text-sm text-muted-foreground"),
-    open: tw("mt-4 text-sm font-medium text-primary"),
+    open: tw("mt-4 hidden text-sm font-medium text-primary lg:block"),
   },
   callToAction: {
     section: tw("relative overflow-hidden py-16 lg:py-24"),
@@ -255,7 +260,7 @@ const LandingPage = async () => {
         </section>
 
         {/* The Mentor */}
-        <section className={styles.section}>
+        <section className={styles.mentorSection}>
           <div className={styles.mentor.content}>
             <BlurFade direction="right">
               <div>
@@ -281,7 +286,11 @@ const LandingPage = async () => {
                 </ul>
               </div>
             </BlurFade>
-            <BlurFade direction="left" delay={0.15}>
+            <BlurFade
+              direction="left"
+              delay={0.15}
+              className={styles.mentor.beam}
+            >
               <IntegrationsBeam />
             </BlurFade>
           </div>
@@ -309,10 +318,12 @@ const LandingPage = async () => {
                     className={styles.roles.link}
                   >
                     <SpotlightCard className={styles.roles.card}>
-                      <div className={styles.roles.iconContainer}>
-                        <role.icon className={styles.roles.icon} />
+                      <div className={styles.roles.heading}>
+                        <div className={styles.roles.iconContainer}>
+                          <role.icon className={styles.roles.icon} />
+                        </div>
+                        <h3 className={styles.roles.title}>{role.title}</h3>
                       </div>
-                      <h3 className={styles.roles.title}>{role.title}</h3>
                       <p className={styles.roles.description}>{role.body}</p>
                       <p className={styles.roles.open}>Open →</p>
                     </SpotlightCard>

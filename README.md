@@ -39,28 +39,6 @@ I built Book Mentor as a one-person tech team, from the product idea to deployme
   - [CI: lint, types, and tests on every PR](.github/workflows/ci.yml)
   - [Answer-quality eval: questions and script](backend/evals/)
 
-## Links to every artifact
-
-- **Product:**
-  - [Product requirements](docs/v1-product.md)
-  - [Domain glossary](CONTEXT.md)
-- **Design:** [design canvas](https://claude.ai/artifact/QtPG3Bwz9Y6m5Htd7tiFb4)
-- **Tickets:** [all issues](https://github.com/RRFayad/book-mentor/issues?q=is%3Aissue)
-- **Architecture decisions (ADRs):**
-  - [0001: PDFs are read in the browser and sent in batches](docs/adr/0001-browser-extracts-pdf-text-and-drives-batched-ingestion.md)
-  - [0002: Book passages in a Drizzle table, searched exactly per book](docs/adr/0002-drizzle-owned-chunks-table.md)
-  - [0003: Only cited passages count as evidence](docs/adr/0003-cited-passages-are-evidence-summary-is-not.md)
-  - [0004: assistant-ui for the chat thread](docs/adr/0004-assistant-ui-for-the-conversation-thread.md)
-  - [0005: The backend owns the product tables (replaced by 0006)](docs/adr/0005-backend-owns-product-tables.md)
-  - [0006: One database schema for every table](docs/adr/0006-one-drizzle-schema-for-every-table.md)
-- **Contracts and design docs:**
-  - [API endpoints and payloads](docs/api-contract.md)
-  - [Database tables](docs/data-model.md)
-  - [How the Mentor searches and answers](docs/retrieval.md)
-- **QA:**
-  - [CI: lint, types, and tests on every PR](.github/workflows/ci.yml)
-  - [Answer-quality eval: questions and script](backend/evals/)
-
 # The project
 
 ## What it does
