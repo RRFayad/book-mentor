@@ -4,7 +4,20 @@
 
 Ask your books questions, get answers that cite the exact page.
 
-- Demo book: Meditations by Marcus Aurelius (public domain), shared with every account.
+**Live demo:** [rf-book-mentor.vercel.app](https://rf-book-mentor.vercel.app/)
+
+## How to use it
+
+1. **Sign up** at the live demo (Google or email).
+   - No inbox needed: any `name+clerk_test@example.com`, code `424242`.
+2. **New Conversation → Select a Source → Meditations** (the demo book, shared with every account).
+3. **Ask**, e.g. "What warning does Marcus give himself about becoming emperor?"
+4. **Click a Citation** → the passage and its page.
+5. **Follow up**, e.g. "Why does he say that?" → it remembers the last 3 questions and answers.
+6. **Your own book:** Library → Add Source → a text PDF (up to 500 pages) → Ready in about a minute.
+   - Up to 3 books; each is deleted 7 days after you add it.
+
+![Selecting Meditations, asking a question, and opening a Citation](docs/images/how-to-use.gif)
 
 ## How it was built: the whole process, not just the code
 
@@ -76,6 +89,7 @@ graph TD
 - Only passages are cited; Notes and the One Page are the Mentor's understanding ([ADR 0003](docs/adr/0003-cited-passages-are-evidence-summary-is-not.md)).
 - Citations are enforced in code, not only asked of the model.
 - Corrective retries: not covered and not off-topic → search again with different queries.
+- Follow-ups: the last 3 questions and answers turn "why does he say that?" into a search the book can answer; a question on a new topic leaves them out, so old context doesn't steer it.
 - Tracing with LangSmith: one Thread per Conversation.
 
 ## Answer quality
