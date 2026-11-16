@@ -127,7 +127,7 @@ const styles = {
     ),
     noteIcon: tw("size-4 text-primary"),
     demo: tw(
-      "mx-auto mt-20 max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-primary/10",
+      "mx-auto mt-12 max-w-5xl overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-primary/10",
     ),
     demoImage: tw("h-auto w-full"),
   },
@@ -215,15 +215,12 @@ const LandingPage = async () => {
                 finds, cites the exact passage, and searches again when it
                 misses.
               </p>
-              <p className={styles.hero.description}>
-                Designed, built, and shipped by one person working as a whole
-                tech team.
-              </p>
             </BlurFade>
 
             <BlurFade delay={0.5}>
               <div className={styles.hero.actions}>
                 <form action={routes.signUp}>
+                  <input type="hidden" name="demo" value="1" />
                   <ShimmerButton type="submit">
                     <RocketIcon className={styles.hero.actionIcon} />
                     Try the Live Demo
@@ -240,10 +237,13 @@ const LandingPage = async () => {
             </BlurFade>
 
             <BlurFade delay={0.6}>
-              <Link href={routes.signUp} className={styles.hero.note}>
+              <Link
+                href={`${routes.signUp}?demo=1`}
+                className={styles.hero.note}
+              >
                 <BookOpenIcon className={styles.hero.noteIcon} />
-                Try it with the Shared Library: sign up as
-                your-name+clerk_test@example.com, code 424242 →
+                Try it with a demo account: no real email needed, the Shared
+                Library is ready to ask
               </Link>
             </BlurFade>
 
@@ -348,6 +348,7 @@ const LandingPage = async () => {
               </p>
               <div className={styles.callToAction.actions}>
                 <form action={routes.signUp}>
+                  <input type="hidden" name="demo" value="1" />
                   <ShimmerButton
                     className={styles.callToAction.button}
                     type="submit"
