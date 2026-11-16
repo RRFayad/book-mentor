@@ -104,7 +104,7 @@ const styles = {
   ),
   featureCheckIcon: tw("size-3"),
   hero: {
-    section: tw("relative overflow-hidden pt-40 pb-24 lg:pt-48 lg:pb-28"),
+    section: tw("relative overflow-hidden pt-28 pb-24 lg:pt-36 lg:pb-28"),
     gridPattern: tw(
       "mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)] fill-transparent stroke-border/60",
     ),
@@ -115,7 +115,7 @@ const styles = {
     badgeIcon: tw("size-3.5 text-primary"),
     badgeText: tw("font-medium"),
     title: tw(
-      "mx-auto mt-8 max-w-4xl text-5xl font-semibold tracking-tight text-balance lg:text-7xl",
+      "mx-auto max-w-4xl text-5xl font-semibold tracking-tight text-balance lg:text-7xl",
     ),
     description: tw(
       "mx-auto mt-6 max-w-2xl text-lg text-pretty text-muted-foreground",
@@ -192,15 +192,6 @@ const LandingPage = async () => {
             className={styles.hero.gridPattern}
           />
           <div className={styles.hero.content}>
-            <BlurFade delay={0} direction="down">
-              <span className={styles.hero.badge}>
-                <SparklesIcon className={styles.hero.badgeIcon} />
-                <span className={styles.hero.badgeText}>
-                  Retrieval-Augmented Generation · LangGraph agent
-                </span>
-              </span>
-            </BlurFade>
-
             <h1 className={styles.hero.title}>
               <TextReveal text="Answers that are" />{" "}
               <AnimatedGradientText>
