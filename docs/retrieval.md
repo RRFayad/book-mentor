@@ -24,13 +24,25 @@ writeSearchQueries → retrieveFromSources → writeAnswer → covered, or off-t
 
 ## Results (Meditations)
 
-- **Pages:** 26 of 29 answers point to a page with the answer.
-- **Not covered by the book:** 4 of 4 answered "couldn't find it".
-- **Solved:** the emperor question → 1/5 (keywords) → 3/5 (sentences) → 10/10 (retries).
-- **Known limit:** the Christians (p. 99) are never found → smaller chunks or hybrid search.
-- **Not reported:** the LLM grader's counts, too unreliable ([#38](https://github.com/RRFayad/book-mentor/issues/38)).
+- **The eval:** 29 questions with known answers, plus 4 the book doesn't cover; 2 runs (2026-11-16).
+- **Answered correctly:** 28/29 and 29/29.
+  - 7–8 per run marked "partial" by the LLM grader, correct after human review (one detail left out) → better grader in [#38](https://github.com/RRFayad/book-mentor/issues/38).
+  - The one miss: a very specific question, mentioned in a single line of the book → smaller chunks or hybrid search.
+- **Pages:** 25 of 29 answers cite a page with the answer, in both runs.
+- **Not covered by the book:** 4/4 answered "couldn't find it".
 
-## How the search was chosen (first test book)
+## How retrieval improved
+
+- **One stubborn question** ("What warning does Marcus give himself about becoming emperor?", p. 51):
+  1. keyword queries → found 1 in 5 runs;
+  2. sentence queries → 3 in 5;
+  3. varied retries (new queries, no original question, 10 passages) → 10 in 10, and in both eval runs.
+- **The One Page steers the queries:** situations the book never names → its own ideas ("road rage" → "anger at others' wrongs").
+- **Filtered vector search:** an approximate index (HNSW) ranked all books, then filtered by book → could drop the right passages → exact search per book ([ADR 0002](adr/0002-drizzle-owned-chunks-table.md)).
+- **Search strategy:** chosen by measurement, below.
+- **Smaller refinements:** prompt reviews, flow and search fixes along the way.
+
+### How the search was chosen (first test book)
 
 Did a page with the answer reach the model? 26 questions, 2 runs each:
 
