@@ -1,6 +1,6 @@
 "use client";
 
-import { MAX_QUESTION_LENGTH } from "@app/shared/constants";
+import { MAX_QUESTION_LENGTH, SOURCE_LIMIT } from "@app/shared/constants";
 import { Popover } from "@base-ui/react/popover";
 import {
   ArrowUpIcon,
@@ -69,6 +69,7 @@ const styles = {
   popupFooter: tw(
     "mt-1.5 flex items-center justify-between border-t px-1 pt-1.5 text-[13px]",
   ),
+  groupCount: tw("font-normal"),
   libraryLink: tw("px-2 text-muted-foreground hover:text-foreground"),
   empty: tw(
     "mx-auto flex w-full max-w-xl flex-col items-center gap-3 px-4 pt-[22vh] text-center",
@@ -148,6 +149,7 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
 
   const ownSources = sources.filter((source) => !source.shared);
   const sharedSources = sources.filter((source) => source.shared);
+  const atSourceLimit = ownSources.length >= SOURCE_LIMIT;
 
   const toOption = (source: Source) => {
     const isPicked = picked.includes(source.id);
@@ -281,7 +283,13 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
                   </div>
                   {ownSources.length > 0 && (
                     <>
-                      <p className={styles.groupTitle}>Your Own Library</p>
+                      <p className={styles.groupTitle}>
+                        Your Own Library
+                        <span className={styles.groupCount}>
+                          {" "}
+                          · {ownSources.length} of {SOURCE_LIMIT} books
+                        </span>
+                      </p>
                       {ownSources.map(toOption)}
                     </>
                   )}
@@ -292,7 +300,11 @@ export const NewConversation = ({ sources }: NewConversationProps) => {
                     </>
                   )}
                   <div className={styles.popupFooter}>
-                    <AddSourceButton variant="ghost" size="sm">
+                    <AddSourceButton
+                      variant="ghost"
+                      size="sm"
+                      disabled={atSourceLimit}
+                    >
                       <PlusIcon />
                       Add a Source
                     </AddSourceButton>

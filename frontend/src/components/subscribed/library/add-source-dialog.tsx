@@ -1,7 +1,12 @@
 "use client";
 
 import { MAX_TITLE_LENGTH } from "@app/shared/constants";
-import { BookOpenIcon, GlobeIcon, LockIcon } from "lucide-react";
+import {
+  BookOpenIcon,
+  GlobeIcon,
+  LoaderCircleIcon,
+  LockIcon,
+} from "lucide-react";
 import {
   useEffect,
   useId,
@@ -56,6 +61,15 @@ const styles = {
   rejection: tw(
     "rounded-lg border border-destructive-border bg-destructive-surface p-3 text-sm text-destructive-text",
   ),
+  sending: tw("space-y-2 rounded-lg border bg-muted/40 p-3"),
+  sendingTrack: tw("flex h-1.5 overflow-hidden rounded-full bg-muted"),
+  sendingDone: tw("h-full bg-primary transition-[width] duration-500"),
+  sendingInFlight: tw(
+    "h-full animate-pulse bg-primary/40 transition-[width] duration-500",
+  ),
+  sendingStep: tw("flex items-center gap-2 text-sm"),
+  sendingIcon: tw("size-4 shrink-0 animate-spin text-primary"),
+  sendingHint: tw("text-xs text-muted-foreground"),
 };
 
 const rejectionMessages = {
@@ -70,17 +84,31 @@ const MAX_BOOK_PAGES = 500;
 
 type Rejection = keyof typeof rejectionMessages;
 
+// While a book is sent: the pages already done, the pages being sent now
+// (as percents of the book), and what is happening.
+type SendingProgress = {
+  donePercent: number;
+  inFlightPercent: number;
+  step: string;
+};
+
+const toPercent = (part: number, whole: number) =>
+  Math.round((part / whole) * 100);
+
 type AddSourceFormProps = {
   initialKind: SourceKind;
   // Admins only: share the book with every reader (the demo book).
   canShare: boolean;
   onDone: () => void;
+  // Tells the dialog when a book is being sent, so it can't be closed then.
+  onSendingChange: (isSending: boolean) => void;
 };
 
 const AddSourceForm = ({
   initialKind,
   canShare,
   onDone,
+  onSendingChange,
 }: AddSourceFormProps) => {
   const id = useId();
   const [kind, setKind] = useState<SourceKind>(initialKind);
@@ -93,12 +121,14 @@ const AddSourceForm = ({
   // The book as the browser read it; null until the PDF has been read.
   const [book, setBook] = useState<PdfBook | null>(null);
   const [readingPage, setReadingPage] = useState<string | null>(null);
-  const [sending, setSending] = useState<string | null>(null);
+  const [sending, setSending] = useState<SendingProgress | null>(null);
   const [shared, setShared] = useState(false);
   const isSending = sending !== null;
 
   // Closing the tab stops sending the book (ADR 0001), so the browser asks first.
   useEffect(() => {
+    onSendingChange(isSending);
+
     if (!isSending) {
       return;
     }
@@ -109,7 +139,7 @@ const AddSourceForm = ({
     window.addEventListener("beforeunload", askBeforeLeaving);
 
     return () => window.removeEventListener("beforeunload", askBeforeLeaving);
-  }, [isSending]);
+  }, [isSending, onSendingChange]);
 
   const source: NewSource =
     kind === "book"
@@ -154,23 +184,39 @@ const AddSourceForm = ({
   };
 
   // Sends the book's pages to the backend in batches, a few at once (ADR 0001).
+  // Server Actions run one at a time, so progress moves once per group.
   const sendPages = async (sourceId: string, pages: PdfBook["pages"]) => {
     const batches = toPageBatches(pages);
+    const lastPage = pages.at(-1)?.page ?? pages.length;
+    let donePages = 0;
 
     for (let start = 0; start < batches.length; start += PARALLEL_BATCHES) {
-      const percent = Math.round((start / batches.length) * 100);
-      setSending(`Sending the book… ${percent}%`);
-
       const group = batches.slice(start, start + PARALLEL_BATCHES);
+      const groupPages = group.flatMap((batch) => batch.pages);
+      const firstInGroup = groupPages[0].page;
+      const lastInGroup = groupPages[groupPages.length - 1].page;
+
+      setSending({
+        donePercent: toPercent(donePages, pages.length),
+        inFlightPercent: toPercent(groupPages.length, pages.length),
+        step: `The Mentor is studying pages ${firstInGroup}–${lastInGroup} of ${lastPage}…`,
+      });
+
       const { ok } = await sendPageBatchesAction(sourceId, group);
 
       if (!ok) {
         return false;
       }
+
+      donePages += groupPages.length;
     }
 
     // Completing writes the book's One Page, which takes a few seconds.
-    setSending("Finishing the book…");
+    setSending({
+      donePercent: 100,
+      inFlightPercent: 0,
+      step: "The Mentor is writing its big picture of the book…",
+    });
     const { ok } = await completeSourceAction(sourceId);
 
     return ok;
@@ -334,6 +380,35 @@ const AddSourceForm = ({
         </p>
       )}
 
+      {sending && (
+        <div className={styles.sending}>
+          <div
+            className={styles.sendingTrack}
+            role="progressbar"
+            aria-label="Adding the book"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={sending.donePercent}
+          >
+            <div
+              className={styles.sendingDone}
+              style={{ width: `${sending.donePercent}%` }}
+            />
+            <div
+              className={styles.sendingInFlight}
+              style={{ width: `${sending.inFlightPercent}%` }}
+            />
+          </div>
+          <p className={styles.sendingStep} aria-live="polite">
+            <LoaderCircleIcon className={styles.sendingIcon} aria-hidden />
+            {sending.step}
+          </p>
+          <p className={styles.sendingHint}>
+            Usually 1–2 minutes for a 300-page book.
+          </p>
+        </div>
+      )}
+
       <DialogFooter>
         <Button
           type="submit"
@@ -341,7 +416,7 @@ const AddSourceForm = ({
             !isNewSourceValid(source) || isPending || readingPage !== null
           }
         >
-          {sending ?? (isPending ? "Adding…" : "Add Source")}
+          {isPending ? "Adding…" : "Add Source"}
         </Button>
       </DialogFooter>
     </form>
@@ -367,15 +442,25 @@ export const AddSourceButton = ({
   disabled = false,
 }: AddSourceButtonProps) => {
   const [open, setOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+
+  // While a book is sent, the dialog stays open
+  const changeOpen = (nextOpen: boolean) => {
+    if (!nextOpen && isSending) {
+      return;
+    }
+
+    setOpen(nextOpen);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger
         render={<Button variant={variant} size={size} disabled={disabled} />}
       >
         {children}
       </DialogTrigger>
-      <DialogContent className={styles.content}>
+      <DialogContent className={styles.content} showCloseButton={!isSending}>
         <DialogHeader>
           <DialogTitle>Add a Source</DialogTitle>
           <DialogDescription>
@@ -387,6 +472,7 @@ export const AddSourceButton = ({
           initialKind={initialKind}
           canShare={canShare}
           onDone={() => setOpen(false)}
+          onSendingChange={setIsSending}
         />
       </DialogContent>
     </Dialog>
