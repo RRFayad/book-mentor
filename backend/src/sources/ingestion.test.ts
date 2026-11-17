@@ -163,6 +163,19 @@ describe("sending a book's text in parts", () => {
     expect(stored.map((chunk) => chunk.page)).toEqual([1]);
   });
 
+  // Some PDFs carry null characters in their text, which Postgres refuses.
+  it("stores a page whose text holds a null character", async () => {
+    const sourceId = await addBook(1);
+
+    const response = await api.as("reader").post(`/sources/${sourceId}/pages`, {
+      pages: [{ page: 1, text: "Train\u0000 briefly." }],
+    });
+    const stored = await chunksOf(sourceId);
+
+    expect(response.status).toBe(200);
+    expect(stored[0].content).toBe("Train briefly.");
+  });
+
   it("doesn't duplicate passages or Notes when a part is sent again", async () => {
     const sourceId = await addBook(2);
 

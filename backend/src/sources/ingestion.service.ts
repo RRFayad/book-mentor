@@ -17,6 +17,7 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 
 const cleanText = (text: string) =>
   text
+    .replace(/\u0000/g, "") // null characters (some PDFs have them) → removed: Postgres refuses them
     .replace(/-\n/g, "-") // hyphen + line break → keep the hyphen: "High-\nintensity" → "High-intensity"
     .replace(/[ \t]+/g, " ") // runs of spaces or tabs → one space
     .replace(/ *\n */g, "\n") // spaces around a line break → removed
@@ -92,10 +93,13 @@ const countUncoveredPages = (sections: PageRange[], pages: PageText[]) =>
   ).length;
 
 // Try 2 times to write batch notes, when there are many uncovered pages
-const writeSections = async (pages: PageText[]) => {
+const writeSections = async (sourceId: string, pages: PageText[]) => {
   const markedPages = toMarkedPages(pages);
+  const pageRange = `${pages[0].page}-${pages[pages.length - 1].page}`;
+  // Lets LangSmith find a book's Notes runs by its id and pages.
+  const runConfig = { metadata: { sourceId, pages: pageRange } };
 
-  const firstTry = await notesChain.invoke({ pages: markedPages });
+  const firstTry = await notesChain.invoke({ pages: markedPages }, runConfig);
   const firstTryUncovered = countUncoveredPages(firstTry.sections, pages);
 
   if (firstTryUncovered <= MAX_UNCOVERED_PAGES) {
@@ -103,10 +107,10 @@ const writeSections = async (pages: PageText[]) => {
   }
 
   console.log(
-    `Pages ${pages[0].page}-${pages[pages.length - 1].page}: ${firstTryUncovered} pages in no Note, writing them again`,
+    `Pages ${pageRange}: ${firstTryUncovered} pages in no Note, writing them again`,
   );
 
-  const secondTry = await notesChain.invoke({ pages: markedPages });
+  const secondTry = await notesChain.invoke({ pages: markedPages }, runConfig);
   const secondTryUncovered = countUncoveredPages(secondTry.sections, pages);
 
   return secondTryUncovered < firstTryUncovered
@@ -123,7 +127,7 @@ const writeNotes = async (sourceId: string, pages: PageText[]) => {
 
   const batchFirstPage = pages[0].page;
   const batchLastPage = pages[pages.length - 1].page;
-  const sections = await writeSections(pages);
+  const sections = await writeSections(sourceId, pages);
 
   if (sections.length === 0) {
     return [];
@@ -222,7 +226,10 @@ export const writeOnePage = async (sourceId: string) => {
     .join("\n\n");
 
   try {
-    const { onePage } = await onePageChain.invoke({ notes: notesText });
+    const { onePage } = await onePageChain.invoke(
+      { notes: notesText },
+      { metadata: { sourceId } },
+    );
 
     return onePage;
   } catch (error) {

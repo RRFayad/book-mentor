@@ -42,9 +42,9 @@ const notesSchema = z.object({
 
 // Keeps the model's reasoning: without it, the model often stopped after a
 // batch's first section (3 of 5 runs on one batch, against 5 of 5 with it).
-export const notesChain = notesPrompt.pipe(
-  chatModel.withStructuredOutput(notesSchema),
-);
+export const notesChain = notesPrompt
+  .pipe(chatModel.withStructuredOutput(notesSchema))
+  .withConfig({ runName: "Ingestion Notes" });
 
 const ONE_PAGE_SYSTEM_PROMPT = `
 You write a book's One Page: its big picture, built from the study notes taken on it section by section, so that a reader's questions about the whole book can be answered later.
@@ -70,6 +70,6 @@ const onePageSchema = z.object({
 });
 
 // Written once per book, from the whole book: worth the model's reasoning.
-export const onePageChain = onePagePrompt.pipe(
-  chatModel.withStructuredOutput(onePageSchema),
-);
+export const onePageChain = onePagePrompt
+  .pipe(chatModel.withStructuredOutput(onePageSchema))
+  .withConfig({ runName: "Ingestion One Page" });
