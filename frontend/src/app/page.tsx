@@ -216,7 +216,6 @@ const LandingPage = async () => {
             <BlurFade delay={0.5}>
               <div className={styles.hero.actions}>
                 <form action={routes.signUp}>
-                  <input type="hidden" name="demo" value="1" />
                   <ShimmerButton type="submit">
                     <RocketIcon className={styles.hero.actionIcon} />
                     Try the Live Demo
@@ -233,10 +232,7 @@ const LandingPage = async () => {
             </BlurFade>
 
             <BlurFade delay={0.6}>
-              <Link
-                href={`${routes.signUp}?demo=1`}
-                className={styles.hero.note}
-              >
+              <Link href={routes.signUp} className={styles.hero.note}>
                 <BookOpenIcon className={styles.hero.noteIcon} />
                 Try it with a demo account: no real email needed, the Shared
                 Library is ready to ask
@@ -350,7 +346,6 @@ const LandingPage = async () => {
               </p>
               <div className={styles.callToAction.actions}>
                 <form action={routes.signUp}>
-                  <input type="hidden" name="demo" value="1" />
                   <ShimmerButton
                     className={styles.callToAction.button}
                     type="submit"

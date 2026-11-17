@@ -20,14 +20,8 @@ const styles = {
 const createDemoEmail = () =>
   `reader-${randomUUID().slice(0, 8)}+clerk_test@example.com`;
 
-type SignUpPageProps = {
-  searchParams: Promise<{ demo?: string | string[] }>;
-};
-
-const SignUpPage = async ({ searchParams }: SignUpPageProps) => {
-  const { demo } = await searchParams;
-  const initialValues =
-    demo === "1" ? { emailAddress: createDemoEmail() } : undefined;
+const SignUpPage = () => {
+  const initialValues = { emailAddress: createDemoEmail() };
 
   return (
     <div className={styles.page}>
